@@ -5,10 +5,10 @@ export const companyDetails = {
   tagline: 'Premium Industrial Metals. Precision Delivered.',
   founded: 2012,
   headquarters: 'Jebel Ali Free Zone, Dubai, UAE',
-  indiaOffice: 'Pimpri-Chinchwad Industrial Belt, Pune, Maharashtra, India',
+  indiaOffice: '8/61, Sector-8, Jankipuram Extension, Lucknow-226021, India',
   email: 'trade@gravenmetal.com',
-  phone: '79053 50134',
-  supportPhone: '+971 4 589 2140',
+  phone: '+9179053 50134',
+  supportPhone: '+9179053 50134',
   certifications: ['ISO 9001:2015', 'LBMA Partner Network', 'REACH Compliant Supply', 'ASTM Verified Batches'],
   intro:
     'GRAVEN METAL supplies certified ferrous and non-ferrous metals to fabrication, infrastructure, energy, automotive, and EPC clients across APAC, GCC, and Europe.',

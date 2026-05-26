@@ -15,13 +15,6 @@ type ContactForm = {
 
 type ContactErrors = Partial<Record<keyof ContactForm, string>>;
 
-const social = [
-  { label: 'Facebook', short: 'f', href: 'https://facebook.com' },
-  { label: 'LinkedIn', short: 'in', href: 'https://linkedin.com' },
-  { label: 'Instagram', short: 'ig', href: 'https://instagram.com' },
-  { label: 'YouTube', short: 'yt', href: 'https://youtube.com' },
-];
-
 export function ContactPage() {
   const [form, setForm] = useState<ContactForm>({ name: '', email: '', phone: '', message: '' });
   const [errors, setErrors] = useState<ContactErrors>({});
@@ -118,31 +111,13 @@ export function ContactPage() {
               </div>
 
               <a
-                href="https://wa.me/917303094370"
+                href="https://wa.me/917905350134"
                 target="_blank"
                 rel="noreferrer"
                 className="mt-5 inline-flex rounded-md border border-emerald-500/40 bg-emerald-500/10 px-4 py-2 text-sm font-medium text-emerald-300 transition hover:bg-emerald-500/20"
               >
                 WhatsApp Chat
               </a>
-
-              <div className="mt-6">
-                <p className="text-sm text-zinc-400">Follow Us</p>
-                <div className="mt-3 flex gap-2">
-                  {social.map((item) => (
-                    <a
-                      key={item.label}
-                      href={item.href}
-                      target="_blank"
-                      rel="noreferrer"
-                      aria-label={item.label}
-                      className="flex h-9 w-9 items-center justify-center rounded-md border border-gold/25 bg-[#0d1218] text-xs font-bold uppercase text-gold transition hover:-translate-y-0.5 hover:border-gold/60"
-                    >
-                      {item.short}
-                    </a>
-                  ))}
-                </div>
-              </div>
             </div>
 
             <form onSubmit={onSubmit} className="rounded-xl border border-gold/20 bg-[#0b0f13]/94 p-4 shadow-panel backdrop-blur-md md:p-6">
@@ -225,14 +200,33 @@ export function ContactPage() {
       </MotionReveal>
 
       <MotionReveal delay={0.08}>
-        <section className="overflow-hidden border-b border-gold/20 bg-[#070b10] shadow-panel">
-          <iframe
-            title="Graven Metal Location"
-            src="https://maps.google.com/maps?q=Pune%20Maharashtra&t=&z=12&ie=UTF8&iwloc=&output=embed"
-            className="h-72 w-full border-0 md:h-80"
-            loading="lazy"
-            referrerPolicy="no-referrer-when-downgrade"
-          />
+        <section className="border-b border-gold/20 bg-[#070b10] px-4 py-6 shadow-panel md:px-8 md:py-8">
+          <div className="mx-auto grid max-w-7xl gap-5 md:grid-cols-2">
+            <article className="overflow-hidden rounded-xl border border-gold/20 bg-[#0b0f13]">
+              <p className="border-b border-gold/10 px-4 py-3 text-sm font-semibold uppercase tracking-[0.12em] text-gold">
+                Lucknow Office
+              </p>
+              <iframe
+                title="Graven Metal Lucknow Office Location"
+                src="https://maps.google.com/maps?q=8/61%20Sector-8%20Jankipuram%20Extension%20Lucknow-226021%20India&t=&z=15&ie=UTF8&iwloc=&output=embed"
+                className="h-72 w-full border-0 md:h-80"
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+              />
+            </article>
+            <article className="overflow-hidden rounded-xl border border-gold/20 bg-[#0b0f13]">
+              <p className="border-b border-gold/10 px-4 py-3 text-sm font-semibold uppercase tracking-[0.12em] text-gold">
+                Delhi Office
+              </p>
+              <iframe
+                title="Graven Metal Delhi Office Location"
+                src="https://maps.google.com/maps?q=7/25%20Tower%20F%202nd%20Floor%20Kirti%20Nagar%20New%20Delhi-110015%20India&t=&z=15&ie=UTF8&iwloc=&output=embed"
+                className="h-72 w-full border-0 md:h-80"
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+              />
+            </article>
+          </div>
         </section>
       </MotionReveal>
     </div>

@@ -3,12 +3,14 @@ import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { useEffect, useState } from 'react';
 import { Navbar } from './Navbar';
 import { Footer } from './Footer';
+import { OfficeShowcaseSection } from '../components/OfficeShowcaseSection';
 
 export function Layout() {
   const location = useLocation();
   const prefersReducedMotion = useReducedMotion();
   const [showRouteLine, setShowRouteLine] = useState(false);
   const isHomeRoute = location.pathname === '/';
+  const isAboutRoute = location.pathname === '/about';
   const isFullBleedRoute =
     isHomeRoute || location.pathname === '/about' || location.pathname === '/contact' || location.pathname === '/auth';
 
@@ -66,6 +68,7 @@ export function Layout() {
           </motion.div>
         </AnimatePresence>
       </main>
+      {isAboutRoute ? <OfficeShowcaseSection /> : null}
       <Footer />
     </div>
   );

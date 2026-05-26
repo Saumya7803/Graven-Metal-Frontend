@@ -19,6 +19,24 @@ const policyLinks = [
   ['Return Policy', '/return-policy'],
 ] as const;
 
+const paymentMethods = [
+  { label: 'Visa', src: '/icons/payment/visa.svg', href: 'https://www.visa.com', widthClass: 'w-[56px]' },
+  { label: 'Mastercard', src: '/icons/payment/mastercard.svg', href: 'https://www.mastercard.com', widthClass: 'w-[70px]' },
+  {
+    label: 'UPI',
+    src: '/icons/payment/upi.svg',
+    href: 'https://www.npci.org.in/what-we-do/upi/product-overview',
+    widthClass: 'w-[58px]',
+  },
+  {
+    label: 'American Express',
+    src: '/icons/payment/amex.svg',
+    href: 'https://www.americanexpress.com',
+    widthClass: 'w-[86px]',
+  },
+  { label: 'RuPay', src: '/icons/payment/rupay.svg', href: 'https://www.rupay.co.in', widthClass: 'w-[64px]' },
+] as const;
+
 const currentYear = new Date().getFullYear();
 
 export function Footer() {
@@ -92,6 +110,29 @@ export function Footer() {
       <div className="relative mx-auto flex max-w-7xl flex-col items-center gap-1.5 border-t border-gold/10 px-4 py-3 text-xs text-zinc-500 md:px-8">
         <div className="w-full">
           <p className="text-center font-semibold text-zinc-200">&copy; {currentYear} GRAVEN METAL. All rights reserved.</p>
+          <div className="mt-3 flex flex-wrap items-center justify-center gap-x-3 gap-y-2">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-zinc-400">We Accept:</p>
+            <div className="flex flex-wrap items-center justify-center gap-2.5 sm:gap-3">
+              {paymentMethods.map((method) => (
+                <a
+                  key={method.label}
+                  href={method.href}
+                  target="_blank"
+                  rel="noreferrer"
+                  aria-label={`Open ${method.label} website`}
+                  className="group inline-flex h-7 items-center justify-center rounded px-1.5 transition duration-300 hover:bg-gold/5 hover:opacity-90 hover:shadow-[0_0_16px_rgba(214,176,92,0.2)]"
+                >
+                  <img
+                    src={method.src}
+                    alt={method.label}
+                    className={`${method.widthClass} h-5 object-contain transition duration-300 group-hover:brightness-110`}
+                    loading="lazy"
+                    decoding="async"
+                  />
+                </a>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     </footer>
