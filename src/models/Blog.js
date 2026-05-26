@@ -16,6 +16,11 @@ const blogSchema = new mongoose.Schema(
     content: { type: String, required: true },
     thumbnail: { type: thumbnailSchema, default: () => ({}) },
     published: { type: Boolean, default: true, index: true },
+    seo: {
+      metaTitle: { type: String, default: '' },
+      metaDescription: { type: String, default: '' },
+      metaKeywords: { type: String, default: '' },
+    },
     author: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
   },
   { timestamps: true }

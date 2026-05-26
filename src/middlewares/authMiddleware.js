@@ -2,8 +2,18 @@ import jwt from 'jsonwebtoken';
 import { User } from '../models/User.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 
+const getJwtSecret = () => {
+  if (process.env.JWT_SECRET) return process.env.JWT_SECRET;
+  if (process.env.NODE_ENV !== 'production') {
+    process.env.JWT_SECRET = 'graven-metal-local-development-secret';
+    return process.env.JWT_SECRET;
+  }
+  return null;
+};
+
 export const protect = asyncHandler(async (req, res, next) => {
-  if (!process.env.JWT_SECRET) {
+  const jwtSecret = getJwtSecret();
+  if (!jwtSecret) {
     return res.status(500).json({ message: 'Server auth configuration error' });
   }
 
@@ -13,7 +23,7 @@ export const protect = asyncHandler(async (req, res, next) => {
   }
 
   const token = header.split(' ')[1];
-  const decoded = jwt.verify(token, process.env.JWT_SECRET, {
+  const decoded = jwt.verify(token, jwtSecret, {
     algorithms: ['HS256'],
     issuer: process.env.JWT_ISSUER || 'graven-metal-api',
     audience: process.env.JWT_AUDIENCE || 'graven-metal-client',

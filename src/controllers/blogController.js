@@ -6,6 +6,15 @@ const imageMimeTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/jpg'];
 
 export const createBlog = asyncHandler(async (req, res) => {
   const payload = { ...req.body, author: req.user?._id };
+  payload.published = String(payload.published ?? 'true') === 'true';
+  payload.seo = {
+    metaTitle: payload.metaTitle || '',
+    metaDescription: payload.metaDescription || '',
+    metaKeywords: payload.metaKeywords || '',
+  };
+  delete payload.metaTitle;
+  delete payload.metaDescription;
+  delete payload.metaKeywords;
 
   const exists = await Blog.findOne({ slug: payload.slug });
   if (exists) return res.status(400).json({ message: 'Blog slug already exists' });
@@ -66,6 +75,17 @@ export const updateBlog = asyncHandler(async (req, res) => {
   if (!existing) return res.status(404).json({ message: 'Blog not found' });
 
   const payload = { ...req.body };
+  if (payload.published !== undefined) payload.published = String(payload.published) === 'true';
+  if (payload.metaTitle || payload.metaDescription || payload.metaKeywords) {
+    payload.seo = {
+      metaTitle: payload.metaTitle || existing.seo?.metaTitle || '',
+      metaDescription: payload.metaDescription || existing.seo?.metaDescription || '',
+      metaKeywords: payload.metaKeywords || existing.seo?.metaKeywords || '',
+    };
+  }
+  delete payload.metaTitle;
+  delete payload.metaDescription;
+  delete payload.metaKeywords;
 
   if (payload.slug && payload.slug !== existing.slug) {
     const duplicate = await Blog.findOne({ slug: payload.slug, _id: { $ne: existing._id } });
