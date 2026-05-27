@@ -20,21 +20,21 @@ const policyLinks = [
 ] as const;
 
 const paymentMethods = [
-  { label: 'Visa', src: '/icons/payment/visa.svg', href: 'https://www.visa.com', widthClass: 'w-[56px]' },
-  { label: 'Mastercard', src: '/icons/payment/mastercard.svg', href: 'https://www.mastercard.com', widthClass: 'w-[42px]' },
+  { label: 'Visa', src: '/icons/payment/visa.svg', href: 'https://www.visa.com', widthClass: 'w-[58px]' },
+  { label: 'Mastercard', src: '/icons/payment/mastercard.svg', href: 'https://www.mastercard.com', widthClass: 'w-[44px]' },
   {
     label: 'UPI',
     src: '/icons/payment/upi.svg',
     href: 'https://www.npci.org.in/what-we-do/upi/product-overview',
-    widthClass: 'w-[58px]',
+    widthClass: 'w-[66px]',
   },
   {
     label: 'American Express',
     src: '/icons/payment/amex.svg',
     href: 'https://www.americanexpress.com',
-    widthClass: 'w-[86px]',
+    widthClass: 'w-[82px]',
   },
-  { label: 'RuPay', src: '/icons/payment/rupay.svg', href: 'https://www.rupay.co.in', widthClass: 'w-[72px]' },
+  { label: 'RuPay', src: '/icons/payment/rupay.svg', href: 'https://www.rupay.co.in', widthClass: 'w-[68px]' },
 ] as const;
 
 const currentYear = new Date().getFullYear();
@@ -120,7 +120,7 @@ export function Footer() {
                   target="_blank"
                   rel="noreferrer"
                   aria-label={`Open ${method.label} website`}
-                  className="group inline-flex h-7 items-center justify-center rounded px-0.5 transition duration-300 hover:bg-gold/5 hover:opacity-90 hover:shadow-[0_0_16px_rgba(214,176,92,0.2)]"
+                  className="group inline-flex h-8 items-center justify-center rounded-[4px] border border-white/10 bg-white/[0.04] px-1.5 transition duration-300 hover:border-gold/30 hover:bg-gold/10 hover:shadow-[0_0_16px_rgba(214,176,92,0.2)]"
                 >
                   <img
                     src={method.src}
