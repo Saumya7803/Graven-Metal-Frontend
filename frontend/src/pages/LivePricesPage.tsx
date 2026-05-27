@@ -128,6 +128,25 @@ function GoldPriceChart() {
 export function LivePricesPage() {
   const [rows, setRows] = useState(seedRows);
   const [lastUpdated, setLastUpdated] = useState(new Date());
+  const [activeView, setActiveView] = useState<'metals' | 'watchlist'>('metals');
+  const [watchlist, setWatchlist] = useState<string[]>([]);
+
+  useEffect(() => {
+    const savedWatchlist = localStorage.getItem('live_prices_watchlist');
+    if (!savedWatchlist) return;
+    try {
+      const parsed = JSON.parse(savedWatchlist);
+      if (Array.isArray(parsed) && parsed.every((item) => typeof item === 'string')) {
+        setWatchlist(parsed);
+      }
+    } catch {
+      // Ignore malformed local storage payload.
+    }
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem('live_prices_watchlist', JSON.stringify(watchlist));
+  }, [watchlist]);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -150,8 +169,20 @@ export function LivePricesPage() {
   }, []);
 
   const topMover = useMemo(() => {
-    return [...rows].sort((a, b) => b.change - a.change)[0];
-  }, [rows]);
+    const sourceRows = activeView === 'watchlist' ? rows.filter((row) => watchlist.includes(row.metal)) : rows;
+    return [...sourceRows].sort((a, b) => b.change - a.change)[0];
+  }, [activeView, rows, watchlist]);
+
+  const visibleRows = useMemo(() => {
+    if (activeView === 'metals') return rows;
+    return rows.filter((row) => watchlist.includes(row.metal));
+  }, [activeView, rows, watchlist]);
+
+  const toggleWatchlist = (metal: string) => {
+    setWatchlist((prev) =>
+      prev.includes(metal) ? prev.filter((item) => item !== metal) : [...prev, metal],
+    );
+  };
 
   return (
     <div className="grid gap-4 lg:grid-cols-[1.08fr_0.92fr]">
@@ -168,10 +199,26 @@ export function LivePricesPage() {
             Real-time metal prices and market trends updated every few seconds.
           </p>
           <div className="mt-5 flex flex-wrap items-center gap-2">
-            <button className="rounded-sm bg-gold-cta px-9 py-2 text-sm font-semibold text-black shadow-gold">
+            <button
+              type="button"
+              onClick={() => setActiveView('metals')}
+              className={`rounded-sm px-9 py-2 text-sm font-semibold transition ${
+                activeView === 'metals'
+                  ? 'bg-gold-cta text-black shadow-gold'
+                  : 'border border-white/5 bg-[#0b1117] text-zinc-300 hover:text-gold'
+              }`}
+            >
               Metals
             </button>
-            <button className="rounded-sm border border-white/5 bg-[#0b1117] px-8 py-2 text-sm font-semibold text-zinc-300 hover:text-gold">
+            <button
+              type="button"
+              onClick={() => setActiveView('watchlist')}
+              className={`rounded-sm px-8 py-2 text-sm font-semibold transition ${
+                activeView === 'watchlist'
+                  ? 'bg-gold-cta text-black shadow-gold'
+                  : 'border border-white/5 bg-[#0b1117] text-zinc-300 hover:text-gold'
+              }`}
+            >
               Watchlist
             </button>
             <p className="ml-auto text-xs text-gold">
@@ -187,13 +234,15 @@ export function LivePricesPage() {
                   <th className="px-3 py-3 text-left font-semibold">Price</th>
                   <th className="px-3 py-3 text-left font-semibold">Change</th>
                   <th className="px-3 py-3 text-left font-semibold">Chart (7D)</th>
+                  <th className="px-3 py-3 text-right font-semibold">Action</th>
                 </tr>
               </thead>
               <tbody>
-                {rows.map((row) => {
+                {visibleRows.map((row) => {
                   const up = row.change >= 0;
                   const metalName = row.metal.split(' ')[0];
                   const metalColor = metalColors[metalName] || '#d8a037';
+                  const isSaved = watchlist.includes(row.metal);
                   return (
                     <tr key={row.metal} className="border-t border-white/5 bg-[#080d12] transition hover:bg-[#0e151c]">
                       <td className="px-3 py-3.5">
@@ -218,9 +267,29 @@ export function LivePricesPage() {
                       <td className="px-3 py-2">
                         <Sparkline metalName={metalName} />
                       </td>
+                      <td className="px-3 py-3 text-right">
+                        <button
+                          type="button"
+                          onClick={() => toggleWatchlist(row.metal)}
+                          className={`rounded-sm px-2.5 py-1 text-xs font-semibold transition ${
+                            isSaved
+                              ? 'bg-gold/20 text-gold hover:bg-gold/30'
+                              : 'border border-white/10 text-zinc-300 hover:border-gold/35 hover:text-gold'
+                          }`}
+                        >
+                          {isSaved ? 'Saved' : 'Save'}
+                        </button>
+                      </td>
                     </tr>
                   );
                 })}
+                {visibleRows.length === 0 && (
+                  <tr>
+                    <td colSpan={5} className="px-4 py-8 text-center text-sm text-zinc-400">
+                      No metals in your watchlist yet. Switch to Metals and click Save on any row.
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>
