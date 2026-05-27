@@ -2,6 +2,14 @@ const DEFAULT_WINDOW_MS = Number(process.env.RATE_LIMIT_WINDOW_MS || 15 * 60 * 1
 const DEFAULT_MAX_REQUESTS = Number(process.env.RATE_LIMIT_MAX || 300);
 const AUTH_WINDOW_MS = Number(process.env.AUTH_RATE_LIMIT_WINDOW_MS || 15 * 60 * 1000);
 const AUTH_MAX_REQUESTS = Number(process.env.AUTH_RATE_LIMIT_MAX || 10);
+const PUBLIC_READ_WINDOW_MS = Number(process.env.PUBLIC_READ_RATE_LIMIT_WINDOW_MS || 15 * 60 * 1000);
+const PUBLIC_READ_MAX_REQUESTS = Number(process.env.PUBLIC_READ_RATE_LIMIT_MAX || 1200);
+const QUOTE_FORM_WINDOW_MS = Number(process.env.QUOTE_FORM_RATE_LIMIT_WINDOW_MS || 15 * 60 * 1000);
+const QUOTE_FORM_MAX_REQUESTS = Number(process.env.QUOTE_FORM_RATE_LIMIT_MAX || 240);
+const CONTACT_FORM_WINDOW_MS = Number(process.env.CONTACT_FORM_RATE_LIMIT_WINDOW_MS || 15 * 60 * 1000);
+const CONTACT_FORM_MAX_REQUESTS = Number(process.env.CONTACT_FORM_RATE_LIMIT_MAX || 240);
+const ADMIN_WINDOW_MS = Number(process.env.ADMIN_RATE_LIMIT_WINDOW_MS || 15 * 60 * 1000);
+const ADMIN_MAX_REQUESTS = Number(process.env.ADMIN_RATE_LIMIT_MAX || 900);
 
 const WINDOW_CLEANUP_INTERVAL = 60 * 1000;
 
@@ -62,6 +70,30 @@ export const authRateLimit = createRateLimiter({
   windowMs: AUTH_WINDOW_MS,
   max: AUTH_MAX_REQUESTS,
   keyPrefix: 'auth',
+});
+
+export const publicReadRateLimit = createRateLimiter({
+  windowMs: PUBLIC_READ_WINDOW_MS,
+  max: PUBLIC_READ_MAX_REQUESTS,
+  keyPrefix: 'public-read',
+});
+
+export const quoteSubmitRateLimit = createRateLimiter({
+  windowMs: QUOTE_FORM_WINDOW_MS,
+  max: QUOTE_FORM_MAX_REQUESTS,
+  keyPrefix: 'quote-submit',
+});
+
+export const contactSubmitRateLimit = createRateLimiter({
+  windowMs: CONTACT_FORM_WINDOW_MS,
+  max: CONTACT_FORM_MAX_REQUESTS,
+  keyPrefix: 'contact-submit',
+});
+
+export const adminRateLimit = createRateLimiter({
+  windowMs: ADMIN_WINDOW_MS,
+  max: ADMIN_MAX_REQUESTS,
+  keyPrefix: 'admin',
 });
 
 export const sanitizeInput = (req, res, next) => {

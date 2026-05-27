@@ -7,18 +7,22 @@ import contactRoutes from './contactRoutes.js';
 import blogRoutes from './blogRoutes.js';
 import superAdminRoutes from './superAdminRoutes.js';
 import settingsRoutes from './settingsRoutes.js';
-import { apiRateLimit } from '../middlewares/securityMiddleware.js';
+import {
+  adminRateLimit,
+  apiRateLimit,
+  publicReadRateLimit,
+} from '../middlewares/securityMiddleware.js';
 
 const router = Router();
 
 router.use('/auth', authRoutes);
-router.use(apiRateLimit);
-router.use('/products', productRoutes);
-router.use('/categories', categoryRoutes);
+router.use('/products', publicReadRateLimit, productRoutes);
+router.use('/categories', publicReadRateLimit, categoryRoutes);
+router.use('/blogs', publicReadRateLimit, blogRoutes);
 router.use('/quotes', quoteRoutes);
 router.use('/contacts', contactRoutes);
-router.use('/blogs', blogRoutes);
-router.use('/settings', settingsRoutes);
-router.use('/super-admin', superAdminRoutes);
+router.use('/settings', adminRateLimit, settingsRoutes);
+router.use('/super-admin', adminRateLimit, superAdminRoutes);
+router.use(apiRateLimit);
 
 export default router;

@@ -10,11 +10,13 @@ import {
 import { authorize, authorizePermission, protect } from '../middlewares/authMiddleware.js';
 import { validate } from '../middlewares/validateMiddleware.js';
 import { PERMISSIONS } from '../constants/permissions.js';
+import { adminRateLimit, contactSubmitRateLimit } from '../middlewares/securityMiddleware.js';
 
 const router = Router();
 
 router.post(
   '/',
+  contactSubmitRateLimit,
   [
     body('fullName').trim().notEmpty().withMessage('Full name is required').isLength({ max: 120 }),
     body('email').isEmail().withMessage('Valid email is required'),
@@ -25,10 +27,25 @@ router.post(
   validate,
   createContact
 );
-router.get('/', protect, authorize('super_admin', 'admin', 'editor'), authorizePermission(PERMISSIONS.MANAGE_CONTACTS), getContacts);
-router.get('/:id', protect, authorize('super_admin', 'admin', 'editor'), authorizePermission(PERMISSIONS.MANAGE_CONTACTS), getContactById);
+router.get(
+  '/',
+  adminRateLimit,
+  protect,
+  authorize('super_admin', 'admin', 'editor'),
+  authorizePermission(PERMISSIONS.MANAGE_CONTACTS),
+  getContacts
+);
+router.get(
+  '/:id',
+  adminRateLimit,
+  protect,
+  authorize('super_admin', 'admin', 'editor'),
+  authorizePermission(PERMISSIONS.MANAGE_CONTACTS),
+  getContactById
+);
 router.put(
   '/:id',
+  adminRateLimit,
   protect,
   authorize('super_admin', 'admin', 'editor'),
   authorizePermission(PERMISSIONS.MANAGE_CONTACTS),
@@ -39,6 +56,13 @@ router.put(
   validate,
   updateContact
 );
-router.delete('/:id', protect, authorize('super_admin', 'admin'), authorizePermission(PERMISSIONS.MANAGE_CONTACTS), deleteContact);
+router.delete(
+  '/:id',
+  adminRateLimit,
+  protect,
+  authorize('super_admin', 'admin'),
+  authorizePermission(PERMISSIONS.MANAGE_CONTACTS),
+  deleteContact
+);
 
 export default router;

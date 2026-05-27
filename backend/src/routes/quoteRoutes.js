@@ -13,11 +13,13 @@ import { authorize, authorizePermission, optionalProtect, protect } from '../mid
 import { validate } from '../middlewares/validateMiddleware.js';
 import { PERMISSIONS } from '../constants/permissions.js';
 import { uploadAttachment, validateUploadedFile } from '../middlewares/uploadMiddleware.js';
+import { adminRateLimit, quoteSubmitRateLimit } from '../middlewares/securityMiddleware.js';
 
 const router = Router();
 
 router.post(
   '/',
+  quoteSubmitRateLimit,
   optionalProtect,
   uploadAttachment.single('file'),
   validateUploadedFile('attachment'),
@@ -37,6 +39,7 @@ router.get('/mine', protect, authorize('user'), getMyQuotes);
 
 router.get(
   '/',
+  adminRateLimit,
   protect,
   authorize('super_admin', 'admin'),
   authorizePermission(PERMISSIONS.MANAGE_QUOTES),
@@ -45,6 +48,7 @@ router.get(
 
 router.get(
   '/:id',
+  adminRateLimit,
   protect,
   authorize('super_admin', 'admin'),
   authorizePermission(PERMISSIONS.MANAGE_QUOTES),
@@ -55,6 +59,7 @@ router.get(
 
 router.put(
   '/:id',
+  adminRateLimit,
   protect,
   authorize('super_admin', 'admin'),
   authorizePermission(PERMISSIONS.MANAGE_QUOTES),
@@ -67,6 +72,7 @@ router.put(
 
 router.patch(
   '/:id/status',
+  adminRateLimit,
   protect,
   authorize('super_admin', 'admin'),
   authorizePermission(PERMISSIONS.MANAGE_QUOTES),
@@ -81,6 +87,7 @@ router.patch(
 
 router.delete(
   '/:id',
+  adminRateLimit,
   protect,
   authorize('super_admin'),
   authorizePermission(PERMISSIONS.MANAGE_QUOTES),
