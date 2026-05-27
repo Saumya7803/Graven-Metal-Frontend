@@ -60,7 +60,7 @@ export function CustomerAuthPage() {
 
   return (
     <>
-      <SEO title="Customer Login" description="Login or create a GRAVEN AUTOMATION customer account." path="/login" noIndex />
+      <SEO title="Customer Login" description="Login or create a GRAVEN METAL customer account." path="/login" noIndex />
       <section className="relative min-h-[calc(100svh-121px)] overflow-hidden bg-[#03070b]">
         <div className="absolute inset-0">
           <img

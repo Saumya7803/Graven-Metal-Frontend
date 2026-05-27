@@ -6,9 +6,9 @@ const sections = [
   {
     title: 'Acceptance and Contract Scope',
     points: [
-      'By placing an order or accepting a quotation from Graven Automations, you agree to these Terms & Conditions for industrial metal trading transactions.',
+      'By placing an order or accepting a quotation from GRAVEN METALs, you agree to these Terms & Conditions for industrial metal trading transactions.',
       'All purchase terms are governed by the approved quotation, proforma invoice, technical specification sheet, and confirmed delivery terms.',
-      'Any conflicting buyer terms apply only when expressly accepted in writing by Graven Automations.'
+      'Any conflicting buyer terms apply only when expressly accepted in writing by GRAVEN METALs.'
     ]
   },
   {
@@ -22,7 +22,7 @@ const sections = [
   {
     title: 'Quality, Inspection, and Customer Responsibility',
     points: [
-      'Graven Automations supplies materials according to declared grade, dimensions, and certification parameters agreed at booking.',
+      'GRAVEN METALs supplies materials according to declared grade, dimensions, and certification parameters agreed at booking.',
       'Customers must inspect deliveries promptly and report shortages, transit damage, or quality concerns within the specified claim window.',
       'Improper handling, storage, fabrication variance, or misuse after delivery remains the buyer\'s responsibility.'
     ]
@@ -30,7 +30,7 @@ const sections = [
   {
     title: 'Liability and Legal Terms',
     points: [
-      'Graven Automations is not liable for indirect, incidental, or consequential losses arising from delayed projects, downstream operations, or market fluctuation.',
+      'GRAVEN METALs is not liable for indirect, incidental, or consequential losses arising from delayed projects, downstream operations, or market fluctuation.',
       'Force majeure events, including regulatory disruptions, port delays, and transport interruptions, may impact schedules without penalty.',
       'Any dispute will be handled under applicable law and competent jurisdiction as communicated in the governing contract documents.'
     ]
@@ -42,7 +42,7 @@ export function TermsConditionsPage() {
     <div className="space-y-6">
       <SEO
         title="Terms & Conditions"
-        description="Terms and conditions for Graven Automations industrial metal supply, orders, payments, and legal responsibilities."
+        description="Terms and conditions for GRAVEN METALs industrial metal supply, orders, payments, and legal responsibilities."
         path="/terms-conditions"
       />
 
@@ -51,7 +51,7 @@ export function TermsConditionsPage() {
           <p className="text-sm text-zinc-500">Home / Policies / Terms & Conditions</p>
           <h1 className="mt-3 font-display text-3xl text-white sm:text-4xl">Terms & Conditions</h1>
           <p className="mt-3 max-w-3xl text-sm leading-7 text-zinc-300 sm:text-base">
-            These Terms & Conditions govern commercial engagements with Graven Automations for sourcing, procurement,
+            These Terms & Conditions govern commercial engagements with GRAVEN METALs for sourcing, procurement,
             processing, and delivery of industrial metals.
           </p>
 

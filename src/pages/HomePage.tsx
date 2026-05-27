@@ -89,7 +89,7 @@ export function HomePage() {
     <div className="bg-[#03070b]">
       <SEO
         title="Industrial Automation Solutions"
-        description="GRAVEN AUTOMATION delivers industrial automation solutions and international spare parts support for modern manufacturing businesses."
+        description="GRAVEN METAL delivers industrial automation solutions and international spare parts support for modern manufacturing businesses."
         path="/"
         keywords={['industrial automation', 'automation spare parts', 'plc systems', 'cnc systems', 'automation support']}
       />
@@ -143,7 +143,7 @@ export function HomePage() {
                     Industrial metal supply
                   </p>
                   <h1 className="mt-5 font-display text-[2.75rem] font-semibold leading-[1.04] text-white sm:text-[4rem] lg:text-[5.15rem]">
-                    GRAVEN AUTOMATION
+                    GRAVEN METAL
                     <span className="block text-gold">scales with precision.</span>
                   </h1>
                   <p className="mt-5 max-w-[560px] text-base leading-7 text-zinc-300 sm:text-lg">
@@ -281,7 +281,7 @@ export function HomePage() {
                 <p className="text-[11px] uppercase tracking-[0.24em] text-gold">Why buyers choose us</p>
                 <h2 className="mt-2 font-display text-3xl text-white sm:text-4xl">Built for repeat procurement.</h2>
                 <p className="mt-4 max-w-xl text-sm leading-7 text-zinc-400">
-                  GRAVEN AUTOMATION keeps the buying experience practical: verified supply, responsive pricing, and
+                  GRAVEN METAL keeps the buying experience practical: verified supply, responsive pricing, and
                   delivery coordination that stays visible from quotation to dispatch.
                 </p>
                 <div className="mt-6 flex flex-wrap gap-3">

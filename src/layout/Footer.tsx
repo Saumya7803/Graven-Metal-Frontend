@@ -49,7 +49,7 @@ export function Footer() {
         <div>
           <BrandLogo className="h-10" />
           <p className="mt-3 max-w-[16.5rem] text-sm leading-7 text-zinc-300">
-            Graven Automation provides industrial automation solutions and spare parts support to improve production
+            GRAVEN METAL provides industrial automation solutions and spare parts support to improve production
             efficiency, precision, and reliability.
           </p>
         </div>
@@ -109,7 +109,7 @@ export function Footer() {
 
       <div className="relative mx-auto flex max-w-7xl flex-col items-center gap-1.5 border-t border-gold/10 px-4 py-3 text-xs text-zinc-500 md:px-8">
         <div className="w-full">
-          <p className="text-center font-semibold text-zinc-200">&copy; {currentYear} GRAVEN AUTOMATION. All rights reserved.</p>
+          <p className="text-center font-semibold text-zinc-200">&copy; {currentYear} GRAVEN METAL. All rights reserved.</p>
           <div className="mt-3 flex flex-wrap items-center justify-center gap-x-2.5 gap-y-1.5">
             <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-zinc-400">We Accept:</p>
             <div className="flex flex-wrap items-center justify-center gap-1.5 sm:gap-2">

@@ -22,7 +22,7 @@ export function SEO({
   structuredData,
 }: Props) {
   const siteUrl = import.meta.env.VITE_SITE_URL || 'https://gravenautomation.com';
-  const fullTitle = `${title} | GRAVEN AUTOMATION`;
+  const fullTitle = `${title} | GRAVEN METAL`;
   const desc = description || 'Premium luxury metal trading platform.';
   const canonical = new URL(path, siteUrl).toString();
   const imageUrl = image.startsWith('http') ? image : new URL(image, siteUrl).toString();
@@ -42,7 +42,7 @@ export function SEO({
       <meta property="og:url" content={canonical} />
       <meta property="og:image" content={imageUrl} />
       <meta property="og:image:alt" content={fullTitle} />
-      <meta property="og:site_name" content="GRAVEN AUTOMATION" />
+      <meta property="og:site_name" content="GRAVEN METAL" />
       <meta property="og:locale" content="en_US" />
 
       <meta name="twitter:card" content="summary_large_image" />

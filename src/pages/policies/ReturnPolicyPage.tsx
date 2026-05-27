@@ -16,14 +16,14 @@ const sections = [
     points: [
       'Customers must raise return claims within the period communicated in the relevant order documents, along with supporting photographs and inspection notes.',
       'Material must remain in original received condition and not be consumed, modified, or mixed with third-party stock before evaluation.',
-      'Graven Automations may request independent test reports where technical grade disputes arise.'
+      'GRAVEN METALs may request independent test reports where technical grade disputes arise.'
     ]
   },
   {
     title: 'Resolution and Commercial Treatment',
     points: [
       'Approved claims may be resolved through replacement supply, credit note, corrective commercial adjustment, or refund as contractually appropriate.',
-      'Any reverse logistics arrangement will be communicated by Graven Automations after claim acceptance and verification.',
+      'Any reverse logistics arrangement will be communicated by GRAVEN METALs after claim acceptance and verification.',
       'Refund timelines depend on banking cycles, document closure, and reconciliation of related trade invoices.'
     ]
   },
@@ -32,7 +32,7 @@ const sections = [
     points: [
       'Improper storage, corrosion due to handling conditions, unauthorized processing, or delayed reporting can invalidate return requests.',
       'Normal manufacturing tolerances and agreed grade variations do not qualify as return defects unless outside documented limits.',
-      'Graven Automations reserves final determination rights based on objective inspection and contractual commitments.'
+      'GRAVEN METALs reserves final determination rights based on objective inspection and contractual commitments.'
     ]
   }
 ];
@@ -42,7 +42,7 @@ export function ReturnPolicyPage() {
     <div className="space-y-6">
       <SEO
         title="Return Policy"
-        description="Return policy for Graven Automations detailing claim eligibility, industrial metal inspection, refunds, and replacement terms."
+        description="Return policy for GRAVEN METALs detailing claim eligibility, industrial metal inspection, refunds, and replacement terms."
         path="/return-policy"
       />
 
@@ -52,7 +52,7 @@ export function ReturnPolicyPage() {
           <h1 className="mt-3 font-display text-3xl text-white sm:text-4xl">Return Policy</h1>
           <p className="mt-3 max-w-3xl text-sm leading-7 text-zinc-300 sm:text-base">
             This Return Policy outlines the process for reporting and resolving approved return matters for industrial
-            metal orders supplied by Graven Automations.
+            metal orders supplied by GRAVEN METALs.
           </p>
 
           <div className="mt-7 grid gap-4">

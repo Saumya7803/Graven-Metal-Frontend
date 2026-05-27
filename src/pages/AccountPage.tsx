@@ -80,7 +80,7 @@ export function AccountPage() {
 
   return (
     <MotionReveal>
-      <SEO title="My Account" description="GRAVEN AUTOMATION customer account and quote history." path="/account" noIndex />
+      <SEO title="My Account" description="GRAVEN METAL customer account and quote history." path="/account" noIndex />
       <section className="grid gap-5 lg:grid-cols-[0.72fr_1.28fr]">
         <aside className="space-y-5">
           <div className="gm-shell p-5">

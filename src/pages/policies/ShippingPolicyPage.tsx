@@ -6,7 +6,7 @@ const sections = [
   {
     title: 'Dispatch and Coverage',
     points: [
-      'Graven Automations coordinates domestic and cross-border shipment for qualified industrial metal orders based on stock availability and trade compliance.',
+      'GRAVEN METALs coordinates domestic and cross-border shipment for qualified industrial metal orders based on stock availability and trade compliance.',
       'Dispatch schedules vary by material type, volume, test certification requirements, and customer-approved delivery terms.',
       'Large-volume or custom-grade consignments may require staged dispatch for quality and logistics control.'
     ]
@@ -24,7 +24,7 @@ const sections = [
     points: [
       'Customers must ensure unloading readiness, storage infrastructure, and authorized receiving personnel at the delivery point.',
       'Risk transfer follows the mutually agreed delivery term (for example ex-works, FOB, CIF, or delivered basis where contracted).',
-      'Any discrepancy must be documented at receipt and shared with Graven Automations support within the contract claim period.'
+      'Any discrepancy must be documented at receipt and shared with GRAVEN METALs support within the contract claim period.'
     ]
   },
   {
@@ -32,7 +32,7 @@ const sections = [
     points: [
       'Failed receiving attempts due to customer-side unavailability may incur redelivery, warehousing, or handling charges.',
       'Delivery re-routing or destination changes after dispatch are subject to operational feasibility and incremental cost approval.',
-      'Graven Automations reserves the right to revise dispatch plans to maintain safety, legality, and material integrity.'
+      'GRAVEN METALs reserves the right to revise dispatch plans to maintain safety, legality, and material integrity.'
     ]
   }
 ];
@@ -42,7 +42,7 @@ export function ShippingPolicyPage() {
     <div className="space-y-6">
       <SEO
         title="Shipping Policy"
-        description="Shipping policy for Graven Automations covering industrial metal dispatch, freight terms, global delivery, and receiving responsibilities."
+        description="Shipping policy for GRAVEN METALs covering industrial metal dispatch, freight terms, global delivery, and receiving responsibilities."
         path="/shipping-policy"
       />
 
@@ -51,7 +51,7 @@ export function ShippingPolicyPage() {
           <p className="text-sm text-zinc-500">Home / Policies / Shipping Policy</p>
           <h1 className="mt-3 font-display text-3xl text-white sm:text-4xl">Shipping Policy</h1>
           <p className="mt-3 max-w-3xl text-sm leading-7 text-zinc-300 sm:text-base">
-            This Shipping Policy defines how Graven Automations handles logistics planning, dispatch, transit coordination,
+            This Shipping Policy defines how GRAVEN METALs handles logistics planning, dispatch, transit coordination,
             and delivery support for industrial metal transactions.
           </p>
 

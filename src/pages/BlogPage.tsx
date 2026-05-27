@@ -29,14 +29,14 @@ export function BlogPage() {
     <MotionReveal>
       <SEO
         title="Metal Market Blog"
-        description="Read GRAVEN AUTOMATION insights on metal pricing trends, sourcing, and industrial market updates."
+        description="Read GRAVEN METAL insights on metal pricing trends, sourcing, and industrial market updates."
         path="/blog"
         type="article"
         keywords={['metal market news', 'metal pricing trends', 'industrial insights']}
         structuredData={{
           '@context': 'https://schema.org',
           '@type': 'Blog',
-          name: 'GRAVEN AUTOMATION Blog',
+          name: 'GRAVEN METAL Blog',
           url: 'https://gravenautomation.com/blog',
         }}
       />

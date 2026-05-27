@@ -1,7 +1,7 @@
 import type { ApiBlog, ApiCategory, ApiProduct } from '../lib/publicApi';
 
 export const companyDetails = {
-  name: 'GRAVEN AUTOMATION PRIVATE LIMITED',
+  name: 'GRAVEN METAL PRIVATE LIMITED',
   tagline: "India's fastest growing industrial automation company.",
   founded: 2022,
   headquarters: '8/61, Sector-8, Jankipuram Extension, Lucknow-226021, India',
@@ -11,7 +11,7 @@ export const companyDetails = {
   supportPhone: '+9179053 50134',
   certifications: ['Industrial Automation Solutions', 'International Spare Parts Supply', 'Process Optimization', 'Quick Technical Support'],
   intro:
-    'Graven Automation delivers industrial automation solutions and international spare parts support for modern manufacturing and production businesses.',
+    'GRAVEN METAL delivers industrial automation solutions and international spare parts support for modern manufacturing and production businesses.',
   mission:
     'Empower businesses with reliable automation solutions that improve efficiency, precision, and operational performance.',
   vision:
@@ -185,7 +185,7 @@ export const demoBlogs: ApiBlog[] = [
 
 export const demoFaq = [
   {
-    q: 'What types of metals does GRAVEN AUTOMATION supply?',
+    q: 'What types of metals does GRAVEN METAL supply?',
     a: 'We supply gold, silver, iron, copper, steel, aluminium, brass, and lead products for industrial and bulk commercial requirements.',
   },
   {
