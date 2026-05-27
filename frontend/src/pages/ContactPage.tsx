@@ -68,7 +68,7 @@ export function ContactPage() {
     <div className="bg-[#03070b]">
       <SEO
         title="Contact"
-        description="Contact GRAVEN METAL for premium metal requirements, quotes, and support."
+        description="Contact GRAVEN AUTOMATION for industrial automation solutions, project support, and quotes."
         path="/contact"
       />
       <MotionReveal>
@@ -87,12 +87,12 @@ export function ContactPage() {
           <div className="relative z-10 mx-auto grid min-h-[calc(100svh-121px)] max-w-7xl items-center gap-6 px-5 py-8 sm:px-7 md:px-10 lg:grid-cols-[0.86fr_1.14fr]">
             <div className="max-w-[520px]">
               <p className="text-sm text-zinc-500">Home / Contact Us</p>
-              <p className="mt-7 text-xs font-bold uppercase tracking-[0.18em] text-gold">Contact Graven Metal</p>
+              <p className="mt-7 text-xs font-bold uppercase tracking-[0.18em] text-gold">Contact Graven Automation</p>
               <h1 className="mt-4 text-4xl font-extrabold leading-tight text-white sm:text-5xl md:text-6xl">
                 Get In Touch
               </h1>
               <p className="mt-5 max-w-md text-base leading-7 text-zinc-300 sm:text-lg">
-                We are here to help with premium metal requirements, bulk procurement, and fast quotes.
+                We are here to help with industrial automation requirements, spare parts support, and fast quotes.
               </p>
 
               <div className="mt-6 grid gap-3 text-sm">
@@ -207,7 +207,7 @@ export function ContactPage() {
                 Lucknow Office
               </p>
               <iframe
-                title="Graven Metal Lucknow Office Location"
+                title="Graven Automation Lucknow Office Location"
                 src="https://maps.google.com/maps?q=8/61%20Sector-8%20Jankipuram%20Extension%20Lucknow-226021%20India&t=&z=15&ie=UTF8&iwloc=&output=embed"
                 className="h-72 w-full border-0 md:h-80"
                 loading="lazy"
@@ -219,7 +219,7 @@ export function ContactPage() {
                 Delhi Office
               </p>
               <iframe
-                title="Graven Metal Delhi Office Location"
+                title="Graven Automation Delhi Office Location"
                 src="https://maps.google.com/maps?q=7/25%20Tower%20F%202nd%20Floor%20Kirti%20Nagar%20New%20Delhi-110015%20India&t=&z=15&ie=UTF8&iwloc=&output=embed"
                 className="h-72 w-full border-0 md:h-80"
                 loading="lazy"

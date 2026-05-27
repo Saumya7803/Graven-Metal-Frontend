@@ -1,23 +1,23 @@
 import type { ApiBlog, ApiCategory, ApiProduct } from '../lib/publicApi';
 
 export const companyDetails = {
-  name: 'GRAVEN METAL TRADING CO.',
-  tagline: 'Premium Industrial Metals. Precision Delivered.',
-  founded: 2012,
-  headquarters: 'Jebel Ali Free Zone, Dubai, UAE',
+  name: 'GRAVEN AUTOMATION PRIVATE LIMITED',
+  tagline: "India's fastest growing industrial automation company.",
+  founded: 2022,
+  headquarters: '8/61, Sector-8, Jankipuram Extension, Lucknow-226021, India',
   indiaOffice: '8/61, Sector-8, Jankipuram Extension, Lucknow-226021, India',
-  email: 'trade@gravenmetal.com',
+  email: 'info@gravenautomation.com',
   phone: '+9179053 50134',
   supportPhone: '+9179053 50134',
-  certifications: ['ISO 9001:2015', 'LBMA Partner Network', 'REACH Compliant Supply', 'ASTM Verified Batches'],
+  certifications: ['Industrial Automation Solutions', 'International Spare Parts Supply', 'Process Optimization', 'Quick Technical Support'],
   intro:
-    'GRAVEN METAL supplies certified ferrous and non-ferrous metals to fabrication, infrastructure, energy, automotive, and EPC clients across APAC, GCC, and Europe.',
+    'Graven Automation delivers industrial automation solutions and international spare parts support for modern manufacturing and production businesses.',
   mission:
-    'Deliver certified metals with transparent pricing, reliable lead times, and traceable quality documentation for every shipment.',
+    'Empower businesses with reliable automation solutions that improve efficiency, precision, and operational performance.',
   vision:
-    'Become the most trusted cross-border industrial metal trading partner for high-volume procurement teams.',
+    'Become the most trusted industrial automation partner for scalable, future-ready operations.',
   values:
-    'Discipline in quality, integrity in pricing, accountability in logistics, and partnership-first service.',
+    'Innovation, reliability, technical excellence, and long-term customer partnership.',
 };
 
 export const demoCategories: ApiCategory[] = [
@@ -185,7 +185,7 @@ export const demoBlogs: ApiBlog[] = [
 
 export const demoFaq = [
   {
-    q: 'What types of metals does GRAVEN METAL supply?',
+    q: 'What types of metals does GRAVEN AUTOMATION supply?',
     a: 'We supply gold, silver, iron, copper, steel, aluminium, brass, and lead products for industrial and bulk commercial requirements.',
   },
   {
@@ -232,10 +232,10 @@ export const demoTestimonials = [
 ];
 
 export const demoCompanyStats = [
-  { value: '10K+', label: 'Happy Clients' },
-  { value: '500+', label: 'Global Suppliers' },
-  { value: '25+', label: 'Countries Delivered' },
-  { value: '100%', label: 'Quality Assured' },
+  { value: '20000+', label: 'Products Sold' },
+  { value: '8000+', label: 'Happy Clients' },
+  { value: '490+', label: 'Skilled Experts' },
+  { value: '500+', label: 'Scalable Solutions' },
 ];
 
 export const demoLiveRows = [

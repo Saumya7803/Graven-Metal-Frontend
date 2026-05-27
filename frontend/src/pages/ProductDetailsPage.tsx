@@ -64,7 +64,7 @@ export function ProductDetailsPage() {
           '@type': 'Product',
           name: product.name,
           description: product.description || `${product.name} details`,
-          image: heroImage || 'https://gravenmetal.com/favicon.svg',
+          image: heroImage || 'https://gravenautomation.com/favicon.svg',
           sku: product.slug || product._id,
           offers: {
             '@type': 'Offer',

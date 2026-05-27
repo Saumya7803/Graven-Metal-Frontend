@@ -6,7 +6,7 @@ const sections = [
   {
     title: 'Information We Collect',
     points: [
-      'Graven Metals collects business contact data, company registration details, tax information, and procurement preferences when you request quotes or place orders for industrial metals.',
+      'Graven Automations collects business contact data, company registration details, tax information, and procurement preferences when you request quotes or place orders for industrial metals.',
       'Technical data such as device type, browser activity, and inquiry timestamps may be processed to secure our platform and improve response quality.',
       'Payment and shipping records are retained for invoicing, customs documentation, compliance audits, and contractual fulfillment.'
     ]
@@ -23,7 +23,7 @@ const sections = [
     title: 'Data Sharing and Security',
     points: [
       'Data may be shared only with logistics partners, payment processors, customs agents, and regulatory authorities involved in legitimate order processing.',
-      'Graven Metals applies controlled access, secure storage practices, and operational safeguards to protect business information from unauthorized use.',
+      'Graven Automations applies controlled access, secure storage practices, and operational safeguards to protect business information from unauthorized use.',
       'We do not sell customer data to unrelated third parties.'
     ]
   },
@@ -32,7 +32,7 @@ const sections = [
     points: [
       'Commercial records are retained for legal, tax, quality, and dispute-management obligations under applicable trade laws.',
       'You may request access, correction, or deletion of eligible personal data by contacting our compliance team.',
-      'Where deletion is restricted by law or ongoing contractual obligations, Graven Metals will retain only what is required.'
+      'Where deletion is restricted by law or ongoing contractual obligations, Graven Automations will retain only what is required.'
     ]
   }
 ];
@@ -42,7 +42,7 @@ export function PrivacyPolicyPage() {
     <div className="space-y-6">
       <SEO
         title="Privacy Policy"
-        description="Privacy policy for Graven Metals covering industrial metal trade inquiries, orders, payments, and shipment operations."
+        description="Privacy policy for Graven Automations covering industrial metal trade inquiries, orders, payments, and shipment operations."
         path="/privacy-policy"
       />
 
@@ -51,7 +51,7 @@ export function PrivacyPolicyPage() {
           <p className="text-sm text-zinc-500">Home / Policies / Privacy Policy</p>
           <h1 className="mt-3 font-display text-3xl text-white sm:text-4xl">Privacy Policy</h1>
           <p className="mt-3 max-w-3xl text-sm leading-7 text-zinc-300 sm:text-base">
-            This Privacy Policy explains how Graven Metals manages information in connection with industrial metal sourcing,
+            This Privacy Policy explains how Graven Automations manages information in connection with industrial metal sourcing,
             quotations, orders, logistics, payments, and customer support operations.
           </p>
 
@@ -76,12 +76,12 @@ export function PrivacyPolicyPage() {
       <MotionReveal delay={0.08}>
         <section className="rounded-2xl border border-gold/20 bg-gradient-to-r from-[#1a1308] via-[#0f1319] to-[#090d12] p-5 shadow-panel sm:p-6">
           <h2 className="font-display text-2xl text-white">Need Clarification?</h2>
-          <p className="mt-2 text-zinc-300">For privacy, compliance, or document requests, contact Graven Metals support.</p>
+          <p className="mt-2 text-zinc-300">For privacy, compliance, or document requests, contact Graven Automations support.</p>
           <Link
             to="/contact"
             className="mt-4 inline-flex rounded-md bg-gold-cta px-4 py-2 text-sm font-semibold text-black shadow-gold transition hover:brightness-110"
           >
-            Contact Graven Metals
+            Contact Graven Automations
           </Link>
         </section>
       </MotionReveal>

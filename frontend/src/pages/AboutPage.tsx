@@ -28,7 +28,7 @@ export function AboutPage() {
     <div className="bg-[#03070b]">
       <SEO
         title="About Us"
-        description="Learn about GRAVEN METAL mission, vision, values, and global supply impact."
+        description="Learn about GRAVEN AUTOMATION mission, vision, values, and industrial automation expertise."
         path="/about"
       />
       <MotionReveal>
@@ -50,7 +50,7 @@ export function AboutPage() {
               <div className="max-w-[540px]">
                 <p className="text-sm text-zinc-500">Home / About Us</p>
                 <p className="mt-7 text-xs font-bold uppercase tracking-[0.18em] text-gold">
-                  About Graven Metal
+                  About Graven Automation
                 </p>
                 <h1 className="mt-4 text-4xl font-extrabold leading-tight text-white sm:text-5xl md:text-6xl">
                   Forging Strength.
@@ -58,8 +58,8 @@ export function AboutPage() {
                   Delivering Excellence.
                 </h1>
                 <p className="mt-5 max-w-md text-base leading-7 text-zinc-300 sm:text-lg">
-                  Graven Metal is a trusted global supplier of premium industrial metals, delivering unmatched quality,
-                  reliable sourcing, and precision-driven solutions for modern industries worldwide.
+                  Graven Automation delivers industrial automation solutions tailored for modern manufacturing,
+                  helping businesses improve efficiency, precision, and reliability at scale.
                 </p>
                 <p className="mt-4 text-sm font-medium text-zinc-300">
                   Trusted by global industries and manufacturing leaders.

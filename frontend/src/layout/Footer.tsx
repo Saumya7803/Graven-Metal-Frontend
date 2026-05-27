@@ -49,8 +49,8 @@ export function Footer() {
         <div>
           <BrandLogo className="h-10" />
           <p className="mt-3 max-w-[16.5rem] text-sm leading-7 text-zinc-300">
-            Graven Metals delivers premium industrial metals with trusted sourcing, superior quality, and innovative
-            solutions powering industries worldwide.
+            Graven Automation provides industrial automation solutions and spare parts support to improve production
+            efficiency, precision, and reliability.
           </p>
         </div>
 
@@ -60,8 +60,8 @@ export function Footer() {
             <p className="w-fit rounded px-1 py-0.5">8/61, Sector-8</p>
             <p className="w-fit rounded px-1 py-0.5">Jankipuram Extension</p>
             <p className="w-fit rounded px-1 py-0.5">Lucknow - 226021, India</p>
-            <a href="mailto:trade@gravenmetal.com" className="gm-luxury-hover w-fit rounded px-1 py-0.5 hover:text-gold">
-              trade@gravenmetal.com
+            <a href="mailto:info@gravenautomation.com" className="gm-luxury-hover w-fit rounded px-1 py-0.5 hover:text-gold">
+              info@gravenautomation.com
             </a>
             <a href="tel:+917905350134" className="gm-luxury-hover w-fit rounded px-1 py-0.5 hover:text-gold">
               +91 79053 50134
@@ -75,8 +75,8 @@ export function Footer() {
             <p className="w-fit rounded px-1 py-0.5">7/25, Tower F, 2nd Floor</p>
             <p className="w-fit rounded px-1 py-0.5">Kirti Nagar</p>
             <p className="w-fit rounded px-1 py-0.5">New Delhi - 110015, India</p>
-            <a href="mailto:trade@gravenmetal.com" className="gm-luxury-hover w-fit rounded px-1 py-0.5 hover:text-gold">
-              trade@gravenmetal.com
+            <a href="mailto:info@gravenautomation.com" className="gm-luxury-hover w-fit rounded px-1 py-0.5 hover:text-gold">
+              info@gravenautomation.com
             </a>
             <a href="tel:+917905350134" className="gm-luxury-hover w-fit rounded px-1 py-0.5 hover:text-gold">
               +91 79053 50134
@@ -109,7 +109,7 @@ export function Footer() {
 
       <div className="relative mx-auto flex max-w-7xl flex-col items-center gap-1.5 border-t border-gold/10 px-4 py-3 text-xs text-zinc-500 md:px-8">
         <div className="w-full">
-          <p className="text-center font-semibold text-zinc-200">&copy; {currentYear} GRAVEN METAL. All rights reserved.</p>
+          <p className="text-center font-semibold text-zinc-200">&copy; {currentYear} GRAVEN AUTOMATION. All rights reserved.</p>
           <div className="mt-3 flex flex-wrap items-center justify-center gap-x-2.5 gap-y-1.5">
             <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-zinc-400">We Accept:</p>
             <div className="flex flex-wrap items-center justify-center gap-1.5 sm:gap-2">

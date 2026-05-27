@@ -105,7 +105,7 @@ export function QuoteRequestPage() {
     <MotionReveal>
       <SEO
         title="Quote Request"
-        description="Submit bulk metal requirements and receive a custom GRAVEN METAL quote."
+        description="Submit bulk metal requirements and receive a custom GRAVEN AUTOMATION quote."
         path="/quote-request"
       />
       <section className="gm-shell p-4 sm:p-5 md:p-7">

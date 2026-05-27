@@ -12,7 +12,7 @@ export function FAQPage() {
     <div className="space-y-6">
       <SEO
         title="FAQ"
-        description="Answers to common questions about GRAVEN METAL products, purity, and delivery."
+        description="Answers to common questions about GRAVEN AUTOMATION products, purity, and delivery."
         path="/faq"
       />
 
