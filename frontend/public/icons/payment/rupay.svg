@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 150 42" role="img" aria-labelledby="title">
+  <title id="title">RuPay</title>
+  <rect width="150" height="42" fill="none"/>
+  <text
+    x="2"
+    y="30"
+    fill="#2D358E"
+    font-family="Arial Black, Arial, Helvetica, sans-serif"
+    font-size="28"
+    font-style="italic"
+    font-weight="900"
+    letter-spacing="-2"
+  >
+    RuPay
+  </text>
+  <path fill="#F58220" d="m125.5 8.2 17.4 12.8-22.8 12.8 5.4-25.6Z"/>
+  <path fill="#0B8F43" d="m132.8 8.2 17.4 12.8-22.8 12.8 5.4-25.6Z"/>
+</svg>
