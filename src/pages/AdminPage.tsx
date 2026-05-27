@@ -2,7 +2,9 @@ import { type DragEvent, type ReactNode, useEffect, useMemo, useRef, useState } 
 import {
   BarChart3,
   Bell,
+  AlertTriangle,
   Boxes,
+  CheckCircle2,
   ClipboardList,
   Contact,
   FileSpreadsheet,
@@ -44,6 +46,7 @@ type Section =
   | 'blogs'
   | 'quotes'
   | 'contacts'
+  | 'customers'
   | 'settings'
   | 'media'
   | 'security';
@@ -57,6 +60,20 @@ type ActivityItem = {
   title: string;
   subtitle: string;
   createdAt: string;
+};
+
+type CustomerActivityRow = {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  quoteCount: number;
+  contactCount: number;
+  openQuotes: number;
+  unreadContacts: number;
+  lastActivityAt: string;
+  lastActivityType: 'quote' | 'contact';
+  lastActivityDetail: string;
 };
 
 type SidebarItem = { key: Section; label: string; icon: LucideIcon };
@@ -302,6 +319,7 @@ const sidebarItems: SidebarItem[] = [
   { key: 'blogs', label: 'Blogs', icon: FileText },
   { key: 'quotes', label: 'Quotes', icon: ClipboardList },
   { key: 'contacts', label: 'Contacts', icon: Contact },
+  { key: 'customers', label: 'Customers', icon: UserCircle2 },
   { key: 'settings', label: 'Website Settings', icon: Settings },
   { key: 'media', label: 'Media Manager', icon: ImagePlus },
   { key: 'security', label: 'Security', icon: ShieldCheck },
@@ -343,6 +361,7 @@ export function AdminPage() {
   const [productCategoryFilter, setProductCategoryFilter] = useState('all');
   const [quoteStatusFilter, setQuoteStatusFilter] = useState<'all' | ApiQuote['status']>('all');
   const [contactStatusFilter, setContactStatusFilter] = useState<'all' | ApiContact['status']>('all');
+  const [customerQuery, setCustomerQuery] = useState('');
   const [blogStateFilter, setBlogStateFilter] = useState<'all' | 'published' | 'draft'>('all');
 
   const [bulkCategory, setBulkCategory] = useState('');
@@ -509,6 +528,51 @@ export function AdminPage() {
     [quotes, contacts, blogs, products]
   );
 
+  const actionItems = useMemo(
+    () => [
+      {
+        label: 'New quote requests',
+        value: quotes.filter((q) => q.status === 'new').length,
+        section: 'quotes' as Section,
+        helper: 'Review and move into pricing',
+        urgent: quotes.some((q) => q.status === 'new'),
+      },
+      {
+        label: 'Unread contacts',
+        value: contacts.filter((c) => c.status === 'unread').length,
+        section: 'contacts' as Section,
+        helper: 'Reply before they go cold',
+        urgent: contacts.some((c) => c.status === 'unread'),
+      },
+      {
+        label: 'Out of stock products',
+        value: products.filter((p) => !p.inStock).length,
+        section: 'products' as Section,
+        helper: 'Update stock or hide unavailable items',
+        urgent: products.some((p) => !p.inStock),
+      },
+      {
+        label: 'Draft blogs',
+        value: blogs.filter((b) => b.published === false).length,
+        section: 'blogs' as Section,
+        helper: 'Finish content or publish updates',
+        urgent: false,
+      },
+    ],
+    [blogs, contacts, products, quotes]
+  );
+
+  const contentReadiness = useMemo(
+    () => [
+      { label: 'Products loaded', done: products.length > 0 },
+      { label: 'Categories loaded', done: categories.length > 0 },
+      { label: 'Support email set', done: Boolean(settingsForm.supportEmail || settingsForm.contactEmail) },
+      { label: 'SEO title set', done: Boolean(settingsForm.seoMetaTitle) },
+      { label: 'Payment methods visible', done: [settingsForm.payVisa, settingsForm.payMastercard, settingsForm.payUpi].some(Boolean) },
+    ],
+    [categories.length, products.length, settingsForm]
+  );
+
   const monthlySeries = useMemo(() => {
     const now = new Date();
     const months = Array.from({ length: 6 }, (_, idx) => {
@@ -566,6 +630,67 @@ export function AdminPage() {
       .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
       .slice(0, 8);
   }, [quotes, contacts]);
+
+  const customerActivity = useMemo<CustomerActivityRow[]>(() => {
+    const rows = new Map<string, CustomerActivityRow>();
+
+    const ensureRow = (email: string, name: string, phone: string) => {
+      const normalizedEmail = email.toLowerCase();
+      if (!rows.has(normalizedEmail)) {
+        rows.set(normalizedEmail, {
+          id: normalizedEmail,
+          name,
+          email: normalizedEmail,
+          phone,
+          quoteCount: 0,
+          contactCount: 0,
+          openQuotes: 0,
+          unreadContacts: 0,
+          lastActivityAt: '',
+          lastActivityType: 'quote',
+          lastActivityDetail: '',
+        });
+      }
+
+      const row = rows.get(normalizedEmail)!;
+      row.name = row.name || name;
+      row.phone = row.phone || phone;
+      return row;
+    };
+
+    const touch = (row: CustomerActivityRow, createdAt: string | undefined, type: CustomerActivityRow['lastActivityType'], detail: string) => {
+      if (!createdAt) return;
+      const current = row.lastActivityAt ? new Date(row.lastActivityAt).getTime() : 0;
+      const next = new Date(createdAt).getTime();
+      if (!current || next >= current) {
+        row.lastActivityAt = createdAt;
+        row.lastActivityType = type;
+        row.lastActivityDetail = detail;
+      }
+    };
+
+    quotes.forEach((quote) => {
+      const row = ensureRow(quote.email, quote.fullName, quote.phone);
+      row.quoteCount += 1;
+      if (quote.status === 'new' || quote.status === 'in_review' || quote.status === 'quoted') row.openQuotes += 1;
+      touch(row, quote.createdAt, 'quote', `${quote.metal} - ${quote.status}`);
+    });
+
+    contacts.forEach((contact) => {
+      const row = ensureRow(contact.email, contact.fullName, contact.phone);
+      row.contactCount += 1;
+      if (contact.status === 'unread') row.unreadContacts += 1;
+      touch(row, contact.createdAt, 'contact', contact.subject || contact.message || 'Contact message');
+    });
+
+    const query = customerQuery.trim().toLowerCase();
+    return Array.from(rows.values())
+      .filter((row) => {
+        if (!query) return true;
+        return `${row.name} ${row.email} ${row.phone} ${row.lastActivityDetail}`.toLowerCase().includes(query);
+      })
+      .sort((a, b) => new Date(b.lastActivityAt || 0).getTime() - new Date(a.lastActivityAt || 0).getTime());
+  }, [contacts, customerQuery, quotes]);
 
   const normalizedSearch = globalSearch.trim().toLowerCase();
 
@@ -1217,6 +1342,58 @@ export function AdminPage() {
                 </article>
               </section>
 
+              <section className="grid gap-4 lg:grid-cols-[1.15fr_0.85fr]">
+                <article className={panelClass}>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-xs uppercase tracking-[0.16em] text-zinc-500">Action Center</p>
+                      <h3 className="mt-1 font-display text-2xl text-white">Needs Attention</h3>
+                    </div>
+                    <AlertTriangle size={18} className="text-gold" />
+                  </div>
+                  <div className="mt-4 grid gap-2 sm:grid-cols-2">
+                    {actionItems.map((item) => (
+                      <button
+                        key={item.label}
+                        type="button"
+                        onClick={() => setSection(item.section)}
+                        className={`rounded-xl border px-3 py-3 text-left ${
+                          item.urgent
+                            ? 'border-gold/30 bg-gold/10 hover:border-gold/60'
+                            : 'border-gold/10 bg-[#101722] hover:border-gold/35'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between gap-3">
+                          <p className="text-sm font-semibold text-zinc-100">{item.label}</p>
+                          <span className="text-2xl font-bold text-gold">{item.value}</span>
+                        </div>
+                        <p className="mt-1 text-xs text-zinc-500">{item.helper}</p>
+                      </button>
+                    ))}
+                  </div>
+                </article>
+
+                <article className={panelClass}>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-xs uppercase tracking-[0.16em] text-zinc-500">Storefront Readiness</p>
+                      <h3 className="mt-1 font-display text-2xl text-white">Launch Checks</h3>
+                    </div>
+                    <CheckCircle2 size={18} className="text-gold" />
+                  </div>
+                  <div className="mt-4 space-y-2">
+                    {contentReadiness.map((item) => (
+                      <div key={item.label} className="flex items-center justify-between rounded-lg border border-gold/10 bg-[#101722] px-3 py-2">
+                        <span className="text-sm text-zinc-300">{item.label}</span>
+                        <span className={item.done ? 'text-sm font-semibold text-emerald-300' : 'text-sm font-semibold text-zinc-600'}>
+                          {item.done ? 'Ready' : 'Missing'}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </article>
+              </section>
+
               <section className="grid gap-4 lg:grid-cols-2">
                 <article className={panelClass}>
                   <div className="flex items-center justify-between">
@@ -1819,6 +1996,113 @@ export function AdminPage() {
                     ))}
                   </tbody>
                 </table>
+              </div>
+            </section>
+          ) : null}
+
+          {section === 'customers' ? (
+            <section className={panelClass}>
+              <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                <div>
+                  <p className="text-xs uppercase tracking-[0.16em] text-zinc-500">Customer Monitoring</p>
+                  <h3 className="mt-1 font-display text-2xl text-white">Customer Activity</h3>
+                  <p className="mt-1 max-w-2xl text-sm text-zinc-500">
+                    Monitor customer quote requests, contact messages, open follow-ups, and latest activity from one place.
+                  </p>
+                </div>
+                <div className="relative w-full lg:max-w-sm">
+                  <Search className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-zinc-600" size={16} />
+                  <input
+                    value={customerQuery}
+                    onChange={(e) => setCustomerQuery(e.target.value)}
+                    placeholder="Search customers"
+                    className={`${inputClass} pl-10`}
+                  />
+                </div>
+              </div>
+
+              <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                {[
+                  ['Tracked Customers', customerActivity.length],
+                  ['Open Quotes', customerActivity.reduce((sum, row) => sum + row.openQuotes, 0)],
+                  ['Unread Messages', customerActivity.reduce((sum, row) => sum + row.unreadContacts, 0)],
+                  ['Total Interactions', customerActivity.reduce((sum, row) => sum + row.quoteCount + row.contactCount, 0)],
+                ].map(([labelText, value]) => (
+                  <div key={labelText} className="rounded-xl border border-gold/15 bg-[#101722] p-4">
+                    <p className="text-xs uppercase tracking-[0.16em] text-zinc-500">{labelText}</p>
+                    <p className="mt-2 text-3xl font-bold text-gold">{value}</p>
+                  </div>
+                ))}
+              </div>
+
+              <div className="mt-5 overflow-x-auto rounded-xl border border-gold/15 bg-[#0b1119]">
+                <table className="w-full min-w-[1080px] text-sm">
+                  <thead className="border-b border-gold/10 text-left text-xs uppercase tracking-[0.14em] text-zinc-500">
+                    <tr>
+                      <th className="px-3 py-3">Customer</th>
+                      <th className="px-3 py-3">Contact</th>
+                      <th className="px-3 py-3">Quotes</th>
+                      <th className="px-3 py-3">Messages</th>
+                      <th className="px-3 py-3">Last Activity</th>
+                      <th className="px-3 py-3">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {customerActivity.map((row) => (
+                      <tr key={row.id} className="border-t border-gold/10 align-top">
+                        <td className="px-3 py-3">
+                          <p className="font-semibold text-white">{row.name || 'Unknown customer'}</p>
+                          <p className="text-xs capitalize text-zinc-500">{row.lastActivityType || 'activity'} watcher</p>
+                        </td>
+                        <td className="px-3 py-3">
+                          <p className="text-zinc-300">{row.email}</p>
+                          <p className="text-xs text-zinc-500">{row.phone || '-'}</p>
+                        </td>
+                        <td className="px-3 py-3">
+                          <p className="font-semibold text-gold">{row.quoteCount}</p>
+                          <p className="text-xs text-zinc-500">{row.openQuotes} open</p>
+                        </td>
+                        <td className="px-3 py-3">
+                          <p className="font-semibold text-gold">{row.contactCount}</p>
+                          <p className="text-xs text-zinc-500">{row.unreadContacts} unread</p>
+                        </td>
+                        <td className="max-w-[280px] px-3 py-3">
+                          <p className="truncate text-zinc-300">{row.lastActivityDetail || '-'}</p>
+                          <p className="text-xs text-zinc-500">{formatDateTime(row.lastActivityAt)}</p>
+                        </td>
+                        <td className="px-3 py-3">
+                          <div className="flex flex-wrap gap-2">
+                            <button
+                              type="button"
+                              onClick={() => setSection('quotes')}
+                              className="rounded-md border border-gold/20 bg-[#0f151e] px-3 py-1.5 text-xs text-zinc-200 hover:border-gold/50 hover:text-gold"
+                            >
+                              Quotes
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setSection('contacts')}
+                              className="rounded-md border border-gold/20 bg-[#0f151e] px-3 py-1.5 text-xs text-zinc-200 hover:border-gold/50 hover:text-gold"
+                            >
+                              Messages
+                            </button>
+                            <a
+                              href={`mailto:${row.email}?subject=Follow-up from Graven Metals`}
+                              className="rounded-md border border-gold/20 bg-gold/10 px-3 py-1.5 text-xs text-gold"
+                            >
+                              Email
+                            </a>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                {!customerActivity.length ? (
+                  <div className="p-5">
+                    <EmptyState title="No customer activity yet" message="Quote requests and contact messages will appear here once customers interact with the website." />
+                  </div>
+                ) : null}
               </div>
             </section>
           ) : null}

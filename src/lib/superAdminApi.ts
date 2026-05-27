@@ -22,6 +22,10 @@ export const superAdminApi = {
     const res = await axiosClient.get('/super-admin/users');
     return res.data;
   },
+  async getCustomerActivity() {
+    const res = await axiosClient.get('/super-admin/customer-activity');
+    return res.data;
+  },
   async deleteUser(id: string) {
     const res = await axiosClient.delete(`/super-admin/users/${id}`);
     return res.data;

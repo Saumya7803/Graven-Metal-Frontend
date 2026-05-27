@@ -53,6 +53,7 @@ const tabs = [
   { key: 'analytics', label: 'Command Center', icon: BarChart3 },
   { key: 'admins', label: 'Admins', icon: ShieldCheck },
   { key: 'users', label: 'Users', icon: Users },
+  { key: 'customers', label: 'Customers', icon: UserCog },
   { key: 'settings', label: 'Settings', icon: SettingsIcon },
   { key: 'seo', label: 'SEO', icon: Globe2 },
   { key: 'backup', label: 'Backup', icon: Database },
@@ -69,6 +70,23 @@ type UserRow = {
   role: UserRole;
   permissions: string[];
   createdAt?: string;
+};
+
+type CustomerActivityRow = {
+  id: string;
+  name: string;
+  email: string;
+  phone?: string;
+  company?: string;
+  registered: boolean;
+  joinedAt?: string;
+  quoteCount: number;
+  contactCount: number;
+  openQuotes: number;
+  unreadContacts: number;
+  lastActivityAt?: string;
+  lastActivityType?: string;
+  lastActivityDetail?: string;
 };
 
 type Settings = {
@@ -95,6 +113,9 @@ type Analytics = {
     admins?: number;
   };
   quoteByStatus?: Array<{ _id: string; count: number }>;
+  contactByStatus?: Array<{ _id: string; count: number }>;
+  usersByRole?: Array<{ _id: string; count: number }>;
+  recentUsers?: Array<{ _id: string; name: string; email: string; role: string; createdAt?: string }>;
 };
 
 type Tone = 'gold' | 'green' | 'blue' | 'red';
@@ -217,11 +238,13 @@ export function SuperAdminPage() {
   const [createAdminOpen, setCreateAdminOpen] = useState(false);
   const [adminSearch, setAdminSearch] = useState('');
   const [userSearch, setUserSearch] = useState('');
+  const [customerSearch, setCustomerSearch] = useState('');
   const [roleFilter, setRoleFilter] = useState('all');
   const [lastBackup, setLastBackup] = useState<{ fileName?: string; generatedAt: string } | null>(null);
 
   const [admins, setAdmins] = useState<UserRow[]>([]);
   const [users, setUsers] = useState<UserRow[]>([]);
+  const [customerActivity, setCustomerActivity] = useState<CustomerActivityRow[]>([]);
   const [settings, setSettings] = useState<Settings>({
     siteName: '',
     supportEmail: '',
@@ -250,9 +273,10 @@ export function SuperAdminPage() {
   const load = async () => {
     setLoading(true);
     try {
-      const [adminRows, userRows, siteSettings, analyticsData, seoData] = await Promise.all([
+      const [adminRows, userRows, customerRows, siteSettings, analyticsData, seoData] = await Promise.all([
         superAdminApi.getAdmins(),
         superAdminApi.getUsers(),
+        superAdminApi.getCustomerActivity(),
         superAdminApi.getSettings(),
         superAdminApi.getAnalytics(),
         superAdminApi.getSEO(),
@@ -260,6 +284,7 @@ export function SuperAdminPage() {
 
       setAdmins(Array.isArray(adminRows) ? adminRows : []);
       setUsers(Array.isArray(userRows) ? userRows : []);
+      setCustomerActivity(Array.isArray(customerRows) ? customerRows : []);
       setSettings({
         siteName: siteSettings?.siteName || '',
         supportEmail: siteSettings?.supportEmail || '',
@@ -289,9 +314,14 @@ export function SuperAdminPage() {
   const totalContent = (totals.products || 0) + (totals.categories || 0) + (totals.blogs || 0);
   const totalRequests = (totals.quotes || 0) + (totals.contacts || 0);
   const quoteStatuses = analytics?.quoteByStatus || [];
+  const contactStatuses = analytics?.contactByStatus || [];
+  const usersByRole = analytics?.usersByRole || [];
+  const recentUsers = analytics?.recentUsers || [];
   const quoteTotal = quoteStatuses.reduce((sum, item) => sum + item.count, 0);
+  const contactTotal = contactStatuses.reduce((sum, item) => sum + item.count, 0);
   const closedQuotes = quoteStatuses.find((item) => item._id === 'closed')?.count || 0;
   const openQuotes = Math.max(quoteTotal - closedQuotes, 0);
+  const unreadContacts = contactStatuses.find((item) => item._id === 'unread')?.count || 0;
   const seoCompleteness = [seo.metaTitle, seo.metaDescription, seo.ogImage, seo.keywords.length ? 'keywords' : ''].filter(
     Boolean
   ).length;
@@ -308,6 +338,26 @@ export function SuperAdminPage() {
         return matchesRole && matchesUser(user, userSearch);
       }),
     [roleFilter, userSearch, users]
+  );
+
+  const filteredCustomerActivity = useMemo(() => {
+    const query = customerSearch.trim().toLowerCase();
+    return customerActivity.filter((row) => {
+      if (!query) return true;
+      return `${row.name} ${row.email} ${row.phone || ''} ${row.company || ''} ${row.lastActivityDetail || ''}`
+        .toLowerCase()
+        .includes(query);
+    });
+  }, [customerActivity, customerSearch]);
+
+  const customerTotals = useMemo(
+    () => ({
+      tracked: customerActivity.length,
+      registered: customerActivity.filter((row) => row.registered).length,
+      openQuotes: customerActivity.reduce((sum, row) => sum + row.openQuotes, 0),
+      unreadContacts: customerActivity.reduce((sum, row) => sum + row.unreadContacts, 0),
+    }),
+    [customerActivity]
   );
 
   const quickStats = [
@@ -602,6 +652,58 @@ export function SuperAdminPage() {
                     )}
                   </div>
                 </div>
+
+                <div className="mt-5 grid gap-4 lg:grid-cols-2">
+                  <div className="rounded-2xl border border-gold/15 bg-[#070c12] p-4">
+                    <div className="flex items-center justify-between gap-3">
+                      <div>
+                        <p className={label}>Contact Queue</p>
+                        <p className="mt-1 text-sm text-zinc-500">{unreadContacts} unread customer messages.</p>
+                      </div>
+                      <Mail className="text-gold" size={22} />
+                    </div>
+                    <div className="mt-4 space-y-3">
+                      {contactStatuses.length ? (
+                        contactStatuses.map((status) => {
+                          const width = contactTotal ? Math.max((status.count / contactTotal) * 100, 6) : 0;
+                          return (
+                            <div key={status._id}>
+                              <div className="mb-1 flex items-center justify-between text-sm">
+                                <span className="capitalize text-zinc-300">{formatPermission(status._id)}</span>
+                                <span className="font-semibold text-gold">{status.count}</span>
+                              </div>
+                              <div className="h-2 overflow-hidden rounded-full bg-zinc-800">
+                                <div className="h-full rounded-full bg-gradient-to-r from-sky-500 to-gold" style={{ width: `${width}%` }} />
+                              </div>
+                            </div>
+                          );
+                        })
+                      ) : (
+                        <p className="text-sm text-zinc-500">No contact activity yet.</p>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="rounded-2xl border border-gold/15 bg-[#070c12] p-4">
+                    <div className="flex items-center justify-between gap-3">
+                      <div>
+                        <p className={label}>Access Mix</p>
+                        <p className="mt-1 text-sm text-zinc-500">Role spread across all accounts.</p>
+                      </div>
+                      <UserCog className="text-gold" size={22} />
+                    </div>
+                    <div className="mt-4 grid gap-2">
+                      {usersByRole.map((role) => (
+                        <div key={role._id} className="flex items-center justify-between rounded-xl border border-gold/10 bg-[#0d1218] px-3 py-2">
+                          <span className={`rounded-full border px-2.5 py-1 text-xs capitalize ${getRoleTone(role._id)}`}>
+                            {formatPermission(role._id)}
+                          </span>
+                          <span className="font-semibold text-gold">{role.count}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
               </section>
 
               <aside className="space-y-5">
@@ -662,6 +764,28 @@ export function SuperAdminPage() {
                       Create database backup
                       <HardDriveDownload size={16} className="text-gold" />
                     </button>
+                  </div>
+                </section>
+
+                <section className={panel}>
+                  <p className={label}>Recent Accounts</p>
+                  <div className="mt-4 space-y-2">
+                    {recentUsers.length ? (
+                      recentUsers.map((row) => (
+                        <div key={row._id} className="rounded-2xl border border-gold/10 bg-[#0d1218] p-3">
+                          <div className="flex items-center justify-between gap-3">
+                            <p className="truncate text-sm font-semibold text-white">{row.name}</p>
+                            <span className={`shrink-0 rounded-full border px-2 py-0.5 text-[11px] capitalize ${getRoleTone(row.role)}`}>
+                              {formatPermission(row.role)}
+                            </span>
+                          </div>
+                          <p className="truncate text-xs text-zinc-500">{row.email}</p>
+                          <p className="mt-1 text-[11px] text-zinc-600">{formatDate(row.createdAt)}</p>
+                        </div>
+                      ))
+                    ) : (
+                      <p className="text-sm text-zinc-500">No account activity yet.</p>
+                    )}
                   </div>
                 </section>
               </aside>
@@ -909,6 +1033,119 @@ export function SuperAdminPage() {
                 {!filteredUsers.length ? (
                   <div className="p-5">
                     <EmptyState title="No users found" message="Adjust the role filter or search text to broaden the results." />
+                  </div>
+                ) : null}
+              </div>
+            </section>
+          ) : null}
+
+          {tab === 'customers' ? (
+            <section className={panel}>
+              <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+                <div>
+                  <p className={label}>Customer Monitoring</p>
+                  <h3 className="mt-1 font-display text-3xl text-white">Customer Activity</h3>
+                  <p className="mt-2 max-w-2xl text-sm text-zinc-500">
+                    See what customers are doing across account creation, quote requests, and contact messages.
+                  </p>
+                </div>
+                <div className="relative w-full xl:max-w-sm">
+                  <Search className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-zinc-600" size={16} />
+                  <input
+                    className={`${input} pl-10`}
+                    value={customerSearch}
+                    onChange={(e) => setCustomerSearch(e.target.value)}
+                    placeholder="Search customer activity"
+                  />
+                </div>
+              </div>
+
+              <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                {[
+                  ['Tracked Customers', customerTotals.tracked],
+                  ['Registered Accounts', customerTotals.registered],
+                  ['Open Quotes', customerTotals.openQuotes],
+                  ['Unread Messages', customerTotals.unreadContacts],
+                ].map(([name, value]) => (
+                  <div key={name} className="rounded-2xl border border-gold/15 bg-[#0d1218] p-4">
+                    <p className="text-xs uppercase tracking-[0.16em] text-zinc-500">{name}</p>
+                    <p className="mt-2 text-3xl font-bold text-gold">{value}</p>
+                  </div>
+                ))}
+              </div>
+
+              <div className={`mt-5 ${tableWrap}`}>
+                <table className="w-full min-w-[1100px] text-sm">
+                  <thead className="border-b border-gold/10">
+                    <tr className={tableHead}>
+                      <th className="px-4 py-3">Customer</th>
+                      <th className="px-4 py-3">Account</th>
+                      <th className="px-4 py-3">Quotes</th>
+                      <th className="px-4 py-3">Messages</th>
+                      <th className="px-4 py-3">Last Activity</th>
+                      <th className="px-4 py-3">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredCustomerActivity.map((row) => (
+                      <tr key={row.id} className="border-t border-gold/10 align-top">
+                        <td className="px-4 py-4">
+                          <p className="font-semibold text-white">{row.name || 'Unknown customer'}</p>
+                          <p className="mt-1 text-xs text-zinc-500">{row.company || 'No company added'}</p>
+                          <p className="mt-1 text-xs text-zinc-600">{row.phone || 'No phone'}</p>
+                        </td>
+                        <td className="px-4 py-4">
+                          <span
+                            className={`rounded-full border px-2.5 py-1 text-xs ${
+                              row.registered
+                                ? 'border-emerald-400/30 bg-emerald-400/10 text-emerald-200'
+                                : 'border-zinc-600/60 bg-zinc-800/70 text-zinc-300'
+                            }`}
+                          >
+                            {row.registered ? 'Registered' : 'Guest lead'}
+                          </span>
+                          <p className="mt-2 text-xs text-zinc-500">Joined {formatDate(row.joinedAt)}</p>
+                        </td>
+                        <td className="px-4 py-4">
+                          <p className="text-2xl font-bold text-gold">{row.quoteCount}</p>
+                          <p className="text-xs text-zinc-500">{row.openQuotes} open</p>
+                        </td>
+                        <td className="px-4 py-4">
+                          <p className="text-2xl font-bold text-gold">{row.contactCount}</p>
+                          <p className="text-xs text-zinc-500">{row.unreadContacts} unread</p>
+                        </td>
+                        <td className="max-w-[280px] px-4 py-4">
+                          <p className="truncate text-zinc-300">{row.lastActivityDetail || '-'}</p>
+                          <p className="mt-1 text-xs capitalize text-zinc-500">
+                            {row.lastActivityType || 'activity'} - {formatDate(row.lastActivityAt)}
+                          </p>
+                        </td>
+                        <td className="px-4 py-4">
+                          <div className="flex flex-col gap-2">
+                            <a
+                              href={`mailto:${row.email}?subject=Follow-up from Graven Metals`}
+                              className="inline-flex items-center justify-center gap-2 rounded-xl border border-gold/25 bg-gold/10 px-3 py-2 text-xs font-semibold text-gold hover:border-gold/50"
+                            >
+                              <Mail size={14} />
+                              Email
+                            </a>
+                            <button
+                              type="button"
+                              onClick={() => setTab('users')}
+                              className="inline-flex items-center justify-center gap-2 rounded-xl border border-gold/15 bg-[#0d1218] px-3 py-2 text-xs text-zinc-300 hover:border-gold/40"
+                            >
+                              <Users size={14} />
+                              Directory
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                {!filteredCustomerActivity.length ? (
+                  <div className="p-5">
+                    <EmptyState title="No customer activity found" message="Customer accounts, quote requests, and contact messages will appear here." />
                   </div>
                 ) : null}
               </div>
