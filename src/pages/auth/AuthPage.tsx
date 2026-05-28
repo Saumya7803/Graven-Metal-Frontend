@@ -3,27 +3,45 @@ import { useNavigate } from 'react-router-dom';
 import { LockKeyhole, Mail, ShieldCheck } from 'lucide-react';
 import { BrandLogo } from '../../components/BrandLogo';
 import { SEO } from '../../components/seo/SEO';
-import { setAuth } from '../../lib/auth';
+import { getDefaultRouteForRole, setAuth } from '../../lib/auth';
 import { getApiErrorMessage } from '../../lib/apiUtils';
 import { publicApi } from '../../lib/publicApi';
+
+const MIN_PASSWORD_LENGTH = 8;
+const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export function AuthPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [touched, setTouched] = useState({ email: false, password: false });
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
+  const normalizedEmail = email.trim();
+  const emailError =
+    touched.email && !emailPattern.test(normalizedEmail)
+      ? 'Enter a valid email address.'
+      : '';
+  const passwordError =
+    touched.password && password.length < MIN_PASSWORD_LENGTH
+      ? `Password must be at least ${MIN_PASSWORD_LENGTH} characters.`
+      : '';
+  const formValid =
+    emailPattern.test(normalizedEmail) &&
+    password.length >= MIN_PASSWORD_LENGTH;
+
   const submit: React.FormEventHandler = async (e) => {
     e.preventDefault();
+    setTouched({ email: true, password: true });
     setError('');
+    if (!formValid) return;
+
     setLoading(true);
     try {
-      const res = await publicApi.login({ email, password });
+      const res = await publicApi.login({ email: normalizedEmail, password });
       setAuth(res.token, res.user);
-      if (res.user.role === 'super_admin') navigate('/super-admin');
-      else if (res.user.role === 'admin' || res.user.role === 'editor') navigate('/admin');
-      else navigate('/');
+      navigate(getDefaultRouteForRole(res.user.role), { replace: true });
     } catch (err) {
       setError(getApiErrorMessage(err));
     } finally {
@@ -74,7 +92,7 @@ export function AuthPage() {
               Enter your credentials. Your role will be detected automatically.
             </p>
 
-            <form className="mt-6 space-y-4" onSubmit={submit}>
+            <form className="mt-6 space-y-4" onSubmit={submit} noValidate>
               <label className="block">
                 <span className="mb-1.5 block text-sm text-zinc-300">Email</span>
                 <span className="relative block">
@@ -82,12 +100,23 @@ export function AuthPage() {
                   <input
                     type="email"
                     autoComplete="email"
-                    className="gm-input gm-input-with-icon"
+                    aria-describedby="admin-email-error"
+                    aria-invalid={!!emailError}
+                    className={`gm-input gm-input-with-icon ${emailError ? 'border-red-500/60 focus:border-red-400' : ''}`}
                     placeholder="admin@graven.local"
                     value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    onBlur={() => setTouched((state) => ({ ...state, email: true }))}
+                    onChange={(e) => {
+                      setEmail(e.target.value);
+                      setError('');
+                    }}
                   />
                 </span>
+                {emailError ? (
+                  <span id="admin-email-error" className="mt-1.5 block text-xs text-red-300">
+                    {emailError}
+                  </span>
+                ) : null}
               </label>
 
               <label className="block">
@@ -97,12 +126,23 @@ export function AuthPage() {
                   <input
                     type="password"
                     autoComplete="current-password"
-                    className="gm-input gm-input-with-icon"
+                    aria-describedby="admin-password-error"
+                    aria-invalid={!!passwordError}
+                    className={`gm-input gm-input-with-icon ${passwordError ? 'border-red-500/60 focus:border-red-400' : ''}`}
                     placeholder="Password123"
                     value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    onBlur={() => setTouched((state) => ({ ...state, password: true }))}
+                    onChange={(e) => {
+                      setPassword(e.target.value);
+                      setError('');
+                    }}
                   />
                 </span>
+                {passwordError ? (
+                  <span id="admin-password-error" className="mt-1.5 block text-xs text-red-300">
+                    {passwordError}
+                  </span>
+                ) : null}
               </label>
 
               {error ? (
@@ -112,7 +152,7 @@ export function AuthPage() {
               ) : null}
 
               <button
-                disabled={loading}
+                disabled={loading || !formValid}
                 className="w-full rounded-md bg-gold-cta px-4 py-3 font-semibold text-black shadow-gold transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {loading ? (
