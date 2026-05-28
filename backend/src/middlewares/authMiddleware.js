@@ -31,6 +31,10 @@ export const protect = asyncHandler(async (req, res, next) => {
   const user = await User.findById(decoded.id).select('-password');
 
   if (!user) return res.status(401).json({ message: 'Invalid token user' });
+  if ((user.sessionVersion || 0) !== (decoded.sessionVersion || 0)) {
+    return res.status(401).json({ message: 'Session has been revoked' });
+  }
+  User.updateOne({ _id: user._id }, { $set: { lastActiveAt: new Date() } }).catch(() => {});
   req.user = user;
   next();
 });
@@ -54,7 +58,10 @@ export const optionalProtect = asyncHandler(async (req, res, next) => {
     audience: process.env.JWT_AUDIENCE || 'graven-metal-client',
   });
   const user = await User.findById(decoded.id).select('-password');
-  if (user) req.user = user;
+  if (user && (user.sessionVersion || 0) === (decoded.sessionVersion || 0)) {
+    User.updateOne({ _id: user._id }, { $set: { lastActiveAt: new Date() } }).catch(() => {});
+    req.user = user;
+  }
   next();
 });
 

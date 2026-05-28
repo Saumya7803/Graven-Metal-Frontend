@@ -22,6 +22,10 @@ const userSchema = new mongoose.Schema(
     },
     role: { type: String, enum: ['super_admin', 'admin', 'editor', 'user'], default: 'user' },
     permissions: [{ type: String }],
+    lastLoginAt: { type: Date },
+    lastActiveAt: { type: Date },
+    sessionVersion: { type: Number, default: 0 },
+    twoFactorEnabled: { type: Boolean, default: false },
   },
   { timestamps: true }
 );

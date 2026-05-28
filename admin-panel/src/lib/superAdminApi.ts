@@ -34,6 +34,14 @@ export const superAdminApi = {
     const res = await axiosClient.patch(`/super-admin/users/${id}`, payload);
     return res.data;
   },
+  async revokeUserSessions(id: string) {
+    const res = await axiosClient.post(`/super-admin/users/${id}/revoke-sessions`);
+    return res.data;
+  },
+  async getAuditLogs(limit = 80) {
+    const res = await axiosClient.get('/super-admin/audit-logs', { params: { limit } });
+    return res.data;
+  },
 
   async getSettings() {
     const res = await axiosClient.get('/super-admin/settings');

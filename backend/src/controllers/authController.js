@@ -3,7 +3,12 @@ import { signToken } from '../utils/jwt.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 
 function formatAuthResponse(user) {
-  const token = signToken({ id: user._id, role: user.role, permissions: user.permissions });
+  const token = signToken({
+    id: user._id,
+    role: user.role,
+    permissions: user.permissions,
+    sessionVersion: user.sessionVersion || 0,
+  });
   return {
     token,
     user: {
@@ -14,6 +19,9 @@ function formatAuthResponse(user) {
       company: user.company || '',
       role: user.role,
       permissions: user.permissions,
+      lastLoginAt: user.lastLoginAt,
+      lastActiveAt: user.lastActiveAt,
+      twoFactorEnabled: !!user.twoFactorEnabled,
     },
   };
 }
@@ -27,6 +35,9 @@ function formatUser(user) {
     company: user.company || '',
     role: user.role,
     permissions: user.permissions || [],
+    lastLoginAt: user.lastLoginAt,
+    lastActiveAt: user.lastActiveAt,
+    twoFactorEnabled: !!user.twoFactorEnabled,
   };
 }
 
@@ -38,6 +49,9 @@ async function loginByRole(email, password, allowedRoles) {
   if (!allowedRoles.includes(user.role)) {
     return { error: 'Unauthorized role for this login portal' };
   }
+  user.lastLoginAt = new Date();
+  user.lastActiveAt = user.lastLoginAt;
+  await user.save();
   return { data: formatAuthResponse(user) };
 }
 

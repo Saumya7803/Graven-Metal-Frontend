@@ -8,10 +8,12 @@ import {
   deleteUser,
   getAnalytics,
   getCustomerActivity,
+  listAuditLogs,
   getSEO,
   getSettings,
   listAdmins,
   listUsers,
+  revokeUserSessions,
   updateSEO,
   updateSettings,
   updateUser,
@@ -48,6 +50,8 @@ router.patch(
 
 router.get('/users', listUsers);
 router.get('/customer-activity', getCustomerActivity);
+router.get('/audit-logs', listAuditLogs);
+router.post('/users/:id/revoke-sessions', [param('id').isMongoId()], validate, revokeUserSessions);
 router.patch(
   '/users/:id',
   [
