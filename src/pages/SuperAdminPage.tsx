@@ -1,18 +1,21 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import {
   Activity,
+  ArrowRight,
   BarChart3,
   CheckCircle2,
   ClipboardList,
   Database,
   Eye,
   FileText,
+  Folder,
   Globe2,
   HardDriveDownload,
   KeyRound,
   LogOut,
   Mail,
   Menu,
+  Package,
   Plus,
   RefreshCw,
   Save,
@@ -180,9 +183,9 @@ function StatCard({
       <div className="absolute inset-0 bg-gradient-to-br from-white/[0.04] via-transparent to-gold/[0.04] opacity-70" />
       <div className="relative flex items-start justify-between gap-4">
         <div>
-          <p className="text-xs uppercase tracking-[0.2em] text-zinc-500">{label}</p>
+          <p className="text-xs uppercase tracking-[0.2em] text-zinc-400">{label}</p>
           <p className="mt-3 text-3xl font-extrabold text-white">{value}</p>
-          <p className="mt-1 text-xs text-zinc-500">{helper}</p>
+          <p className="mt-1 text-xs text-zinc-400">{helper}</p>
         </div>
         <div className={`rounded-2xl bg-gradient-to-br to-transparent p-3 ring-1 ${tones[tone]}`}>
           <Icon size={20} />
@@ -192,13 +195,37 @@ function StatCard({
   );
 }
 
-function EmptyState({ title, message }: { title: string; message: string }) {
+function EmptyState({
+  title,
+  message,
+  action,
+  onAction,
+}: {
+  title: string;
+  message: string;
+  action?: string;
+  onAction?: () => void;
+}) {
   return (
     <div className="rounded-2xl border border-dashed border-gold/20 bg-[#0b1119] p-8 text-center">
       <p className="font-display text-xl text-white">{title}</p>
-      <p className="mx-auto mt-2 max-w-md text-sm text-zinc-500">{message}</p>
+      <p className="mx-auto mt-2 max-w-md text-sm text-zinc-400">{message}</p>
+      {action && onAction ? (
+        <button
+          type="button"
+          onClick={onAction}
+          className="mt-4 inline-flex items-center gap-2 rounded-xl border border-gold/20 bg-gold/10 px-3 py-2 text-xs font-semibold text-gold hover:border-gold/50 hover:bg-gold/15"
+        >
+          {action}
+          <ArrowRight size={14} />
+        </button>
+      ) : null}
     </div>
   );
+}
+
+function pluralize(count: number, singular: string, plural = `${singular}s`) {
+  return `${count} ${count === 1 ? singular : plural}`;
 }
 
 function formatPermission(permission: string) {
@@ -265,10 +292,10 @@ export function SuperAdminPage() {
 
   const panel = 'rounded-3xl border border-gold/20 bg-[#0a0f14]/95 p-5 shadow-glow';
   const input =
-    'w-full rounded-xl border border-gold/20 bg-[#0d1218] px-3.5 py-2.5 text-sm text-zinc-100 outline-none placeholder:text-zinc-600 focus:border-gold/60';
-  const label = 'text-xs uppercase tracking-[0.18em] text-zinc-500';
+    'w-full rounded-xl border border-gold/20 bg-[#0d1218] px-3.5 py-2.5 text-sm text-zinc-100 outline-none placeholder:text-zinc-500 focus:border-gold/60';
+  const label = 'text-xs uppercase tracking-[0.18em] text-zinc-400';
   const tableWrap = 'overflow-x-auto rounded-2xl border border-gold/15 bg-[#070c12]';
-  const tableHead = 'text-left text-xs uppercase tracking-[0.15em] text-zinc-500';
+  const tableHead = 'text-left text-xs uppercase tracking-[0.15em] text-zinc-400';
 
   const load = async () => {
     setLoading(true);
@@ -364,7 +391,7 @@ export function SuperAdminPage() {
     {
       label: 'Total Users',
       value: totalUsers,
-      helper: `${totalAdmins} privileged accounts`,
+      helper: pluralize(totalAdmins, 'privileged account'),
       icon: Users,
       tone: 'blue' as Tone,
     },
@@ -388,6 +415,38 @@ export function SuperAdminPage() {
       helper: `${openQuotes} open quote requests`,
       icon: ClipboardList,
       tone: openQuotes > 0 ? ('gold' as Tone) : ('green' as Tone),
+    },
+  ];
+
+  const snapshotItems = [
+    { name: 'Products', value: totals.products || 0, icon: Package },
+    { name: 'Categories', value: totals.categories || 0, icon: Folder },
+    { name: 'Blogs', value: totals.blogs || 0, icon: FileText },
+    { name: 'Quotes', value: totals.quotes || 0, icon: ClipboardList },
+    { name: 'Contacts', value: totals.contacts || 0, icon: Mail },
+    { name: 'SEO Keywords', value: seo.keywords.length, icon: Globe2 },
+  ];
+
+  const checklistItems = [
+    {
+      text: settings.supportEmail ? 'Support email configured' : 'Add support email',
+      done: !!settings.supportEmail,
+      target: 'settings' as Tab,
+    },
+    {
+      text: seoCompleteness >= 3 ? 'SEO foundation looks healthy' : 'Complete SEO metadata',
+      done: seoCompleteness >= 3,
+      target: 'seo' as Tab,
+    },
+    {
+      text: totalAdmins > 0 ? 'Admin coverage available' : 'Create one admin account',
+      done: totalAdmins > 0,
+      target: 'admins' as Tab,
+    },
+    {
+      text: lastBackup ? 'Backup created this session' : 'Create a fresh backup',
+      done: !!lastBackup,
+      target: 'backup' as Tab,
     },
   ];
 
@@ -478,7 +537,7 @@ export function SuperAdminPage() {
                 <ShieldCheck size={24} />
               </div>
               <h1 className="font-display text-2xl text-white">GRAVEN Control</h1>
-              <p className="mt-1 text-xs text-zinc-500">Super admin command panel</p>
+              <p className="mt-1 text-xs text-zinc-400">Super admin command panel</p>
             </div>
             <button
               type="button"
@@ -516,9 +575,9 @@ export function SuperAdminPage() {
           </div>
 
           <div className="mt-auto rounded-2xl border border-gold/15 bg-[#0d1218] p-3">
-            <p className="text-xs uppercase tracking-[0.18em] text-zinc-500">Signed in as</p>
+            <p className="text-xs uppercase tracking-[0.18em] text-zinc-400">Signed in as</p>
             <p className="mt-2 truncate text-sm font-semibold text-white">{currentUser?.name || 'Super Admin'}</p>
-            <p className="truncate text-xs text-zinc-500">{currentUser?.email || 'Privileged session'}</p>
+            <p className="truncate text-xs text-zinc-400">{currentUser?.email || 'Privileged session'}</p>
             <button
               type="button"
               className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-xl border border-gold/20 bg-[#090d13] px-3 py-2 text-sm text-zinc-200 hover:border-gold/45 hover:text-gold"
@@ -552,8 +611,8 @@ export function SuperAdminPage() {
                   <ActiveIcon size={14} />
                   Privilege Zone
                 </div>
-                <h2 className="font-display text-4xl text-white md:text-5xl">{activeTab.label}</h2>
-                <p className="mt-2 max-w-2xl text-sm text-zinc-400">
+                <h2 className="font-display text-3xl text-white md:text-4xl">{activeTab.label}</h2>
+                <p className="mt-2 max-w-2xl text-base leading-7 text-zinc-300">
                   Monitor access, configure the storefront, tune SEO, and keep recoveries one click away.
                 </p>
               </div>
@@ -605,17 +664,14 @@ export function SuperAdminPage() {
                 </div>
 
                 <div className="mt-5 grid gap-3 md:grid-cols-3">
-                  {[
-                    ['Products', totals.products || 0],
-                    ['Categories', totals.categories || 0],
-                    ['Blogs', totals.blogs || 0],
-                    ['Quotes', totals.quotes || 0],
-                    ['Contacts', totals.contacts || 0],
-                    ['SEO Keywords', seo.keywords.length],
-                  ].map(([name, value]) => (
-                    <div key={name} className="rounded-2xl border border-gold/15 bg-[#0d1218] p-4">
-                      <p className="text-xs uppercase tracking-[0.16em] text-zinc-500">{name}</p>
-                      <p className="mt-2 text-3xl font-bold text-gold">{value}</p>
+                  {snapshotItems.map(({ name, value, icon: Icon }) => (
+                    <div key={name} className="group relative overflow-hidden rounded-2xl border border-gold/15 bg-[#0d1218] p-4">
+                      <Icon
+                        size={54}
+                        className="pointer-events-none absolute right-3 top-3 text-gold/10 transition group-hover:text-gold/15"
+                      />
+                      <p className="relative text-xs uppercase tracking-[0.16em] text-zinc-400">{name}</p>
+                      <p className="relative mt-2 text-3xl font-bold text-gold">{value}</p>
                     </div>
                   ))}
                 </div>
@@ -624,7 +680,7 @@ export function SuperAdminPage() {
                   <div className="flex items-center justify-between gap-3">
                     <div>
                       <p className={label}>Quote Pipeline</p>
-                      <p className="mt-1 text-sm text-zinc-500">{openQuotes} active quotes need commercial follow-up.</p>
+                      <p className="mt-1 text-sm text-zinc-400">{openQuotes} active quotes need commercial follow-up.</p>
                     </div>
                     <ClipboardList className="text-gold" size={22} />
                   </div>
@@ -648,7 +704,12 @@ export function SuperAdminPage() {
                         );
                       })
                     ) : (
-                      <EmptyState title="No quote activity yet" message="Quote status data will appear here after requests arrive." />
+                      <EmptyState
+                        title="No quote activity yet"
+                        message="Quote status data will appear here after requests arrive."
+                        action="Review customers"
+                        onAction={() => setTab('customers')}
+                      />
                     )}
                   </div>
                 </div>
@@ -658,7 +719,7 @@ export function SuperAdminPage() {
                     <div className="flex items-center justify-between gap-3">
                       <div>
                         <p className={label}>Contact Queue</p>
-                        <p className="mt-1 text-sm text-zinc-500">{unreadContacts} unread customer messages.</p>
+                        <p className="mt-1 text-sm text-zinc-400">{unreadContacts} unread customer messages.</p>
                       </div>
                       <Mail className="text-gold" size={22} />
                     </div>
@@ -679,7 +740,12 @@ export function SuperAdminPage() {
                           );
                         })
                       ) : (
-                        <p className="text-sm text-zinc-500">No contact activity yet.</p>
+                        <EmptyState
+                          title="No contact activity yet"
+                          message="Customer messages will appear here when the queue receives new contacts."
+                          action="Open customer activity"
+                          onAction={() => setTab('customers')}
+                        />
                       )}
                     </div>
                   </div>
@@ -688,7 +754,7 @@ export function SuperAdminPage() {
                     <div className="flex items-center justify-between gap-3">
                       <div>
                         <p className={label}>Access Mix</p>
-                        <p className="mt-1 text-sm text-zinc-500">Role spread across all accounts.</p>
+                        <p className="mt-1 text-sm text-zinc-400">Role spread across all accounts.</p>
                       </div>
                       <UserCog className="text-gold" size={22} />
                     </div>
@@ -711,28 +777,27 @@ export function SuperAdminPage() {
                   <p className={label}>Readiness</p>
                   <h3 className="mt-1 font-display text-2xl text-white">Launch Checklist</h3>
                   <div className="mt-4 space-y-3">
-                    {[
-                      {
-                        text: settings.supportEmail ? 'Support email configured' : 'Add support email',
-                        done: !!settings.supportEmail,
-                      },
-                      {
-                        text: seoCompleteness >= 3 ? 'SEO foundation looks healthy' : 'Complete SEO metadata',
-                        done: seoCompleteness >= 3,
-                      },
-                      {
-                        text: totalAdmins > 0 ? 'Admin coverage available' : 'Create one admin account',
-                        done: totalAdmins > 0,
-                      },
-                      {
-                        text: lastBackup ? 'Backup created this session' : 'Create a fresh backup',
-                        done: !!lastBackup,
-                      },
-                    ].map((item) => (
-                      <div key={item.text} className="flex items-center gap-3 rounded-2xl border border-gold/10 bg-[#0d1218] p-3">
-                        <CheckCircle2 size={18} className={item.done ? 'text-emerald-300' : 'text-zinc-600'} />
-                        <span className="text-sm text-zinc-300">{item.text}</span>
-                      </div>
+                    {checklistItems.map((item) => (
+                      <button
+                        key={item.text}
+                        type="button"
+                        onClick={() => setTab(item.target)}
+                        className="group flex w-full items-center gap-3 rounded-2xl border border-gold/10 bg-[#0d1218] p-3 text-left hover:border-gold/35 hover:bg-[#101822]"
+                      >
+                        {item.done ? (
+                          <CheckCircle2 size={18} className="shrink-0 text-emerald-300" />
+                        ) : (
+                          <span
+                            aria-hidden="true"
+                            className="h-[18px] w-[18px] shrink-0 rounded-full border border-zinc-400/80"
+                          />
+                        )}
+                        <span className="min-w-0 flex-1 text-sm text-zinc-300">{item.text}</span>
+                        <ArrowRight
+                          size={15}
+                          className="shrink-0 text-zinc-400 opacity-0 transition group-hover:translate-x-0.5 group-hover:text-gold group-hover:opacity-100"
+                        />
+                      </button>
                     ))}
                   </div>
                 </section>
@@ -779,12 +844,12 @@ export function SuperAdminPage() {
                               {formatPermission(row.role)}
                             </span>
                           </div>
-                          <p className="truncate text-xs text-zinc-500">{row.email}</p>
-                          <p className="mt-1 text-[11px] text-zinc-600">{formatDate(row.createdAt)}</p>
+                          <p className="truncate text-xs text-zinc-400">{row.email}</p>
+                          <p className="mt-1 text-[11px] text-zinc-500">{formatDate(row.createdAt)}</p>
                         </div>
                       ))
                     ) : (
-                      <p className="text-sm text-zinc-500">No account activity yet.</p>
+                      <p className="text-sm text-zinc-400">No account activity yet.</p>
                     )}
                   </div>
                 </section>
@@ -800,7 +865,7 @@ export function SuperAdminPage() {
                   <h3 className="mt-1 font-display text-3xl text-white">Admins & Permissions</h3>
                 </div>
                 <div className="relative w-full lg:max-w-sm">
-                  <Search className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-zinc-600" size={16} />
+                  <Search className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" size={16} />
                   <input
                     className={`${input} pl-10`}
                     value={adminSearch}
@@ -825,8 +890,8 @@ export function SuperAdminPage() {
                       <tr key={admin._id} className="border-t border-gold/10 align-top">
                         <td className="px-4 py-4">
                           <p className="font-semibold text-white">{admin.name}</p>
-                          <p className="mt-1 text-xs text-zinc-500">{admin.email}</p>
-                          <p className="mt-2 text-xs text-zinc-600">Added {formatDate(admin.createdAt)}</p>
+                          <p className="mt-1 text-xs text-zinc-400">{admin.email}</p>
+                          <p className="mt-2 text-xs text-zinc-500">Added {formatDate(admin.createdAt)}</p>
                         </td>
                         <td className="px-4 py-4">
                           <select
@@ -940,7 +1005,7 @@ export function SuperAdminPage() {
                 </div>
                 <div className="grid gap-2 sm:grid-cols-[1fr_170px] xl:w-[560px]">
                   <div className="relative">
-                    <Search className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-zinc-600" size={16} />
+                    <Search className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" size={16} />
                     <input
                       className={`${input} pl-10`}
                       value={userSearch}
@@ -976,7 +1041,7 @@ export function SuperAdminPage() {
                         <tr key={user._id} className="border-t border-gold/10">
                           <td className="px-4 py-4">
                             <p className="font-semibold text-white">{user.name}</p>
-                            <p className="mt-1 text-xs text-zinc-600">Joined {formatDate(user.createdAt)}</p>
+                            <p className="mt-1 text-xs text-zinc-500">Joined {formatDate(user.createdAt)}</p>
                           </td>
                           <td className="px-4 py-4 text-zinc-300">{user.email}</td>
                           <td className="px-4 py-4">
@@ -1045,12 +1110,12 @@ export function SuperAdminPage() {
                 <div>
                   <p className={label}>Customer Monitoring</p>
                   <h3 className="mt-1 font-display text-3xl text-white">Customer Activity</h3>
-                  <p className="mt-2 max-w-2xl text-sm text-zinc-500">
+                  <p className="mt-2 max-w-2xl text-sm text-zinc-400">
                     See what customers are doing across account creation, quote requests, and contact messages.
                   </p>
                 </div>
                 <div className="relative w-full xl:max-w-sm">
-                  <Search className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-zinc-600" size={16} />
+                  <Search className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" size={16} />
                   <input
                     className={`${input} pl-10`}
                     value={customerSearch}
@@ -1068,7 +1133,7 @@ export function SuperAdminPage() {
                   ['Unread Messages', customerTotals.unreadContacts],
                 ].map(([name, value]) => (
                   <div key={name} className="rounded-2xl border border-gold/15 bg-[#0d1218] p-4">
-                    <p className="text-xs uppercase tracking-[0.16em] text-zinc-500">{name}</p>
+                    <p className="text-xs uppercase tracking-[0.16em] text-zinc-400">{name}</p>
                     <p className="mt-2 text-3xl font-bold text-gold">{value}</p>
                   </div>
                 ))}
@@ -1091,8 +1156,8 @@ export function SuperAdminPage() {
                       <tr key={row.id} className="border-t border-gold/10 align-top">
                         <td className="px-4 py-4">
                           <p className="font-semibold text-white">{row.name || 'Unknown customer'}</p>
-                          <p className="mt-1 text-xs text-zinc-500">{row.company || 'No company added'}</p>
-                          <p className="mt-1 text-xs text-zinc-600">{row.phone || 'No phone'}</p>
+                          <p className="mt-1 text-xs text-zinc-400">{row.company || 'No company added'}</p>
+                          <p className="mt-1 text-xs text-zinc-500">{row.phone || 'No phone'}</p>
                         </td>
                         <td className="px-4 py-4">
                           <span
@@ -1104,19 +1169,19 @@ export function SuperAdminPage() {
                           >
                             {row.registered ? 'Registered' : 'Guest lead'}
                           </span>
-                          <p className="mt-2 text-xs text-zinc-500">Joined {formatDate(row.joinedAt)}</p>
+                          <p className="mt-2 text-xs text-zinc-400">Joined {formatDate(row.joinedAt)}</p>
                         </td>
                         <td className="px-4 py-4">
                           <p className="text-2xl font-bold text-gold">{row.quoteCount}</p>
-                          <p className="text-xs text-zinc-500">{row.openQuotes} open</p>
+                          <p className="text-xs text-zinc-400">{row.openQuotes} open</p>
                         </td>
                         <td className="px-4 py-4">
                           <p className="text-2xl font-bold text-gold">{row.contactCount}</p>
-                          <p className="text-xs text-zinc-500">{row.unreadContacts} unread</p>
+                          <p className="text-xs text-zinc-400">{row.unreadContacts} unread</p>
                         </td>
                         <td className="max-w-[280px] px-4 py-4">
                           <p className="truncate text-zinc-300">{row.lastActivityDetail || '-'}</p>
-                          <p className="mt-1 text-xs capitalize text-zinc-500">
+                          <p className="mt-1 text-xs capitalize text-zinc-400">
                             {row.lastActivityType || 'activity'} - {formatDate(row.lastActivityAt)}
                           </p>
                         </td>
@@ -1158,7 +1223,7 @@ export function SuperAdminPage() {
                 <div>
                   <p className={label}>Storefront Controls</p>
                   <h3 className="mt-1 font-display text-3xl text-white">Website Settings</h3>
-                  <p className="mt-2 max-w-2xl text-sm text-zinc-500">
+                  <p className="mt-2 max-w-2xl text-sm text-zinc-400">
                     Keep the public-facing basics in one place. Maintenance mode should stay off unless you are actively deploying or fixing content.
                   </p>
                 </div>
@@ -1178,7 +1243,7 @@ export function SuperAdminPage() {
                 <label>
                   <span className={label}>Site Name</span>
                   <input
-                    className="mt-2 w-full rounded-xl border border-gold/20 bg-[#0d1218] px-3.5 py-2.5 text-sm text-zinc-100 outline-none placeholder:text-zinc-600 focus:border-gold/60"
+                    className="mt-2 w-full rounded-xl border border-gold/20 bg-[#0d1218] px-3.5 py-2.5 text-sm text-zinc-100 outline-none placeholder:text-zinc-500 focus:border-gold/60"
                     value={settings.siteName}
                     onChange={(e) => setSettings((prev) => ({ ...prev, siteName: e.target.value }))}
                     placeholder="GRAVEN Metals"
@@ -1187,7 +1252,7 @@ export function SuperAdminPage() {
                 <label>
                   <span className={label}>Support Email</span>
                   <div className="relative mt-2">
-                    <Mail className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-zinc-600" size={16} />
+                    <Mail className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" size={16} />
                     <input
                       className={`${input} pl-10`}
                       value={settings.supportEmail}
@@ -1202,7 +1267,7 @@ export function SuperAdminPage() {
                 <label className="flex cursor-pointer flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   <span>
                     <span className="block font-semibold text-white">Maintenance Mode</span>
-                    <span className="mt-1 block text-sm text-zinc-500">
+                    <span className="mt-1 block text-sm text-zinc-400">
                       Temporarily hide the public experience while admins work behind the curtain.
                     </span>
                   </span>
@@ -1248,30 +1313,30 @@ export function SuperAdminPage() {
                   <label>
                     <span className={label}>Meta Title</span>
                     <input
-                      className="mt-2 w-full rounded-xl border border-gold/20 bg-[#0d1218] px-3.5 py-2.5 text-sm text-zinc-100 outline-none placeholder:text-zinc-600 focus:border-gold/60"
+                      className="mt-2 w-full rounded-xl border border-gold/20 bg-[#0d1218] px-3.5 py-2.5 text-sm text-zinc-100 outline-none placeholder:text-zinc-500 focus:border-gold/60"
                       value={seo.metaTitle}
                       onChange={(e) => setSeo((prev) => ({ ...prev, metaTitle: e.target.value }))}
                       placeholder="Premium Metal Trading Platform"
                     />
-                    <span className="mt-1 block text-xs text-zinc-600">{seo.metaTitle.length}/60 recommended characters</span>
+                    <span className="mt-1 block text-xs text-zinc-500">{seo.metaTitle.length}/60 recommended characters</span>
                   </label>
                   <label>
                     <span className={label}>Meta Description</span>
                     <textarea
-                      className="mt-2 w-full rounded-xl border border-gold/20 bg-[#0d1218] px-3.5 py-2.5 text-sm text-zinc-100 outline-none placeholder:text-zinc-600 focus:border-gold/60"
+                      className="mt-2 w-full rounded-xl border border-gold/20 bg-[#0d1218] px-3.5 py-2.5 text-sm text-zinc-100 outline-none placeholder:text-zinc-500 focus:border-gold/60"
                       value={seo.metaDescription}
                       onChange={(e) => setSeo((prev) => ({ ...prev, metaDescription: e.target.value }))}
                       placeholder="Describe your metals, services, and market promise clearly."
                       rows={4}
                     />
-                    <span className="mt-1 block text-xs text-zinc-600">
+                    <span className="mt-1 block text-xs text-zinc-500">
                       {seo.metaDescription.length}/160 recommended characters
                     </span>
                   </label>
                   <label>
                     <span className={label}>OG Image URL</span>
                     <input
-                      className="mt-2 w-full rounded-xl border border-gold/20 bg-[#0d1218] px-3.5 py-2.5 text-sm text-zinc-100 outline-none placeholder:text-zinc-600 focus:border-gold/60"
+                      className="mt-2 w-full rounded-xl border border-gold/20 bg-[#0d1218] px-3.5 py-2.5 text-sm text-zinc-100 outline-none placeholder:text-zinc-500 focus:border-gold/60"
                       value={seo.ogImage}
                       onChange={(e) => setSeo((prev) => ({ ...prev, ogImage: e.target.value }))}
                       placeholder="https://example.com/social-card.jpg"
@@ -1280,7 +1345,7 @@ export function SuperAdminPage() {
                   <label>
                     <span className={label}>Keywords</span>
                     <input
-                      className="mt-2 w-full rounded-xl border border-gold/20 bg-[#0d1218] px-3.5 py-2.5 text-sm text-zinc-100 outline-none placeholder:text-zinc-600 focus:border-gold/60"
+                      className="mt-2 w-full rounded-xl border border-gold/20 bg-[#0d1218] px-3.5 py-2.5 text-sm text-zinc-100 outline-none placeholder:text-zinc-500 focus:border-gold/60"
                       value={seo.keywords.join(', ')}
                       onChange={(e) =>
                         setSeo((prev) => ({
@@ -1340,7 +1405,7 @@ export function SuperAdminPage() {
                         </span>
                       ))
                     ) : (
-                      <p className="text-sm text-zinc-500">No keywords yet.</p>
+                      <p className="text-sm text-zinc-400">No keywords yet.</p>
                     )}
                   </div>
                 </div>
@@ -1353,7 +1418,7 @@ export function SuperAdminPage() {
               <div className={panel}>
                 <p className={label}>Disaster Recovery</p>
                 <h3 className="mt-1 font-display text-3xl text-white">Database Backup</h3>
-                <p className="mt-3 max-w-2xl text-sm leading-6 text-zinc-500">
+                <p className="mt-3 max-w-2xl text-sm leading-6 text-zinc-400">
                   Generate a server-side JSON snapshot of users, products, categories, blogs, quotes, contacts, and settings.
                   This is especially useful before role changes, SEO edits, or maintenance work.
                 </p>
@@ -1365,7 +1430,7 @@ export function SuperAdminPage() {
                     ['Mode', 'Server-side'],
                   ].map(([name, value]) => (
                     <div key={name} className="rounded-2xl border border-gold/15 bg-[#0d1218] p-4">
-                      <p className="text-xs uppercase tracking-[0.16em] text-zinc-500">{name}</p>
+                      <p className="text-xs uppercase tracking-[0.16em] text-zinc-400">{name}</p>
                       <p className="mt-2 font-semibold text-white">{value}</p>
                     </div>
                   ))}
@@ -1409,7 +1474,7 @@ export function SuperAdminPage() {
                 )}
                 <div className="mt-5 rounded-2xl border border-gold/15 bg-[#0d1218] p-4">
                   <p className="font-semibold text-white">Good backup rhythm</p>
-                  <p className="mt-2 text-sm leading-6 text-zinc-500">
+                  <p className="mt-2 text-sm leading-6 text-zinc-400">
                     Make a backup before deployments, bulk content changes, and permission changes. Tiny ritual, huge future relief.
                   </p>
                 </div>
@@ -1425,7 +1490,7 @@ export function SuperAdminPage() {
             <label>
               <span className={label}>Name</span>
               <input
-                className="mt-2 w-full rounded-xl border border-gold/20 bg-[#0d1218] px-3.5 py-2.5 text-sm text-zinc-100 outline-none placeholder:text-zinc-600 focus:border-gold/60"
+                className="mt-2 w-full rounded-xl border border-gold/20 bg-[#0d1218] px-3.5 py-2.5 text-sm text-zinc-100 outline-none placeholder:text-zinc-500 focus:border-gold/60"
                 placeholder="Admin name"
                 value={newAdmin.name}
                 onChange={(e) => setNewAdmin((prev) => ({ ...prev, name: e.target.value }))}
@@ -1434,7 +1499,7 @@ export function SuperAdminPage() {
             <label>
               <span className={label}>Email</span>
               <input
-                className="mt-2 w-full rounded-xl border border-gold/20 bg-[#0d1218] px-3.5 py-2.5 text-sm text-zinc-100 outline-none placeholder:text-zinc-600 focus:border-gold/60"
+                className="mt-2 w-full rounded-xl border border-gold/20 bg-[#0d1218] px-3.5 py-2.5 text-sm text-zinc-100 outline-none placeholder:text-zinc-500 focus:border-gold/60"
                 placeholder="admin@example.com"
                 value={newAdmin.email}
                 onChange={(e) => setNewAdmin((prev) => ({ ...prev, email: e.target.value }))}
@@ -1443,7 +1508,7 @@ export function SuperAdminPage() {
             <label>
               <span className={label}>Password</span>
               <div className="relative mt-2">
-                <KeyRound className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-zinc-600" size={16} />
+                <KeyRound className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" size={16} />
                 <input
                   className={`${input} pl-10`}
                   placeholder="8+ chars, uppercase, lowercase, number"
@@ -1456,7 +1521,7 @@ export function SuperAdminPage() {
             <label>
               <span className={label}>Role</span>
               <select
-                className="mt-2 w-full rounded-xl border border-gold/20 bg-[#0d1218] px-3.5 py-2.5 text-sm text-zinc-100 outline-none placeholder:text-zinc-600 focus:border-gold/60"
+                className="mt-2 w-full rounded-xl border border-gold/20 bg-[#0d1218] px-3.5 py-2.5 text-sm text-zinc-100 outline-none placeholder:text-zinc-500 focus:border-gold/60"
                 value={newAdmin.role}
                 onChange={(e) => setNewAdmin((prev) => ({ ...prev, role: e.target.value }))}
               >
