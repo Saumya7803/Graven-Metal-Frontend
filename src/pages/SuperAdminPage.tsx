@@ -12,6 +12,7 @@ import {
   Globe2,
   HardDriveDownload,
   KeyRound,
+  History,
   LogOut,
   Mail,
   Menu,
@@ -57,6 +58,7 @@ const tabs = [
   { key: 'admins', label: 'Admins', icon: ShieldCheck },
   { key: 'users', label: 'Users', icon: Users },
   { key: 'customers', label: 'Customers', icon: UserCog },
+  { key: 'audit', label: 'Audit Logs', icon: History },
   { key: 'settings', label: 'Settings', icon: SettingsIcon },
   { key: 'seo', label: 'SEO', icon: Globe2 },
   { key: 'backup', label: 'Backup', icon: Database },
@@ -73,6 +75,9 @@ type UserRow = {
   role: UserRole;
   permissions: string[];
   createdAt?: string;
+  lastLoginAt?: string;
+  lastActiveAt?: string;
+  twoFactorEnabled?: boolean;
 };
 
 type CustomerActivityRow = {
@@ -119,6 +124,15 @@ type Analytics = {
   contactByStatus?: Array<{ _id: string; count: number }>;
   usersByRole?: Array<{ _id: string; count: number }>;
   recentUsers?: Array<{ _id: string; name: string; email: string; role: string; createdAt?: string }>;
+};
+
+type AuditLogRow = {
+  _id: string;
+  action: string;
+  actor?: { name?: string; email?: string; role?: string };
+  target?: { type?: string; id?: string; label?: string };
+  metadata?: Record<string, unknown>;
+  createdAt?: string;
 };
 
 type Tone = 'gold' | 'green' | 'blue' | 'red';
@@ -241,6 +255,17 @@ function formatDate(date?: string) {
   }).format(new Date(date));
 }
 
+function formatDateTime(date?: string) {
+  if (!date) return 'Never';
+  return new Intl.DateTimeFormat('en-IN', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  }).format(new Date(date));
+}
+
 function getRoleTone(role: string) {
   if (role === 'super_admin') return 'border-gold/35 bg-gold/10 text-gold';
   if (role === 'admin') return 'border-sky-400/30 bg-sky-400/10 text-sky-200';
@@ -272,6 +297,7 @@ export function SuperAdminPage() {
   const [admins, setAdmins] = useState<UserRow[]>([]);
   const [users, setUsers] = useState<UserRow[]>([]);
   const [customerActivity, setCustomerActivity] = useState<CustomerActivityRow[]>([]);
+  const [auditLogs, setAuditLogs] = useState<AuditLogRow[]>([]);
   const [settings, setSettings] = useState<Settings>({
     siteName: '',
     supportEmail: '',
@@ -300,18 +326,20 @@ export function SuperAdminPage() {
   const load = async () => {
     setLoading(true);
     try {
-      const [adminRows, userRows, customerRows, siteSettings, analyticsData, seoData] = await Promise.all([
+      const [adminRows, userRows, customerRows, siteSettings, analyticsData, seoData, auditRows] = await Promise.all([
         superAdminApi.getAdmins(),
         superAdminApi.getUsers(),
         superAdminApi.getCustomerActivity(),
         superAdminApi.getSettings(),
         superAdminApi.getAnalytics(),
         superAdminApi.getSEO(),
+        superAdminApi.getAuditLogs(),
       ]);
 
       setAdmins(Array.isArray(adminRows) ? adminRows : []);
       setUsers(Array.isArray(userRows) ? userRows : []);
       setCustomerActivity(Array.isArray(customerRows) ? customerRows : []);
+      setAuditLogs(Array.isArray(auditRows) ? auditRows : []);
       setSettings({
         siteName: siteSettings?.siteName || '',
         supportEmail: siteSettings?.supportEmail || '',
@@ -495,6 +523,20 @@ export function SuperAdminPage() {
       await load();
     } catch (error) {
       toast.error((error as Error).message);
+    }
+  };
+
+  const revokeSessions = async (user: UserRow) => {
+    if (!window.confirm(`Revoke all active sessions for "${user.email}"? They will need to log in again.`)) return;
+    setSaving(true);
+    try {
+      await superAdminApi.revokeUserSessions(user._id);
+      toast.success('Active sessions revoked');
+      await load();
+    } catch (error) {
+      toast.error((error as Error).message);
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -892,6 +934,19 @@ export function SuperAdminPage() {
                           <p className="font-semibold text-white">{admin.name}</p>
                           <p className="mt-1 text-xs text-zinc-400">{admin.email}</p>
                           <p className="mt-2 text-xs text-zinc-500">Added {formatDate(admin.createdAt)}</p>
+                          <div className="mt-3 space-y-1 rounded-xl border border-gold/10 bg-[#0d1218] p-2">
+                            <p className="text-xs text-zinc-400">Last login: {formatDateTime(admin.lastLoginAt)}</p>
+                            <p className="text-xs text-zinc-400">Last active: {formatDateTime(admin.lastActiveAt)}</p>
+                            <span
+                              className={`inline-flex rounded-full border px-2 py-0.5 text-[11px] ${
+                                admin.twoFactorEnabled
+                                  ? 'border-emerald-400/30 bg-emerald-400/10 text-emerald-200'
+                                  : 'border-amber-400/30 bg-amber-400/10 text-amber-200'
+                              }`}
+                            >
+                              2FA {admin.twoFactorEnabled ? 'Enabled' : 'Not enabled'}
+                            </span>
+                          </div>
                         </td>
                         <td className="px-4 py-4">
                           <select
@@ -975,6 +1030,23 @@ export function SuperAdminPage() {
                             </button>
                             <button
                               type="button"
+                              disabled={saving}
+                              className="inline-flex items-center justify-center gap-2 rounded-xl border border-amber-400/25 bg-amber-400/10 px-3 py-2 text-xs font-semibold text-amber-200 hover:border-amber-300/60 disabled:opacity-60"
+                              onClick={() => revokeSessions(admin)}
+                            >
+                              <KeyRound size={14} />
+                              Revoke Sessions
+                            </button>
+                            <button
+                              type="button"
+                              className="inline-flex items-center justify-center gap-2 rounded-xl border border-sky-400/25 bg-sky-400/10 px-3 py-2 text-xs font-semibold text-sky-200 hover:border-sky-300/60"
+                              onClick={() => setTab('audit')}
+                            >
+                              <History size={14} />
+                              Audit Logs
+                            </button>
+                            <button
+                              type="button"
                               className="inline-flex items-center justify-center gap-2 rounded-xl border border-red-500/30 bg-red-500/10 px-3 py-2 text-xs font-semibold text-red-300 hover:border-red-400/60"
                               onClick={() => deleteAdmin(admin)}
                             >
@@ -990,6 +1062,75 @@ export function SuperAdminPage() {
                 {!filteredAdmins.length ? (
                   <div className="p-5">
                     <EmptyState title="No admins found" message="Try a different search or create a new admin account." />
+                  </div>
+                ) : null}
+              </div>
+            </section>
+          ) : null}
+
+          {tab === 'audit' ? (
+            <section className={panel}>
+              <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                <div>
+                  <p className={label}>Security Trail</p>
+                  <h3 className="mt-1 font-display text-3xl text-white">Audit Logs</h3>
+                  <p className="mt-2 max-w-2xl text-sm text-zinc-400">
+                    Review privileged changes, session revocations, settings updates, backups, and admin account events.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={load}
+                  className="inline-flex items-center gap-2 rounded-xl border border-gold/20 bg-[#0d1218] px-4 py-2 text-sm font-semibold text-zinc-200 hover:border-gold/45 hover:text-gold"
+                >
+                  <RefreshCw size={16} />
+                  Refresh Logs
+                </button>
+              </div>
+
+              <div className={`mt-5 ${tableWrap}`}>
+                <table className="w-full min-w-[920px] text-sm">
+                  <thead className="border-b border-gold/10">
+                    <tr className={tableHead}>
+                      <th className="px-4 py-3">Action</th>
+                      <th className="px-4 py-3">Actor</th>
+                      <th className="px-4 py-3">Target</th>
+                      <th className="px-4 py-3">Timestamp</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {auditLogs.map((log) => (
+                      <tr key={log._id} className="border-t border-gold/10 align-top">
+                        <td className="px-4 py-4">
+                          <span className="rounded-full border border-gold/20 bg-gold/10 px-2.5 py-1 text-xs font-semibold text-gold">
+                            {formatPermission(log.action)}
+                          </span>
+                          {log.metadata && Object.keys(log.metadata).length ? (
+                            <pre className="mt-2 max-w-md overflow-x-auto rounded-xl border border-gold/10 bg-[#05080d] p-2 text-[11px] leading-5 text-zinc-400">
+                              {JSON.stringify(log.metadata, null, 2)}
+                            </pre>
+                          ) : null}
+                        </td>
+                        <td className="px-4 py-4">
+                          <p className="font-semibold text-white">{log.actor?.name || 'System'}</p>
+                          <p className="mt-1 text-xs text-zinc-400">{log.actor?.email || 'No actor email'}</p>
+                          <p className="mt-1 text-xs capitalize text-zinc-500">{formatPermission(log.actor?.role || 'unknown')}</p>
+                        </td>
+                        <td className="px-4 py-4">
+                          <p className="font-semibold text-white">{log.target?.label || 'Unknown target'}</p>
+                          <p className="mt-1 text-xs text-zinc-400">{log.target?.type || 'resource'}</p>
+                        </td>
+                        <td className="px-4 py-4 text-zinc-300">{formatDateTime(log.createdAt)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                {!auditLogs.length ? (
+                  <div className="p-5">
+                    <EmptyState
+                      title="No audit logs yet"
+                      message="Privileged actions will appear here as admins change settings, permissions, sessions, and backups."
+                    />
                   </div>
                 ) : null}
               </div>
