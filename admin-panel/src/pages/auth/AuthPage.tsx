@@ -8,7 +8,6 @@ import { getApiErrorMessage } from '../../lib/apiUtils';
 import { publicApi } from '../../lib/publicApi';
 
 export function AuthPage() {
-  const [portal, setPortal] = useState<'admin' | 'super_admin'>('admin');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -20,13 +19,10 @@ export function AuthPage() {
     setError('');
     setLoading(true);
     try {
-      const res =
-        portal === 'super_admin'
-          ? await publicApi.loginSuperAdmin({ email, password })
-          : await publicApi.loginAdmin({ email, password });
+      const res = await publicApi.login({ email, password });
       setAuth(res.token, res.user);
       if (res.user.role === 'super_admin') navigate('/super-admin');
-      else if (res.user.role === 'admin') navigate('/admin');
+      else if (res.user.role === 'admin' || res.user.role === 'editor') navigate('/admin');
       else navigate('/');
     } catch (err) {
       setError(getApiErrorMessage(err));
@@ -38,7 +34,7 @@ export function AuthPage() {
   return (
     <>
       <SEO title="Admin Login" description="Secure GRAVEN METAL admin authentication portal." path="/auth" noIndex />
-      <section className="relative min-h-[calc(100svh-121px)] overflow-hidden bg-[#03070b]">
+      <section className="relative min-h-screen overflow-hidden bg-[#03070b]">
         <div className="absolute inset-0">
           <img
             src="/imgs/background.png"
@@ -50,7 +46,7 @@ export function AuthPage() {
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_18%,rgba(217,182,106,0.12),transparent_34%)]" />
         </div>
 
-        <div className="relative z-10 mx-auto grid min-h-[calc(100svh-121px)] max-w-6xl items-center gap-8 px-5 py-10 sm:px-7 md:px-10 lg:grid-cols-[0.9fr_1fr]">
+        <div className="relative z-10 mx-auto grid min-h-screen max-w-6xl items-center gap-8 px-5 py-10 sm:px-7 md:px-10 lg:grid-cols-[0.9fr_1fr]">
           <div className="hidden max-w-lg lg:block">
             <BrandLogo className="h-14" />
             <p className="mt-8 text-xs font-bold uppercase tracking-[0.18em] text-gold">Secure Admin Portal</p>
@@ -73,35 +69,12 @@ export function AuthPage() {
               <BrandLogo className="h-12" />
             </div>
             <p className="mt-4 text-xs font-bold uppercase tracking-[0.18em] text-gold lg:mt-0">Authentication</p>
-            <h2 className="mt-2 font-display text-3xl text-white">
-              {portal === 'super_admin' ? 'Super Admin Login' : 'Admin Login'}
-            </h2>
+            <h2 className="mt-2 font-display text-3xl text-white">Admin Login</h2>
             <p className="mt-2 text-sm leading-6 text-zinc-400">
-              Enter your credentials to access the dashboard.
+              Enter your credentials. Your role will be detected automatically.
             </p>
 
-            <div className="mt-5 grid grid-cols-2 gap-2 rounded-lg border border-gold/20 bg-[#0d1218] p-1">
-              <button
-                type="button"
-                onClick={() => setPortal('admin')}
-                className={`rounded-md px-3 py-2.5 text-sm font-semibold ${
-                  portal === 'admin' ? 'bg-gold-cta text-black shadow-gold' : 'text-zinc-300 hover:text-gold'
-                }`}
-              >
-                Admin
-              </button>
-              <button
-                type="button"
-                onClick={() => setPortal('super_admin')}
-                className={`rounded-md px-3 py-2.5 text-sm font-semibold ${
-                  portal === 'super_admin' ? 'bg-gold-cta text-black shadow-gold' : 'text-zinc-300 hover:text-gold'
-                }`}
-              >
-                Super Admin
-              </button>
-            </div>
-
-            <form className="mt-5 space-y-4" onSubmit={submit}>
+            <form className="mt-6 space-y-4" onSubmit={submit}>
               <label className="block">
                 <span className="mb-1.5 block text-sm text-zinc-300">Email</span>
                 <span className="relative block">
@@ -109,8 +82,8 @@ export function AuthPage() {
                   <input
                     type="email"
                     autoComplete="email"
-                    className="gm-input pl-10"
-                    placeholder={portal === 'super_admin' ? 'super@graven.local' : 'admin@graven.local'}
+                    className="gm-input gm-input-with-icon"
+                    placeholder="admin@graven.local"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                   />
@@ -124,7 +97,7 @@ export function AuthPage() {
                   <input
                     type="password"
                     autoComplete="current-password"
-                    className="gm-input pl-10"
+                    className="gm-input gm-input-with-icon"
                     placeholder="Password123"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
@@ -154,8 +127,7 @@ export function AuthPage() {
             </form>
 
             <div className="mt-5 rounded-lg border border-gold/15 bg-black/30 p-3 text-xs leading-5 text-zinc-400">
-              Local admin: <span className="text-zinc-200">admin@graven.local</span> /{' '}
-              <span className="text-zinc-200">Password123</span>
+              Use your assigned admin or super admin credentials. We will route you to the right dashboard.
             </div>
           </div>
         </div>

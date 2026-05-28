@@ -113,6 +113,11 @@ export const publicApi = {
     return unwrapResponse(res.data);
   },
 
+  async login(payload: AuthPayload) {
+    const res = await axiosClient.post<AuthResponse>('/auth/login', payload);
+    return res.data;
+  },
+
   async loginAdmin(payload: AuthPayload) {
     const res = await axiosClient.post<AuthResponse>('/auth/login/admin', payload);
     return res.data;
