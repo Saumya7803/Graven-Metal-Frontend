@@ -7,7 +7,16 @@ import { SEO } from '../components/seo/SEO';
 import { getApiErrorMessage } from '../lib/apiUtils';
 import { publicApi } from '../lib/publicApi';
 import type { ApiProduct } from '../lib/publicApi';
-import { demoProducts } from '../data/demoContent';
+
+function formatProductPrice(product: ApiProduct) {
+  const currency = (product.currency || 'USD').toUpperCase();
+  const formatted = new Intl.NumberFormat(undefined, {
+    style: 'currency',
+    currency,
+    maximumFractionDigits: product.price % 1 === 0 ? 0 : 2,
+  }).format(product.price);
+  return `${formatted} / ${product.unit || 'kg'}`;
+}
 
 export function ProductsPage() {
   const [products, setProducts] = useState<ApiProduct[]>([]);
@@ -22,9 +31,9 @@ export function ProductsPage() {
   useEffect(() => {
     publicApi
       .getProducts()
-      .then((data) => setProducts(data.length ? data : demoProducts))
+      .then(setProducts)
       .catch((error) => {
-        setProducts(demoProducts);
+        setProducts([]);
         toast.error(getApiErrorMessage(error));
       })
       .finally(() => setLoading(false));
@@ -78,13 +87,18 @@ export function ProductsPage() {
                   key={p._id}
                   id={p._id}
                   name={p.name}
-                  price={`$${p.price} / ${p.unit || 'kg'}`}
+                  price={formatProductPrice(p)}
                   category={typeof p.category === 'string' ? '-' : p.category?.name || '-'}
                   tint="from-amber-400/20 to-zinc-800/20"
                   imageUrl={p.image?.url}
                 />
               ))}
         </div>
+        {!loading && filtered.length === 0 ? (
+          <p className="mt-6 rounded-md border border-gold/15 bg-black/25 p-5 text-center text-sm text-zinc-400">
+            No products are available from the API catalog yet.
+          </p>
+        ) : null}
         {!loading ? (
           <div className="mt-6 flex flex-wrap items-center justify-center gap-2">
             {Array.from({ length: totalPages }).map((_, i) => {

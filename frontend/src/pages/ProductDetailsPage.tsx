@@ -7,7 +7,6 @@ import { SEO } from '../components/seo/SEO';
 import { getApiErrorMessage } from '../lib/apiUtils';
 import { publicApi } from '../lib/publicApi';
 import type { ApiProduct } from '../lib/publicApi';
-import { demoProducts } from '../data/demoContent';
 import { optimizeImageUrl } from '../lib/image';
 
 const specs = [
@@ -17,6 +16,15 @@ const specs = [
   ['Certificate', 'Yes'],
 ];
 const features = ['100% Purity Guaranteed', 'Certified & Hallmarked', 'Secure Global Delivery', 'Best Market Pricing'];
+
+function formatProductPrice(product: ApiProduct) {
+  const currency = (product.currency || 'USD').toUpperCase();
+  return new Intl.NumberFormat(undefined, {
+    style: 'currency',
+    currency,
+    maximumFractionDigits: product.price % 1 === 0 ? 0 : 2,
+  }).format(product.price);
+}
 
 export function ProductDetailsPage() {
   const { id } = useParams();
@@ -30,17 +38,16 @@ export function ProductDetailsPage() {
         .getProductById(id)
         .then(setProduct)
         .catch((error) => {
-          const fallback = demoProducts.find((p) => p._id === id || p.slug === id);
-          setProduct(fallback || demoProducts[0]);
+          setProduct(null);
           toast.error(getApiErrorMessage(error));
         });
     }
 
     publicApi
       .getProducts()
-      .then((data) => setAll(data.length ? data : demoProducts))
+      .then(setAll)
       .catch((error) => {
-        setAll(demoProducts);
+        setAll([]);
         toast.error(getApiErrorMessage(error));
       });
   }, [id]);
@@ -97,9 +104,11 @@ export function ProductDetailsPage() {
           <h1 className="font-display text-3xl text-white sm:text-4xl">{product.name}</h1>
           <p className="mt-1 text-sm text-zinc-400">{typeof product.category === 'string' ? product.category : product.category?.name || 'Premium Grade'}</p>
           <p className="mt-4 text-3xl font-semibold text-gold sm:text-4xl">
-            ${product.price} / {product.unit || 'kg'}
+            {formatProductPrice(product)} / {product.unit || 'kg'}
           </p>
-          <p className="mt-2 text-xs text-emerald-400">In Stock</p>
+          <p className={product.inStock === false ? 'mt-2 text-xs text-red-300' : 'mt-2 text-xs text-emerald-400'}>
+            {product.inStock === false ? 'Out of Stock' : 'In Stock'}
+          </p>
           <ul className="mt-4 space-y-2 text-sm text-zinc-300">
             {features.map((feature) => (
               <li key={feature} className="flex items-center gap-2">
