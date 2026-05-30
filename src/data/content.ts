@@ -1,19 +1,11 @@
 export const products = [
   {
-    id: 'gold-bars',
-    name: 'Gold Bars',
-    category: 'Gold',
-    price: '$6,054 / 10g',
-    desc: '24K investment-grade bars with secure custody.',
-    tint: 'from-amber-400/35 to-yellow-700/20',
-  },
-  {
-    id: 'silver-bars',
-    name: 'Silver Bars',
-    category: 'Silver',
-    price: '$78,050 / Kg',
-    desc: 'High purity 999 silver bars for commercial use.',
-    tint: 'from-zinc-300/35 to-slate-600/20',
+    id: 'copper-wire',
+    name: 'Copper Wire',
+    category: 'Copper',
+    price: '$805 / Kg',
+    desc: 'Premium conductivity copper coils and wiring.',
+    tint: 'from-orange-400/35 to-orange-700/20',
   },
   {
     id: 'iron-rods',
@@ -22,14 +14,6 @@ export const products = [
     price: '$52,100 / Ton',
     desc: 'High-tensile TMT rods for industrial projects.',
     tint: 'from-zinc-500/30 to-zinc-800/20',
-  },
-  {
-    id: 'copper-wire',
-    name: 'Copper Wire',
-    category: 'Copper',
-    price: '$805 / Kg',
-    desc: 'Premium conductivity copper coils and wiring.',
-    tint: 'from-orange-400/35 to-orange-700/20',
   },
   {
     id: 'steel-coils',
@@ -54,14 +38,6 @@ export const products = [
     price: '$425 / Kg',
     desc: 'Durable brass rods for precision engineering.',
     tint: 'from-yellow-400/30 to-amber-700/20',
-  },
-  {
-    id: 'lead-ingots',
-    name: 'Lead Ingots',
-    category: 'Lead',
-    price: '$190 / Kg',
-    desc: 'Reliable lead ingots for battery and shielding.',
-    tint: 'from-slate-400/30 to-slate-800/20',
   },
 ];
 

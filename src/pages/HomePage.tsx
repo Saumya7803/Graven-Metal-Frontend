@@ -21,12 +21,11 @@ import { SEO } from '../components/seo/SEO';
 import { useCustomerAuth } from '../components/auth/AuthProvider';
 
 const categories = [
-  { name: 'Gold', image: '/imgs/gold.png', note: 'Certified bars and industrial-grade supply' },
-  { name: 'Silver', image: '/imgs/silver.png', note: 'High-purity bars, granules, and bulk lots' },
-  { name: 'Iron', image: '/imgs/iron.png', note: 'TMT rods, billets, and structural material' },
   { name: 'Copper', image: '/imgs/coper.png', note: 'Wire, rods, cathodes, and conductive stock' },
   { name: 'Steel', image: '/imgs/steel.png', note: 'Coils and industrial fabrication grades' },
   { name: 'Aluminium', image: '/imgs/alumunu.png', note: 'Primary ingots and lightweight stock' },
+  { name: 'Brass', image: '/imgs/Brass%20rods.png', note: 'Precision rods, tubes, and sheet stock' },
+  { name: 'Iron', image: '/imgs/iron.png', note: 'TMT rods, billets, and structural material' },
 ];
 
 const assurances = [
@@ -53,9 +52,9 @@ const navLinks = [
 ] as const;
 
 const marketRows = [
-  { metal: 'Gold 24K', price: '$6,054', move: '+1.25%', positive: true },
-  { metal: 'Silver 1Kg', price: '$78,050', move: '+0.85%', positive: true },
   { metal: 'Copper 1Kg', price: '$805', move: '+1.10%', positive: true },
+  { metal: 'Steel Coil', price: '$56,900', move: '+0.43%', positive: true },
+  { metal: 'Aluminium 1Kg', price: '$225', move: '-0.10%', positive: false },
 ];
 
 const capabilities = [
