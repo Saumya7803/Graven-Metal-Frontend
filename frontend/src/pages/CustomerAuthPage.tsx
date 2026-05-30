@@ -11,6 +11,9 @@ import { publicApi } from '../lib/publicApi';
 
 type Mode = 'login' | 'register';
 
+const DEV_CUSTOMER_EMAIL = import.meta.env.DEV ? 'customer@graven.local' : '';
+const DEV_CUSTOMER_PASSWORD = import.meta.env.DEV ? 'Password123' : '';
+
 export function CustomerAuthPage() {
   const [mode, setMode] = useState<Mode>('login');
   const [form, setForm] = useState({
@@ -94,9 +97,15 @@ export function CustomerAuthPage() {
             <h2 className="mt-2 font-display text-3xl text-white">
               {mode === 'register' ? 'Create Account' : 'Customer Login'}
             </h2>
-            <p className="mt-2 text-sm leading-6 text-zinc-400">
-              {mode === 'register' ? 'Create a customer account for quote tracking.' : 'Enter your credentials to open your account.'}
-            </p>
+              <p className="mt-2 text-sm leading-6 text-zinc-400">
+                {mode === 'register' ? 'Create a customer account for quote tracking.' : 'Enter your credentials to open your account.'}
+              </p>
+              {mode === 'login' && DEV_CUSTOMER_EMAIL ? (
+                <p className="mt-3 rounded-md border border-gold/15 bg-black/25 px-3 py-2 text-xs leading-5 text-zinc-400">
+                  Demo login: <span className="text-zinc-200">{DEV_CUSTOMER_EMAIL}</span> /{' '}
+                  <span className="text-zinc-200">{DEV_CUSTOMER_PASSWORD}</span>
+                </p>
+              ) : null}
 
             <div className="mt-5 grid grid-cols-2 gap-2 rounded-lg border border-gold/20 bg-[#0d1218] p-1">
               {(['login', 'register'] as Mode[]).map((item) => (

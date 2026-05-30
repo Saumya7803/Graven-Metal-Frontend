@@ -6,6 +6,8 @@ const DEV_SUPER_ADMIN_EMAIL = process.env.DEV_SUPER_ADMIN_EMAIL || 'super@graven
 const DEV_SUPER_ADMIN_PASSWORD = process.env.DEV_SUPER_ADMIN_PASSWORD || 'Password123';
 const DEV_ADMIN_EMAIL = process.env.DEV_ADMIN_EMAIL || 'admin@graven.local';
 const DEV_ADMIN_PASSWORD = process.env.DEV_ADMIN_PASSWORD || 'Password123';
+const DEV_CUSTOMER_EMAIL = process.env.DEV_CUSTOMER_EMAIL || 'customer@graven.local';
+const DEV_CUSTOMER_PASSWORD = process.env.DEV_CUSTOMER_PASSWORD || 'Password123';
 const DEV_LQT_EMAIL = process.env.DEV_LQT_EMAIL || 'lqt@graven.local';
 const DEV_SALES_EMAIL = process.env.DEV_SALES_EMAIL || 'sales@graven.local';
 const DEV_PROCUREMENT_EMAIL = process.env.DEV_PROCUREMENT_EMAIL || 'procurement@graven.local';
@@ -132,6 +134,17 @@ export const ensureDevUsers = async () => {
       role: 'admin',
     });
     console.log(`Created local admin: ${DEV_ADMIN_EMAIL}`);
+  }
+
+  const customerExists = await User.findOne({ email: DEV_CUSTOMER_EMAIL });
+  if (!customerExists) {
+    await User.create({
+      name: 'Local Customer',
+      email: DEV_CUSTOMER_EMAIL,
+      password: DEV_CUSTOMER_PASSWORD,
+      role: 'user',
+    });
+    console.log(`Created local customer: ${DEV_CUSTOMER_EMAIL}`);
   }
 
   const teamAccounts = [
