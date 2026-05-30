@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
-import { Building2, LockKeyhole, Mail, Phone, ShieldCheck, UserRound } from 'lucide-react';
+import { ShieldCheck } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { BrandLogo } from '../components/BrandLogo';
 import { SEO } from '../components/seo/SEO';
@@ -11,24 +11,17 @@ import { publicApi } from '../lib/publicApi';
 
 type Mode = 'login' | 'register';
 
-function IconField({
-  icon: Icon,
+function FormField({
   label,
   children,
 }: {
-  icon: typeof Mail;
   label: string;
   children: React.ReactNode;
 }) {
   return (
     <label className="block">
       <span className="mb-1.5 block text-sm text-zinc-300">{label}</span>
-      <span className="relative block">
-        <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-5 text-zinc-500">
-          <Icon size={15} />
-        </span>
-        {children}
-      </span>
+      {children}
     </label>
   );
 }
@@ -148,57 +141,57 @@ export function CustomerAuthPage() {
             <form className="mt-5 space-y-4" onSubmit={submit}>
               {mode === 'register' ? (
                 <>
-                  <IconField icon={UserRound} label="Full Name">
+                  <FormField label="Full Name">
                     <input
-                      className="gm-input h-12 pl-16 pr-3 text-[15px]"
+                      className="gm-input h-12 px-4 text-[15px]"
                       value={form.name}
                       onChange={(e) => update('name', e.target.value)}
                       autoComplete="name"
                       required
                     />
-                  </IconField>
+                  </FormField>
                   <div className="grid gap-3 sm:grid-cols-2">
-                    <IconField icon={Phone} label="Phone">
+                    <FormField label="Phone">
                       <input
-                        className="gm-input h-12 pl-16 pr-3 text-[15px]"
+                        className="gm-input h-12 px-4 text-[15px]"
                         value={form.phone}
                         onChange={(e) => update('phone', e.target.value)}
                         autoComplete="tel"
                       />
-                    </IconField>
-                    <IconField icon={Building2} label="Company">
+                    </FormField>
+                    <FormField label="Company">
                       <input
-                        className="gm-input h-12 pl-16 pr-3 text-[15px]"
+                        className="gm-input h-12 px-4 text-[15px]"
                         value={form.company}
                         onChange={(e) => update('company', e.target.value)}
                       />
-                    </IconField>
+                    </FormField>
                   </div>
                 </>
               ) : null}
 
-              <IconField icon={Mail} label="Email">
+              <FormField label="Email">
                 <input
                   type="email"
                   autoComplete="email"
-                  className="gm-input h-12 pl-16 pr-3 text-[15px]"
+                  className="gm-input h-12 px-4 text-[15px]"
                   value={form.email}
                   onChange={(e) => update('email', e.target.value)}
                   required
                 />
-              </IconField>
+              </FormField>
 
-              <IconField icon={LockKeyhole} label="Password">
+              <FormField label="Password">
                 <input
                   type="password"
                   autoComplete={mode === 'register' ? 'new-password' : 'current-password'}
-                  className="gm-input h-12 pl-16 pr-3 text-[15px]"
+                  className="gm-input h-12 px-4 text-[15px]"
                   value={form.password}
                   onChange={(e) => update('password', e.target.value)}
                   minLength={8}
                   required
                 />
-              </IconField>
+              </FormField>
 
               {mode === 'register' ? (
                 <p className="text-xs text-zinc-500">Use at least 8 characters with uppercase, lowercase, and a number.</p>
