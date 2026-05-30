@@ -11,14 +11,11 @@ import type { ApiCategory } from '../lib/publicApi';
 import { demoCategories } from '../data/demoContent';
 
 const categoryImageBySlug: Record<string, string> = {
-  gold: '/imgs/gold.png',
-  silver: '/imgs/silver.png',
-  iron: '/imgs/iron.png',
   copper: '/imgs/coper.png',
   steel: '/imgs/steel.png',
   aluminium: '/imgs/alumunu.png',
   brass: '/imgs/Brass%20rods.png',
-  lead: '/imgs/lead%20ingots.png',
+  iron: '/imgs/iron.png',
 };
 
 const getCategoryImage = (category: ApiCategory) => {

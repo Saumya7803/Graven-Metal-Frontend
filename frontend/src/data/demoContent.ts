@@ -21,54 +21,35 @@ export const companyDetails = {
 };
 
 export const demoCategories: ApiCategory[] = [
-  { _id: 'cat-gold', name: 'Gold', slug: 'gold', description: 'Investment-grade and industrial gold products.', productCount: 9 },
-  { _id: 'cat-silver', name: 'Silver', slug: 'silver', description: 'High-purity silver bars and granules.', productCount: 8 },
-  { _id: 'cat-iron', name: 'Iron', slug: 'iron', description: 'TMT rods, billets, and structural iron.', productCount: 11 },
-  { _id: 'cat-copper', name: 'Copper', slug: 'copper', description: 'Conductive copper wire, rods, and cathodes.', productCount: 12 },
-  { _id: 'cat-steel', name: 'Steel', slug: 'steel', description: 'Hot rolled coils and industrial steel forms.', productCount: 14 },
-  { _id: 'cat-aluminium', name: 'Aluminium', slug: 'aluminium', description: 'Primary and secondary aluminium supply.', productCount: 10 },
-  { _id: 'cat-brass', name: 'Brass', slug: 'brass', description: 'Precision brass rods, tubes, and sheets.', productCount: 6 },
-  { _id: 'cat-lead', name: 'Lead', slug: 'lead', description: 'Battery-grade lead ingots and alloy stock.', productCount: 5 },
+  { _id: 'cat-copper', name: 'Copper', slug: 'copper', description: 'Conductive copper wire, rods, and cathodes.', productCount: 1 },
+  { _id: 'cat-steel', name: 'Steel', slug: 'steel', description: 'Hot rolled coils and industrial steel forms.', productCount: 1 },
+  { _id: 'cat-aluminium', name: 'Aluminium', slug: 'aluminium', description: 'Primary and secondary aluminium supply.', productCount: 1 },
+  { _id: 'cat-brass', name: 'Brass', slug: 'brass', description: 'Precision brass rods, tubes, and sheets.', productCount: 1 },
+  { _id: 'cat-iron', name: 'Iron', slug: 'iron', description: 'TMT rods, billets, and structural iron.', productCount: 1 },
 ];
 
 const categoryMap = Object.fromEntries(demoCategories.map((c) => [c.slug, c]));
 const demoProductImageByCategory: Record<string, string> = {
-  gold: '/imgs/gold.png',
-  silver: '/imgs/silver.png',
-  iron: '/imgs/iron.png',
   copper: '/imgs/coper.png',
   steel: '/imgs/steel.png',
   aluminium: '/imgs/alumunu.png',
   brass: '/imgs/Brass%20rods.png',
-  lead: '/imgs/lead%20ingots.png',
+  iron: '/imgs/iron.png',
 };
 
 export const demoProducts: ApiProduct[] = [
   {
-    _id: 'prd-gold-bars-24k',
-    name: 'Gold Bars (24K)',
-    slug: 'gold-bars-24k',
-    description: '24K, 99.99% purity bars supplied with refinery and assay certification.',
-    price: 6054,
-    currency: 'USD',
-    unit: '10g',
-    stockQty: 380,
-    inStock: true,
-    image: { url: demoProductImageByCategory.gold },
-    category: { _id: categoryMap.gold._id, name: categoryMap.gold.name, slug: categoryMap.gold.slug },
-  },
-  {
-    _id: 'prd-silver-bars-999',
-    name: 'Silver Bars (999)',
-    slug: 'silver-bars-999',
-    description: 'Industrial and investment-grade 999 silver bars with tamper-proof packaging.',
-    price: 78050,
+    _id: 'prd-copper-wire-etp',
+    name: 'Copper Wire (ETP Grade)',
+    slug: 'copper-wire-etp',
+    description: 'High conductivity ETP copper wire coils for cable and motor manufacturing.',
+    price: 805,
     currency: 'USD',
     unit: 'kg',
-    stockQty: 950,
+    stockQty: 4200,
     inStock: true,
-    image: { url: demoProductImageByCategory.silver },
-    category: { _id: categoryMap.silver._id, name: categoryMap.silver.name, slug: categoryMap.silver.slug },
+    image: { url: demoProductImageByCategory.copper },
+    category: { _id: categoryMap.copper._id, name: categoryMap.copper.name, slug: categoryMap.copper.slug },
   },
   {
     _id: 'prd-iron-rods-tmt',
@@ -82,19 +63,6 @@ export const demoProducts: ApiProduct[] = [
     inStock: true,
     image: { url: demoProductImageByCategory.iron },
     category: { _id: categoryMap.iron._id, name: categoryMap.iron.name, slug: categoryMap.iron.slug },
-  },
-  {
-    _id: 'prd-copper-wire-etp',
-    name: 'Copper Wire (ETP Grade)',
-    slug: 'copper-wire-etp',
-    description: 'High conductivity ETP copper wire coils for cable and motor manufacturing.',
-    price: 805,
-    currency: 'USD',
-    unit: 'kg',
-    stockQty: 4200,
-    inStock: true,
-    image: { url: demoProductImageByCategory.copper },
-    category: { _id: categoryMap.copper._id, name: categoryMap.copper.name, slug: categoryMap.copper.slug },
   },
   {
     _id: 'prd-steel-coils-hr',
@@ -135,19 +103,6 @@ export const demoProducts: ApiProduct[] = [
     image: { url: demoProductImageByCategory.brass },
     category: { _id: categoryMap.brass._id, name: categoryMap.brass.name, slug: categoryMap.brass.slug },
   },
-  {
-    _id: 'prd-lead-ingots-pb99',
-    name: 'Lead Ingots (Pb 99.97%)',
-    slug: 'lead-ingots-pb99',
-    description: 'Battery and shielding-grade lead ingots with strict batch tracking.',
-    price: 190,
-    currency: 'USD',
-    unit: 'kg',
-    stockQty: 3900,
-    inStock: true,
-    image: { url: demoProductImageByCategory.lead },
-    category: { _id: categoryMap.lead._id, name: categoryMap.lead.name, slug: categoryMap.lead.slug },
-  },
 ];
 
 export const demoBlogs: ApiBlog[] = [
@@ -186,7 +141,7 @@ export const demoBlogs: ApiBlog[] = [
 export const demoFaq = [
   {
     q: 'What types of metals does GRAVEN METAL supply?',
-    a: 'We supply gold, silver, iron, copper, steel, aluminium, brass, and lead products for industrial and bulk commercial requirements.',
+    a: 'We supply copper, steel, aluminium, brass, and iron products for industrial and bulk commercial requirements.',
   },
   {
     q: 'Are your metals certified and traceable?',
@@ -239,10 +194,9 @@ export const demoCompanyStats = [
 ];
 
 export const demoLiveRows = [
-  { metal: 'Gold (24K)', unit: '/ 10g', price: 6054, change: 1.25 },
-  { metal: 'Silver (1Kg)', unit: '/ Kg', price: 78050, change: 0.85 },
-  { metal: 'Iron (TMT)', unit: '/ Ton', price: 52100, change: -0.35 },
   { metal: 'Copper (1Kg)', unit: '/ Kg', price: 805, change: 1.1 },
-  { metal: 'Aluminium (1Kg)', unit: '/ Kg', price: 225, change: -0.1 },
+  { metal: 'Iron (TMT)', unit: '/ Ton', price: 52100, change: -0.35 },
   { metal: 'Steel Coil', unit: '/ Ton', price: 56900, change: 0.43 },
+  { metal: 'Aluminium (1Kg)', unit: '/ Kg', price: 225, change: -0.1 },
+  { metal: 'Brass (1Kg)', unit: '/ Kg', price: 425, change: 0.22 },
 ];

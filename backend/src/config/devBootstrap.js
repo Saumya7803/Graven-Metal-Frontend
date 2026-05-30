@@ -10,38 +10,17 @@ const DEV_LQT_EMAIL = process.env.DEV_LQT_EMAIL || 'lqt@graven.local';
 const DEV_SALES_EMAIL = process.env.DEV_SALES_EMAIL || 'sales@graven.local';
 const DEV_PROCUREMENT_EMAIL = process.env.DEV_PROCUREMENT_EMAIL || 'procurement@graven.local';
 
+const removedCatalogCategorySlugs = ['gold', 'silver', 'lead'];
+
 const demoCategories = [
-  { name: 'Gold', slug: 'gold', description: 'Certified bars and industrial-grade supply.', sortOrder: 10 },
-  { name: 'Silver', slug: 'silver', description: 'High-purity bars, granules, and bulk lots.', sortOrder: 20 },
-  { name: 'Copper', slug: 'copper', description: 'Wire, rods, cathodes, and conductive stock.', sortOrder: 30 },
-  { name: 'Steel', slug: 'steel', description: 'Coils and industrial fabrication grades.', sortOrder: 40 },
-  { name: 'Aluminium', slug: 'aluminium', description: 'Primary ingots and lightweight stock.', sortOrder: 50 },
-  { name: 'Brass', slug: 'brass', description: 'Rods, sheets, and machined brass material.', sortOrder: 60 },
-  { name: 'Iron', slug: 'iron', description: 'TMT rods, billets, and structural material.', sortOrder: 70 },
-  { name: 'Lead', slug: 'lead', description: 'Lead ingots and industrial bulk supply.', sortOrder: 80 },
+  { name: 'Copper', slug: 'copper', description: 'Wire, rods, cathodes, and conductive stock.', sortOrder: 10 },
+  { name: 'Steel', slug: 'steel', description: 'Coils and industrial fabrication grades.', sortOrder: 20 },
+  { name: 'Aluminium', slug: 'aluminium', description: 'Primary ingots and lightweight stock.', sortOrder: 30 },
+  { name: 'Brass', slug: 'brass', description: 'Rods, sheets, and machined brass material.', sortOrder: 40 },
+  { name: 'Iron', slug: 'iron', description: 'TMT rods, billets, and structural material.', sortOrder: 50 },
 ];
 
 const demoProducts = [
-  {
-    name: '24K Gold Bar',
-    slug: '24k-gold-bar',
-    description: 'Investment-grade 24K gold bars for certified bulk procurement.',
-    categorySlug: 'gold',
-    price: 6054,
-    currency: 'USD',
-    unit: '10g',
-    stockQty: 25,
-  },
-  {
-    name: 'Silver Industrial Granules',
-    slug: 'silver-industrial-granules',
-    description: 'High-purity silver granules for industrial and commercial use.',
-    categorySlug: 'silver',
-    price: 78050,
-    currency: 'INR',
-    unit: 'kg',
-    stockQty: 80,
-  },
   {
     name: 'Copper Cathode Sheets',
     slug: 'copper-cathode-sheets',
@@ -92,20 +71,16 @@ const demoProducts = [
     unit: 'kg',
     stockQty: 500,
   },
-  {
-    name: 'Lead Ingots',
-    slug: 'lead-ingots',
-    description: 'Industrial lead ingots for shielding, batteries, and alloys.',
-    categorySlug: 'lead',
-    price: 185,
-    currency: 'INR',
-    unit: 'kg',
-    stockQty: 160,
-  },
 ];
 
 async function ensureDevCatalog() {
   if (process.env.DEV_BOOTSTRAP_CATALOG === 'false') return;
+
+  const removedCategories = await Category.find({ slug: { $in: removedCatalogCategorySlugs } }).select('_id');
+  if (removedCategories.length > 0) {
+    await Product.deleteMany({ category: { $in: removedCategories.map((category) => category._id) } });
+  }
+  await Category.deleteMany({ slug: { $in: removedCatalogCategorySlugs } });
 
   const categoryBySlug = new Map();
   for (const item of demoCategories) {
