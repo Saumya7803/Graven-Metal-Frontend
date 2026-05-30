@@ -1,6 +1,7 @@
+import type { SyntheticEvent } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { optimizeImageUrl } from '../lib/image';
+import { getProductFallbackImage, resolveProductImageUrl } from '../lib/image';
 
 type Props = {
   id: string;
@@ -12,7 +13,13 @@ type Props = {
 };
 
 export function ProductCard({ id, name, price, category, tint, imageUrl }: Props) {
-  const optimizedImage = optimizeImageUrl(imageUrl, 640);
+  const optimizedImage = resolveProductImageUrl(imageUrl, category, 640);
+  const fallbackImage = getProductFallbackImage(category);
+  const handleImageError = (event: SyntheticEvent<HTMLImageElement>) => {
+    if (!fallbackImage || event.currentTarget.dataset.fallbackApplied === 'true') return;
+    event.currentTarget.dataset.fallbackApplied = 'true';
+    event.currentTarget.src = fallbackImage;
+  };
 
   return (
     <motion.article
@@ -28,6 +35,7 @@ export function ProductCard({ id, name, price, category, tint, imageUrl }: Props
             loading="lazy"
             decoding="async"
             className="h-full w-full object-cover"
+            onError={handleImageError}
           />
         ) : null}
       </div>

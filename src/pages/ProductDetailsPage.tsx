@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import type { SyntheticEvent } from 'react';
 import { useParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { ProductCard } from '../components/ProductCard';
@@ -7,7 +8,7 @@ import { SEO } from '../components/seo/SEO';
 import { getApiErrorMessage } from '../lib/apiUtils';
 import { publicApi } from '../lib/publicApi';
 import type { ApiProduct } from '../lib/publicApi';
-import { optimizeImageUrl } from '../lib/image';
+import { getProductFallbackImage, resolveProductImageUrl } from '../lib/image';
 
 const specs = [
   ['Purity', '24K | 99.99%'],
@@ -53,7 +54,14 @@ export function ProductDetailsPage() {
   }, [id]);
 
   const related = useMemo(() => all.filter((x) => x._id !== id).slice(0, 5), [all, id]);
-  const heroImage = optimizeImageUrl(product?.image?.url, 1280);
+  const categoryName = typeof product?.category === 'string' ? product.category : product?.category?.name || '';
+  const heroImage = resolveProductImageUrl(product?.image?.url, categoryName, 1280);
+  const heroFallbackImage = getProductFallbackImage(categoryName);
+  const handleHeroImageError = (event: SyntheticEvent<HTMLImageElement>) => {
+    if (!heroFallbackImage || event.currentTarget.dataset.fallbackApplied === 'true') return;
+    event.currentTarget.dataset.fallbackApplied = 'true';
+    event.currentTarget.src = heroFallbackImage;
+  };
   if (!product) {
     return <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">{Array.from({ length: 4 }).map((_, i) => <SkeletonCard key={i} />)}</div>;
   }
@@ -92,6 +100,7 @@ export function ProductDetailsPage() {
                 className="h-full w-full object-cover"
                 decoding="async"
                 fetchPriority="high"
+                onError={handleHeroImageError}
               />
             ) : null}
           </div>
@@ -131,7 +140,7 @@ export function ProductDetailsPage() {
               id={r._id}
               name={r.name}
               price={`$${r.price}/${r.unit || 'kg'}`}
-              category={typeof r.category === 'string' ? '-' : r.category?.name || '-'}
+              category={typeof r.category === 'string' ? r.category : r.category?.name || 'Metal'}
               tint="from-zinc-500/20 to-zinc-800/20"
               imageUrl={r.image?.url}
             />

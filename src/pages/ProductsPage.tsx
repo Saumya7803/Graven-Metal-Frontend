@@ -88,7 +88,7 @@ export function ProductsPage() {
                   id={p._id}
                   name={p.name}
                   price={formatProductPrice(p)}
-                  category={typeof p.category === 'string' ? '-' : p.category?.name || '-'}
+                  category={getCategoryName(p) || 'Metal'}
                   tint="from-amber-400/20 to-zinc-800/20"
                   imageUrl={p.image?.url}
                 />
