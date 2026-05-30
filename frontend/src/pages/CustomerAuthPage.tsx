@@ -14,6 +14,28 @@ type Mode = 'login' | 'register';
 const DEV_CUSTOMER_EMAIL = import.meta.env.DEV ? 'customer@graven.local' : '';
 const DEV_CUSTOMER_PASSWORD = import.meta.env.DEV ? 'Password123' : '';
 
+function IconField({
+  icon: Icon,
+  label,
+  children,
+}: {
+  icon: typeof Mail;
+  label: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <label className="block">
+      <span className="mb-1.5 block text-sm text-zinc-300">{label}</span>
+      <span className="relative block">
+        <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-zinc-500">
+          <Icon size={17} />
+        </span>
+        {children}
+      </span>
+    </label>
+  );
+}
+
 export function CustomerAuthPage() {
   const [mode, setMode] = useState<Mode>('login');
   const [form, setForm] = useState({
@@ -97,15 +119,15 @@ export function CustomerAuthPage() {
             <h2 className="mt-2 font-display text-3xl text-white">
               {mode === 'register' ? 'Create Account' : 'Customer Login'}
             </h2>
-              <p className="mt-2 text-sm leading-6 text-zinc-400">
-                {mode === 'register' ? 'Create a customer account for quote tracking.' : 'Enter your credentials to open your account.'}
+            <p className="mt-2 text-sm leading-6 text-zinc-400">
+              {mode === 'register' ? 'Create a customer account for quote tracking.' : 'Enter your credentials to open your account.'}
+            </p>
+            {mode === 'login' && DEV_CUSTOMER_EMAIL ? (
+              <p className="mt-3 rounded-xl border border-gold/15 bg-black/20 px-3.5 py-2.5 text-xs leading-5 text-zinc-400">
+                Demo login: <span className="text-zinc-200">{DEV_CUSTOMER_EMAIL}</span> /{' '}
+                <span className="text-zinc-200">{DEV_CUSTOMER_PASSWORD}</span>
               </p>
-              {mode === 'login' && DEV_CUSTOMER_EMAIL ? (
-                <p className="mt-3 rounded-md border border-gold/15 bg-black/25 px-3 py-2 text-xs leading-5 text-zinc-400">
-                  Demo login: <span className="text-zinc-200">{DEV_CUSTOMER_EMAIL}</span> /{' '}
-                  <span className="text-zinc-200">{DEV_CUSTOMER_PASSWORD}</span>
-                </p>
-              ) : null}
+            ) : null}
 
             <div className="mt-5 grid grid-cols-2 gap-2 rounded-lg border border-gold/20 bg-[#0d1218] p-1">
               {(['login', 'register'] as Mode[]).map((item) => (
@@ -128,73 +150,57 @@ export function CustomerAuthPage() {
             <form className="mt-5 space-y-4" onSubmit={submit}>
               {mode === 'register' ? (
                 <>
-                  <label className="block">
-                    <span className="mb-1.5 block text-sm text-zinc-300">Full Name</span>
-                    <span className="relative block">
-                      <UserRound className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" size={18} />
-                      <input
-                        className="gm-input pl-10"
-                        value={form.name}
-                        onChange={(e) => update('name', e.target.value)}
-                        autoComplete="name"
-                        required
-                      />
-                    </span>
-                  </label>
+                  <IconField icon={UserRound} label="Full Name">
+                    <input
+                      className="gm-input h-12 pl-12 pr-3 text-[15px]"
+                      value={form.name}
+                      onChange={(e) => update('name', e.target.value)}
+                      autoComplete="name"
+                      required
+                    />
+                  </IconField>
                   <div className="grid gap-3 sm:grid-cols-2">
-                    <label className="block">
-                      <span className="mb-1.5 block text-sm text-zinc-300">Phone</span>
-                      <span className="relative block">
-                        <Phone className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" size={16} />
-                        <input
-                          className="gm-input pl-10"
-                          value={form.phone}
-                          onChange={(e) => update('phone', e.target.value)}
-                          autoComplete="tel"
-                        />
-                      </span>
-                    </label>
-                    <label className="block">
-                      <span className="mb-1.5 block text-sm text-zinc-300">Company</span>
-                      <span className="relative block">
-                        <Building2 className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" size={16} />
-                        <input className="gm-input pl-10" value={form.company} onChange={(e) => update('company', e.target.value)} />
-                      </span>
-                    </label>
+                    <IconField icon={Phone} label="Phone">
+                      <input
+                        className="gm-input h-12 pl-12 pr-3 text-[15px]"
+                        value={form.phone}
+                        onChange={(e) => update('phone', e.target.value)}
+                        autoComplete="tel"
+                      />
+                    </IconField>
+                    <IconField icon={Building2} label="Company">
+                      <input
+                        className="gm-input h-12 pl-12 pr-3 text-[15px]"
+                        value={form.company}
+                        onChange={(e) => update('company', e.target.value)}
+                      />
+                    </IconField>
                   </div>
                 </>
               ) : null}
 
-              <label className="block">
-                <span className="mb-1.5 block text-sm text-zinc-300">Email</span>
-                <span className="relative block">
-                  <Mail className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" size={18} />
-                  <input
-                    type="email"
-                    autoComplete="email"
-                    className="gm-input pl-10"
-                    value={form.email}
-                    onChange={(e) => update('email', e.target.value)}
-                    required
-                  />
-                </span>
-              </label>
+              <IconField icon={Mail} label="Email">
+                <input
+                  type="email"
+                  autoComplete="email"
+                  className="gm-input h-12 pl-12 pr-3 text-[15px]"
+                  value={form.email}
+                  onChange={(e) => update('email', e.target.value)}
+                  required
+                />
+              </IconField>
 
-              <label className="block">
-                <span className="mb-1.5 block text-sm text-zinc-300">Password</span>
-                <span className="relative block">
-                  <LockKeyhole className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" size={18} />
-                  <input
-                    type="password"
-                    autoComplete={mode === 'register' ? 'new-password' : 'current-password'}
-                    className="gm-input pl-10"
-                    value={form.password}
-                    onChange={(e) => update('password', e.target.value)}
-                    minLength={8}
-                    required
-                  />
-                </span>
-              </label>
+              <IconField icon={LockKeyhole} label="Password">
+                <input
+                  type="password"
+                  autoComplete={mode === 'register' ? 'new-password' : 'current-password'}
+                  className="gm-input h-12 pl-12 pr-3 text-[15px]"
+                  value={form.password}
+                  onChange={(e) => update('password', e.target.value)}
+                  minLength={8}
+                  required
+                />
+              </IconField>
 
               {mode === 'register' ? (
                 <p className="text-xs text-zinc-500">Use at least 8 characters with uppercase, lowercase, and a number.</p>
