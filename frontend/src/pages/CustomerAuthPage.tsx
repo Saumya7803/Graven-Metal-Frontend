@@ -27,8 +27,8 @@ function IconField({
     <label className="block">
       <span className="mb-1.5 block text-sm text-zinc-300">{label}</span>
       <span className="relative block">
-        <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-zinc-500">
-          <Icon size={17} />
+        <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-zinc-500">
+          <Icon size={15} />
         </span>
         {children}
       </span>
@@ -152,7 +152,7 @@ export function CustomerAuthPage() {
                 <>
                   <IconField icon={UserRound} label="Full Name">
                     <input
-                      className="gm-input h-12 pl-12 pr-3 text-[15px]"
+                      className="gm-input h-12 pl-14 pr-3 text-[15px]"
                       value={form.name}
                       onChange={(e) => update('name', e.target.value)}
                       autoComplete="name"
@@ -162,7 +162,7 @@ export function CustomerAuthPage() {
                   <div className="grid gap-3 sm:grid-cols-2">
                     <IconField icon={Phone} label="Phone">
                       <input
-                        className="gm-input h-12 pl-12 pr-3 text-[15px]"
+                        className="gm-input h-12 pl-14 pr-3 text-[15px]"
                         value={form.phone}
                         onChange={(e) => update('phone', e.target.value)}
                         autoComplete="tel"
@@ -170,7 +170,7 @@ export function CustomerAuthPage() {
                     </IconField>
                     <IconField icon={Building2} label="Company">
                       <input
-                        className="gm-input h-12 pl-12 pr-3 text-[15px]"
+                        className="gm-input h-12 pl-14 pr-3 text-[15px]"
                         value={form.company}
                         onChange={(e) => update('company', e.target.value)}
                       />
@@ -183,7 +183,7 @@ export function CustomerAuthPage() {
                 <input
                   type="email"
                   autoComplete="email"
-                  className="gm-input h-12 pl-12 pr-3 text-[15px]"
+                  className="gm-input h-12 pl-14 pr-3 text-[15px]"
                   value={form.email}
                   onChange={(e) => update('email', e.target.value)}
                   required
@@ -194,7 +194,7 @@ export function CustomerAuthPage() {
                 <input
                   type="password"
                   autoComplete={mode === 'register' ? 'new-password' : 'current-password'}
-                  className="gm-input h-12 pl-12 pr-3 text-[15px]"
+                  className="gm-input h-12 pl-14 pr-3 text-[15px]"
                   value={form.password}
                   onChange={(e) => update('password', e.target.value)}
                   minLength={8}
