@@ -32,7 +32,7 @@ import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { SEO } from '../components/seo/SEO';
 import { clearAuth, getAuthUser } from '../lib/auth';
-import { operationsApi, type OperationRow } from '../lib/operationsApi';
+import { operationsApi, type OperationMember, type OperationRow } from '../lib/operationsApi';
 
 type DashboardKind = 'lqt' | 'sales' | 'procurement';
 type Tone = 'gold' | 'green' | 'blue' | 'red' | 'violet';
@@ -60,6 +60,11 @@ type WorkRow = {
   status: string;
   next: string;
   value: string;
+  assignedTeam?: string;
+  assignedTo?: string;
+  email?: string;
+  phone?: string;
+  requirement?: string;
 };
 
 type ModuleItem = {
@@ -113,6 +118,8 @@ type WorkspaceProps = {
   actionBusy: boolean;
   onRowAction: (row: WorkRow, action?: string) => void;
   onCreateRecord: (module: string) => void;
+  onOpenForm: (row: WorkRow) => void;
+  onOpenNewForm: () => void;
 };
 
 const toneClass: Record<Tone, { icon: string; bar: string; chip: string; ring: string }> = {
@@ -426,7 +433,15 @@ function QueueModeControl({
   );
 }
 
-function WorkTable({ config, rows }: { config: DashboardConfig; rows: WorkRow[] }) {
+function WorkTable({
+  config,
+  rows,
+  onOpenForm,
+}: {
+  config: DashboardConfig;
+  rows: WorkRow[];
+  onOpenForm?: (row: WorkRow) => void;
+}) {
   return (
     <div className={`overflow-x-auto rounded-2xl border ${roleClass.borderSoft} ${roleClass.inner}`}>
       <table className="w-full min-w-[760px] text-sm">
@@ -438,6 +453,7 @@ function WorkTable({ config, rows }: { config: DashboardConfig; rows: WorkRow[] 
             <th className="px-4 py-3">Status</th>
             <th className="px-4 py-3">Next Step</th>
             <th className="px-4 py-3">Value</th>
+            {onOpenForm ? <th className="px-4 py-3">Action</th> : null}
           </tr>
         </thead>
         <tbody>
@@ -451,6 +467,17 @@ function WorkTable({ config, rows }: { config: DashboardConfig; rows: WorkRow[] 
               </td>
               <td className="px-4 py-3 text-zinc-300">{row.next}</td>
               <td className={`px-4 py-3 font-semibold ${roleClass.text}`}>{row.value}</td>
+              {onOpenForm ? (
+                <td className="px-4 py-3">
+                  <button
+                    type="button"
+                    onClick={() => onOpenForm(row)}
+                    className={`rounded-lg border ${roleClass.border} ${roleClass.bgSoft} px-2.5 py-1.5 text-xs font-semibold ${roleClass.text}`}
+                  >
+                    Open Form
+                  </button>
+                </td>
+              ) : null}
             </tr>
           ))}
         </tbody>
@@ -523,7 +550,7 @@ function SideRail({
   );
 }
 
-function OverviewWorkspace({ config, filteredRows, queueMode, setQueueMode, selectedModule, statusTotal }: WorkspaceProps) {
+function OverviewWorkspace({ config, filteredRows, queueMode, setQueueMode, selectedModule, statusTotal, onOpenForm }: WorkspaceProps) {
   return (
     <div className="grid gap-5 xl:grid-cols-[1.35fr_0.65fr]">
       <Panel>
@@ -535,7 +562,7 @@ function OverviewWorkspace({ config, filteredRows, queueMode, setQueueMode, sele
           <QueueModeControl queueMode={queueMode} setQueueMode={setQueueMode} />
         </div>
         <div className="mt-4">
-          <WorkTable config={config} rows={filteredRows} />
+          <WorkTable config={config} rows={filteredRows} onOpenForm={onOpenForm} />
         </div>
       </Panel>
       <SideRail config={config} statusTotal={statusTotal} />
@@ -543,7 +570,7 @@ function OverviewWorkspace({ config, filteredRows, queueMode, setQueueMode, sele
   );
 }
 
-function IntakeWorkspace({ kind, filteredRows, selectedModule, actionBusy, onRowAction, onCreateRecord }: WorkspaceProps) {
+function IntakeWorkspace({ kind, filteredRows, selectedModule, actionBusy, onOpenForm, onOpenNewForm }: WorkspaceProps) {
   const fields =
     kind === 'procurement'
       ? ['Supplier name', 'Material category', 'GST / compliance', 'Preferred lane']
@@ -580,7 +607,7 @@ function IntakeWorkspace({ kind, filteredRows, selectedModule, actionBusy, onRow
               <button
                 type="button"
                 disabled={actionBusy}
-                onClick={() => onRowAction(row, 'intake')}
+                onClick={() => onOpenForm(row)}
                 className={`mt-4 inline-flex items-center gap-2 rounded-xl ${roleClass.cta} px-3 py-2 text-xs font-bold text-black disabled:opacity-60`}
               >
                 Open Intake
@@ -595,21 +622,17 @@ function IntakeWorkspace({ kind, filteredRows, selectedModule, actionBusy, onRow
         <p className="text-xs uppercase tracking-[0.18em] text-zinc-500">Quick Capture</p>
         <div className="mt-4 space-y-3">
           {fields.map((field) => (
-            <label key={field} className="block">
-              <span className="mb-1 block text-xs text-zinc-500">{field}</span>
-              <input
-                className={`w-full rounded-xl border ${roleClass.border} ${roleClass.inner} px-3 py-2 text-sm text-zinc-200 outline-none ${roleClass.focus}`}
-                placeholder={field}
-              />
-            </label>
+            <div key={field} className={`rounded-xl border ${roleClass.borderSoft} ${roleClass.inner} px-3 py-2 text-sm text-zinc-400`}>
+              {field}
+            </div>
           ))}
           <button
             type="button"
-            disabled={actionBusy}
-            onClick={() => onCreateRecord(selectedModule.key)}
+            disabled={actionBusy || kind === 'lqt'}
+            onClick={onOpenNewForm}
             className={`inline-flex w-full items-center justify-center gap-2 rounded-xl border ${roleClass.border} ${roleClass.bgSoft} px-3 py-2 text-sm font-semibold ${roleClass.text} disabled:opacity-60`}
           >
-            Save Draft
+            {kind === 'lqt' ? 'Open an assigned lead' : 'Open Validated Form'}
             <CheckCircle2 size={15} />
           </button>
         </div>
@@ -618,7 +641,7 @@ function IntakeWorkspace({ kind, filteredRows, selectedModule, actionBusy, onRow
   );
 }
 
-function AssignmentWorkspace({ config, filteredRows, selectedModule }: WorkspaceProps) {
+function AssignmentWorkspace({ config, filteredRows, selectedModule, onOpenForm }: WorkspaceProps) {
   const owners = Array.from(new Set(filteredRows.map((row) => row.owner)));
   return (
     <div className="grid gap-5 xl:grid-cols-[0.8fr_1.2fr]">
@@ -644,7 +667,7 @@ function AssignmentWorkspace({ config, filteredRows, selectedModule }: Workspace
       <Panel>
         <p className="text-xs uppercase tracking-[0.18em] text-zinc-500">Assignment Board</p>
         <div className="mt-4">
-          <WorkTable config={config} rows={filteredRows} />
+          <WorkTable config={config} rows={filteredRows} onOpenForm={onOpenForm} />
         </div>
       </Panel>
     </div>
@@ -890,7 +913,7 @@ function ScheduleWorkspace({ filteredRows, selectedModule, actionBusy, onRowActi
   );
 }
 
-function ProcessWorkspace({ config, filteredRows, selectedModule, queueMode, setQueueMode, actionBusy, onRowAction }: WorkspaceProps) {
+function ProcessWorkspace({ config, filteredRows, selectedModule, queueMode, setQueueMode, actionBusy, onRowAction, onOpenForm }: WorkspaceProps) {
   return (
     <Panel>
       <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
@@ -901,7 +924,7 @@ function ProcessWorkspace({ config, filteredRows, selectedModule, queueMode, set
         <QueueModeControl queueMode={queueMode} setQueueMode={setQueueMode} />
       </div>
       <div className="mt-5">
-        <WorkTable config={config} rows={filteredRows} />
+        <WorkTable config={config} rows={filteredRows} onOpenForm={onOpenForm} />
       </div>
       <div className="mt-5 grid gap-3 md:grid-cols-3">
         {['Prepare document', 'Internal approval', 'Customer/vendor update'].map((step, index) => (
@@ -963,6 +986,211 @@ function HistoryWorkspace({ config, filteredRows, selectedModule }: WorkspacePro
   );
 }
 
+type OperationsFormModalProps = {
+  kind: DashboardKind;
+  row: WorkRow;
+  members: OperationMember[];
+  activeModule: string;
+  busy: boolean;
+  onClose: () => void;
+  onSave: (row: WorkRow, payload: Record<string, unknown>) => void;
+};
+
+function OperationsFormModal({ kind, row, members, activeModule, busy, onClose, onSave }: OperationsFormModalProps) {
+  const isQuote = row.source === 'quote';
+  const [title, setTitle] = useState(row.account || '');
+  const [assigneeId, setAssigneeId] = useState(
+    row.assignedTo || members.find((member) => member.name === row.owner)?.id || ''
+  );
+  const [detail, setDetail] = useState(row.requirement || row.detail || '');
+  const [status, setStatus] = useState(row.status || (kind === 'procurement' ? 'Requested' : 'in_review'));
+  const [leadTemperature, setLeadTemperature] = useState(row.status?.toLowerCase() || 'warm');
+  const [nextStep, setNextStep] = useState(row.next === 'Review requirement' ? '' : row.next || '');
+  const [value, setValue] = useState(row.value || '');
+  const [note, setNote] = useState('');
+  const [followUpAt, setFollowUpAt] = useState('');
+  const [quotationAmount, setQuotationAmount] = useState('');
+  const [handoffToSales, setHandoffToSales] = useState(kind === 'lqt' && activeModule === 'sales-assignment');
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const memberById = new Map(members.map((member) => [member.id, member]));
+  const inputClass = `w-full rounded-xl border ${roleClass.border} ${roleClass.inner} px-3 py-2.5 text-sm text-zinc-100 outline-none placeholder:text-zinc-500 ${roleClass.focus}`;
+
+  const submit = () => {
+    const nextErrors: Record<string, string> = {};
+    if (!isQuote && !title.trim()) nextErrors.title = 'Name is required';
+    if (!handoffToSales && !assigneeId) nextErrors.assignee = 'Select an assigned employee';
+    if (!detail.trim()) nextErrors.detail = 'Requirement details are required';
+    if (!note.trim() || note.trim().length < 3) nextErrors.note = 'Add a note with at least 3 characters';
+    if (kind === 'procurement' && !nextStep.trim()) nextErrors.nextStep = 'Next step is required';
+    if (quotationAmount && (!Number.isFinite(Number(quotationAmount)) || Number(quotationAmount) <= 0)) {
+      nextErrors.quotationAmount = 'Quotation amount must be greater than zero';
+    }
+
+    if (Object.keys(nextErrors).length) {
+      setErrors(nextErrors);
+      return;
+    }
+
+    if (isQuote && kind === 'lqt') {
+      onSave(row, {
+        module: activeModule,
+        status: 'in_review',
+        leadTemperature,
+        assignedTeam: handoffToSales ? 'sales' : 'lqt',
+        assignedTo: handoffToSales ? '' : assigneeId,
+        requirement: detail.trim(),
+        note: note.trim(),
+        ...(followUpAt
+          ? { followUp: { note: nextStep.trim() || 'LQT follow-up', dueAt: new Date(followUpAt).toISOString() } }
+          : {}),
+      });
+      return;
+    }
+
+    if (isQuote && kind === 'sales') {
+      onSave(row, {
+        module: activeModule,
+        status: status === 'closed' ? 'closed' : 'in_review',
+        assignedTeam: 'sales',
+        assignedTo: assigneeId,
+        requirement: detail.trim(),
+        note: note.trim(),
+        ...(followUpAt
+          ? { followUp: { note: nextStep.trim() || 'Sales follow-up', dueAt: new Date(followUpAt).toISOString() } }
+          : {}),
+        ...(quotationAmount
+          ? { quotation: { amount: Number(quotationAmount), currency: 'INR', status: 'sent' } }
+          : {}),
+      });
+      return;
+    }
+
+    onSave(row, {
+      module: activeModule,
+      title: title.trim(),
+      owner: memberById.get(assigneeId)?.name || '',
+      detail: detail.trim(),
+      status: status.trim(),
+      nextStep: nextStep.trim(),
+      value: value.trim(),
+      note: note.trim(),
+    });
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 grid place-items-center bg-black/75 p-4 backdrop-blur-sm">
+      <section className={`max-h-[92vh] w-full max-w-3xl overflow-y-auto rounded-3xl border ${roleClass.borderStrong} ${roleClass.surface} p-5 shadow-glow`}>
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <p className={`text-xs uppercase tracking-[0.18em] ${roleClass.text}`}>{kind} operations form</p>
+            <h3 className="mt-2 font-display text-2xl text-white">{row.id ? `Update ${row.account}` : 'Create New Record'}</h3>
+            <p className="mt-1 text-sm text-zinc-400">Complete the required fields before saving this workflow update.</p>
+          </div>
+          <button type="button" onClick={onClose} className={`rounded-xl border ${roleClass.border} ${roleClass.inner} p-2 text-zinc-300`}>
+            <X size={18} />
+          </button>
+        </div>
+
+        <div className="mt-5 grid gap-4 md:grid-cols-2">
+          <label>
+            <span className="text-xs uppercase tracking-[0.14em] text-zinc-500">{isQuote ? 'Account' : kind === 'procurement' ? 'Supplier name' : 'Customer name'}</span>
+            <input className={`${inputClass} mt-2`} value={title} onChange={(event) => setTitle(event.target.value)} disabled={isQuote} />
+            {errors.title ? <span className="mt-1 block text-xs text-red-300">{errors.title}</span> : null}
+          </label>
+
+          <label>
+            <span className="text-xs uppercase tracking-[0.14em] text-zinc-500">Assigned employee</span>
+            <select
+              className={`${inputClass} mt-2`}
+              value={assigneeId}
+              onChange={(event) => setAssigneeId(event.target.value)}
+              disabled={handoffToSales}
+            >
+              <option value="">Select {kind} employee</option>
+              {members.map((member) => (
+                <option key={member.id} value={member.id}>
+                  {member.name} ({member.email})
+                </option>
+              ))}
+            </select>
+            {errors.assignee ? <span className="mt-1 block text-xs text-red-300">{errors.assignee}</span> : null}
+          </label>
+
+          <label className="md:col-span-2">
+            <span className="text-xs uppercase tracking-[0.14em] text-zinc-500">Requirement details</span>
+            <textarea className={`${inputClass} mt-2`} rows={3} value={detail} onChange={(event) => setDetail(event.target.value)} />
+            {errors.detail ? <span className="mt-1 block text-xs text-red-300">{errors.detail}</span> : null}
+          </label>
+
+          {kind === 'lqt' ? (
+            <>
+              <label>
+                <span className="text-xs uppercase tracking-[0.14em] text-zinc-500">Lead temperature</span>
+                <select className={`${inputClass} mt-2`} value={leadTemperature} onChange={(event) => setLeadTemperature(event.target.value)}>
+                  <option value="hot">Hot</option>
+                  <option value="warm">Warm</option>
+                  <option value="cold">Cold</option>
+                  <option value="rejected">Rejected</option>
+                </select>
+              </label>
+              <label className={`flex items-center gap-3 rounded-xl border ${roleClass.border} ${roleClass.inner} px-3 py-2.5`}>
+                <input type="checkbox" checked={handoffToSales} onChange={(event) => setHandoffToSales(event.target.checked)} />
+                <span className="text-sm text-zinc-300">Qualified: hand off to Sales queue</span>
+              </label>
+            </>
+          ) : (
+            <label>
+              <span className="text-xs uppercase tracking-[0.14em] text-zinc-500">Status</span>
+              <input className={`${inputClass} mt-2`} value={status} onChange={(event) => setStatus(event.target.value)} />
+            </label>
+          )}
+
+          <label>
+            <span className="text-xs uppercase tracking-[0.14em] text-zinc-500">Next step</span>
+            <input className={`${inputClass} mt-2`} value={nextStep} onChange={(event) => setNextStep(event.target.value)} placeholder="Follow-up action" />
+            {errors.nextStep ? <span className="mt-1 block text-xs text-red-300">{errors.nextStep}</span> : null}
+          </label>
+
+          {kind !== 'lqt' ? (
+            <label>
+              <span className="text-xs uppercase tracking-[0.14em] text-zinc-500">{kind === 'sales' && isQuote ? 'Quotation amount (INR)' : 'Value'}</span>
+              <input
+                className={`${inputClass} mt-2`}
+                value={kind === 'sales' && isQuote ? quotationAmount : value}
+                onChange={(event) => (kind === 'sales' && isQuote ? setQuotationAmount(event.target.value) : setValue(event.target.value))}
+                placeholder={kind === 'sales' && isQuote ? 'e.g. 750000' : 'Draft value'}
+              />
+              {errors.quotationAmount ? <span className="mt-1 block text-xs text-red-300">{errors.quotationAmount}</span> : null}
+            </label>
+          ) : null}
+
+          {isQuote ? (
+            <label>
+              <span className="text-xs uppercase tracking-[0.14em] text-zinc-500">Follow-up date</span>
+              <input className={`${inputClass} mt-2`} type="datetime-local" value={followUpAt} onChange={(event) => setFollowUpAt(event.target.value)} />
+            </label>
+          ) : null}
+
+          <label className="md:col-span-2">
+            <span className="text-xs uppercase tracking-[0.14em] text-zinc-500">Work note</span>
+            <textarea className={`${inputClass} mt-2`} rows={3} value={note} onChange={(event) => setNote(event.target.value)} placeholder="Record what was checked, discussed, or changed" />
+            {errors.note ? <span className="mt-1 block text-xs text-red-300">{errors.note}</span> : null}
+          </label>
+        </div>
+
+        <div className="mt-5 flex justify-end gap-3">
+          <button type="button" onClick={onClose} className={`rounded-xl border ${roleClass.border} ${roleClass.inner} px-4 py-2 text-sm text-zinc-300`}>
+            Cancel
+          </button>
+          <button type="button" disabled={busy} onClick={submit} className={`rounded-xl ${roleClass.cta} px-4 py-2 text-sm font-extrabold text-black disabled:opacity-60`}>
+            {busy ? 'Saving...' : 'Save Form'}
+          </button>
+        </div>
+      </section>
+    </div>
+  );
+}
+
 function ModuleWorkspace(props: WorkspaceProps) {
   const { activeModule } = props;
   if (activeModule === 'overview') return <OverviewWorkspace {...props} />;
@@ -1016,6 +1244,8 @@ export function OperationsDashboardPage({ kind }: { kind: DashboardKind }) {
   const [query, setQuery] = useState('');
   const [queueMode, setQueueMode] = useState<'open' | 'due' | 'closed'>('open');
   const [serverRows, setServerRows] = useState<WorkRow[]>([]);
+  const [members, setMembers] = useState<OperationMember[]>([]);
+  const [formRow, setFormRow] = useState<WorkRow | null>(null);
   const [moduleCounts, setModuleCounts] = useState<Record<string, number>>({});
   const [loadingOperations, setLoadingOperations] = useState(false);
   const [actionBusy, setActionBusy] = useState(false);
@@ -1045,8 +1275,9 @@ export function OperationsDashboardPage({ kind }: { kind: DashboardKind }) {
   const loadOperations = async () => {
     setLoadingOperations(true);
     try {
-      const data = await operationsApi.getDashboard(kind);
+      const [data, teamMembers] = await Promise.all([operationsApi.getDashboard(kind), operationsApi.getMembers(kind)]);
       setServerRows(data.rows.map((row: OperationRow) => ({ ...row, id: String(row.id) })));
+      setMembers(teamMembers);
       setModuleCounts(data.modules || {});
     } catch (error) {
       toast.error((error as Error).message);
@@ -1136,6 +1367,42 @@ export function OperationsDashboardPage({ kind }: { kind: DashboardKind }) {
         value: 'Draft',
       });
       toast.success('Draft saved');
+      await loadOperations();
+    } catch (error) {
+      toast.error((error as Error).message);
+    } finally {
+      setActionBusy(false);
+    }
+  };
+
+  const handleOpenNewForm = () => {
+    if (kind === 'lqt') return;
+    setFormRow({
+      source: 'operation',
+      account: '',
+      owner: user?.name || '',
+      detail: '',
+      status: kind === 'procurement' ? 'Requested' : 'open',
+      next: '',
+      value: '',
+    });
+  };
+
+  const handleSaveForm = async (row: WorkRow, payload: Record<string, unknown>) => {
+    setActionBusy(true);
+    try {
+      if (row.source === 'quote' && row.id && (kind === 'lqt' || kind === 'sales')) {
+        await operationsApi.updateQuote(kind, row.id, payload);
+      } else if (row.source === 'operation' && row.id && (kind === 'sales' || kind === 'procurement')) {
+        await operationsApi.updateRecord(kind, row.id, payload);
+      } else if (row.source === 'operation' && (kind === 'sales' || kind === 'procurement')) {
+        await operationsApi.createRecord(kind, payload);
+      } else {
+        throw new Error('This record cannot be updated from the current dashboard');
+      }
+
+      toast.success('Operations form saved');
+      setFormRow(null);
       await loadOperations();
     } catch (error) {
       toast.error((error as Error).message);
@@ -1290,6 +1557,8 @@ export function OperationsDashboardPage({ kind }: { kind: DashboardKind }) {
             actionBusy={actionBusy}
             onRowAction={handleRowAction}
             onCreateRecord={handleCreateRecord}
+            onOpenForm={setFormRow}
+            onOpenNewForm={handleOpenNewForm}
           />
 
           <section className="grid gap-4 lg:grid-cols-3">
@@ -1322,6 +1591,17 @@ export function OperationsDashboardPage({ kind }: { kind: DashboardKind }) {
           </section>
         </main>
       </div>
+      {formRow ? (
+        <OperationsFormModal
+          kind={kind}
+          row={formRow}
+          members={members}
+          activeModule={activeModule}
+          busy={actionBusy}
+          onClose={() => setFormRow(null)}
+          onSave={handleSaveForm}
+        />
+      ) : null}
     </div>
   );
 }

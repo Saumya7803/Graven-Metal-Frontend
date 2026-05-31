@@ -13,12 +13,20 @@ export type OperationRow = {
   next: string;
   value: string;
   assignedTeam?: string;
+  assignedTo?: string;
   leadTemperature?: string;
   requirement?: string;
   email?: string;
   phone?: string;
   createdAt?: string;
   updatedAt?: string;
+};
+
+export type OperationMember = {
+  id: string;
+  name: string;
+  email: string;
+  role: OperationTeam;
 };
 
 export type OperationsDashboard = {
@@ -32,6 +40,11 @@ export const operationsApi = {
   async getDashboard(team: OperationTeam) {
     const res = await axiosClient.get<OperationsDashboard>(`/operations/${team}/dashboard`);
     return res.data;
+  },
+
+  async getMembers(team: OperationTeam) {
+    const res = await axiosClient.get<{ data: OperationMember[] }>(`/operations/${team}/members`);
+    return res.data.data;
   },
 
   async updateQuote(team: 'lqt' | 'sales', id: string, payload: Record<string, unknown>) {

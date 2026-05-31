@@ -40,13 +40,13 @@ const run = async () => {
       password: 'Password123',
       role: 'admin',
     });
-    await User.create({
+    const lqtUser = await User.create({
       name: 'LQT User',
       email: 'lqt@graven.test',
       password: 'Password123',
       role: 'lqt',
     });
-    await User.create({
+    const salesUser = await User.create({
       name: 'Sales User',
       email: 'sales@graven.test',
       password: 'Password123',
@@ -174,6 +174,23 @@ const run = async () => {
     assertStatus(lqtDashboard, 200, 'lqt dashboard api');
     assertTruthy(lqtDashboard.body?.rows?.some((row) => `${row.id}` === `${quoteId}`), 'lqt dashboard contains quote');
 
+    const lqtMembers = await request(app)
+      .get('/api/operations/lqt/members')
+      .set('Authorization', `Bearer ${lqtToken}`);
+    assertStatus(lqtMembers, 200, 'lqt members api');
+    assertTruthy(lqtMembers.body?.data?.some((member) => `${member.id}` === `${lqtUser._id}`), 'lqt members contains lqt user');
+
+    const adminOperations = await request(app)
+      .get('/api/operations/lqt/dashboard')
+      .set('Authorization', `Bearer ${adminToken}`);
+    assertStatus(adminOperations, 403, 'normal admin operations access');
+
+    const invalidLqtAssignment = await request(app)
+      .patch(`/api/operations/lqt/quotes/${quoteId}`)
+      .set('Authorization', `Bearer ${lqtToken}`)
+      .send({ module: 'assigned-leads', assignedTeam: 'lqt', assignedTo: salesUser._id.toString(), note: 'Wrong team' });
+    assertStatus(invalidLqtAssignment, 400, 'lqt assignment rejects sales user');
+
     const lqtUpdate = await request(app)
       .patch(`/api/operations/lqt/quotes/${quoteId}`)
       .set('Authorization', `Bearer ${lqtToken}`)
@@ -181,12 +198,13 @@ const run = async () => {
         module: 'qualification',
         status: 'in_review',
         leadTemperature: 'hot',
-        assignedToName: 'LQT User',
+        assignedTo: lqtUser._id.toString(),
         note: 'Qualified by LQT smoke test',
         followUp: { note: 'Call procurement head', dueAt: new Date().toISOString() },
         meeting: { note: 'Discovery meeting', scheduledAt: new Date().toISOString() },
       });
     assertStatus(lqtUpdate, 200, 'lqt quote operation update');
+    assertTruthy(`${lqtUpdate.body?.data?.assignedTo}` === `${lqtUser._id}`, 'lqt quote stores assigned employee');
 
     const salesUpdate = await request(app)
       .patch(`/api/operations/sales/quotes/${quoteId}`)
@@ -194,7 +212,7 @@ const run = async () => {
       .send({
         module: 'quotation-management',
         assignedTeam: 'sales',
-        assignedToName: 'Sales User',
+        assignedTo: salesUser._id.toString(),
         quotation: { amount: 750000, currency: 'INR', status: 'sent' },
         note: 'Quotation sent by sales smoke test',
       });

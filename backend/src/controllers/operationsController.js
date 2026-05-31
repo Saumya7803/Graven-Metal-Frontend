@@ -1,5 +1,6 @@
 import { Quote } from '../models/Quote.js';
 import { OperationRecord } from '../models/OperationRecord.js';
+import { User } from '../models/User.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 
 const quoteModules = new Set([
@@ -32,7 +33,7 @@ const procurementModules = new Set([
 ]);
 
 function assertTeamAccess(req, team) {
-  if (req.user.role === 'super_admin' || req.user.role === 'admin') return null;
+  if (req.user.role === 'super_admin') return null;
   if (req.user.role !== team) return 'Forbidden: team dashboard access denied';
   return null;
 }
@@ -52,6 +53,7 @@ function formatQuoteRow(quote) {
     phone: quote.phone,
     requirement: quote.requirement,
     assignedTeam: quote.assignedTeam,
+    assignedTo: quote.assignedTo,
     leadTemperature: quote.leadTemperature,
     quotation: quote.quotation,
     order: quote.order,
@@ -139,6 +141,22 @@ export const getOperationsDashboard = asyncHandler(async (req, res) => {
   });
 });
 
+export const listOperationMembers = asyncHandler(async (req, res) => {
+  const { team } = req.params;
+  const accessError = assertTeamAccess(req, team);
+  if (accessError) return res.status(403).json({ message: accessError });
+
+  const members = await User.find({ role: team }).select('_id name email role').sort({ name: 1 });
+  res.json({
+    data: members.map((member) => ({
+      id: member._id,
+      name: member.name,
+      email: member.email,
+      role: member.role,
+    })),
+  });
+});
+
 export const updateQuoteOperation = asyncHandler(async (req, res) => {
   const { team, id } = req.params;
   const accessError = assertTeamAccess(req, team);
@@ -152,7 +170,9 @@ export const updateQuoteOperation = asyncHandler(async (req, res) => {
     status,
     leadTemperature,
     assignedTeam,
+    assignedTo,
     assignedToName,
+    requirement,
     adminNotes,
     note,
     followUp,
@@ -172,7 +192,21 @@ export const updateQuoteOperation = asyncHandler(async (req, res) => {
   }
   if (leadTemperature) quote.leadTemperature = leadTemperature;
   if (assignedTeam !== undefined) quote.assignedTeam = assignedTeam;
-  if (assignedToName !== undefined) quote.assignedToName = assignedToName;
+  if (assignedTo !== undefined) {
+    if (!assignedTo) {
+      quote.assignedTo = null;
+      quote.assignedToName = '';
+    } else {
+      const assignmentTeam = assignedTeam || quote.assignedTeam || team;
+      const member = await User.findOne({ _id: assignedTo, role: assignmentTeam }).select('_id name');
+      if (!member) return res.status(400).json({ message: `Assigned employee must belong to the ${assignmentTeam} team` });
+      quote.assignedTo = member._id;
+      quote.assignedToName = member.name;
+    }
+  } else if (assignedToName !== undefined) {
+    quote.assignedToName = assignedToName;
+  }
+  if (requirement !== undefined) quote.requirement = requirement;
   if (adminNotes !== undefined) quote.adminNotes = adminNotes;
   if (note) {
     quote.callNotes.push({
