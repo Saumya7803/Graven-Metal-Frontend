@@ -66,6 +66,7 @@ const quoteSchema = new mongoose.Schema(
     status: { type: String, enum: ['new', 'in_review', 'quoted', 'closed'], default: 'new' },
     leadTemperature: { type: String, enum: ['hot', 'warm', 'cold', 'rejected'], default: 'warm', index: true },
     assignedTeam: { type: String, enum: ['lqt', 'sales', 'procurement', ''], default: 'lqt', index: true },
+    assignedTo: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null, index: true },
     assignedToName: { type: String, default: '', trim: true },
     adminNotes: { type: String, default: '' },
     statusHistory: { type: [statusHistorySchema], default: [{ status: 'new', note: 'Quote submitted' }] },

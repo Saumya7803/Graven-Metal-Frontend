@@ -3,6 +3,7 @@ import { body, param } from 'express-validator';
 import {
   createOperationRecord,
   getOperationsDashboard,
+  listOperationMembers,
   listOperationRecords,
   updateOperationRecord,
   updateQuoteOperation,
@@ -11,11 +12,29 @@ import { authorize, protect } from '../middlewares/authMiddleware.js';
 import { validate } from '../middlewares/validateMiddleware.js';
 
 const router = Router();
-const teamRoles = ['super_admin', 'admin', 'lqt', 'sales', 'procurement'];
+const teamRoles = ['super_admin', 'lqt', 'sales', 'procurement'];
+const quoteModules = [
+  'overview',
+  'new-leads',
+  'assigned-leads',
+  'qualification',
+  'lead-status',
+  'follow-ups',
+  'call-notes',
+  'meeting-scheduling',
+  'sales-assignment',
+  'lead-history',
+  'rfq-management',
+  'quotation-management',
+  'negotiation-tracking',
+  'order-management',
+  'lead-conversion',
+];
 
 router.use(protect, authorize(...teamRoles));
 
 router.get('/:team/dashboard', [param('team').isIn(['lqt', 'sales', 'procurement'])], validate, getOperationsDashboard);
+router.get('/:team/members', [param('team').isIn(['lqt', 'sales', 'procurement'])], validate, listOperationMembers);
 router.get('/:team/records', [param('team').isIn(['sales', 'procurement'])], validate, listOperationRecords);
 router.post(
   '/:team/records',
@@ -28,13 +47,26 @@ router.post(
     body('status').optional().isString().isLength({ max: 80 }),
     body('nextStep').optional().isString().isLength({ max: 300 }),
     body('value').optional().isString().isLength({ max: 120 }),
+    body('metadata').optional().isObject(),
+    body('note').optional().trim().notEmpty().isLength({ max: 2000 }),
   ],
   validate,
   createOperationRecord
 );
 router.patch(
   '/:team/records/:id',
-  [param('team').isIn(['sales', 'procurement']), param('id').isMongoId()],
+  [
+    param('team').isIn(['sales', 'procurement']),
+    param('id').isMongoId(),
+    body('title').optional().trim().notEmpty().isLength({ max: 180 }),
+    body('owner').optional().trim().isLength({ max: 120 }),
+    body('detail').optional().trim().isLength({ max: 1000 }),
+    body('status').optional().trim().notEmpty().isLength({ max: 80 }),
+    body('nextStep').optional().trim().isLength({ max: 300 }),
+    body('value').optional().trim().isLength({ max: 120 }),
+    body('metadata').optional().isObject(),
+    body('note').optional().trim().notEmpty().isLength({ max: 2000 }),
+  ],
   validate,
   updateOperationRecord
 );
@@ -43,10 +75,13 @@ router.patch(
   [
     param('team').isIn(['lqt', 'sales']),
     param('id').isMongoId(),
+    body('module').optional().isIn(quoteModules),
     body('status').optional().isIn(['new', 'in_review', 'quoted', 'closed']),
     body('leadTemperature').optional().isIn(['hot', 'warm', 'cold', 'rejected']),
     body('assignedTeam').optional().isIn(['lqt', 'sales', 'procurement', '']),
+    body('assignedTo').optional({ values: 'falsy' }).isMongoId(),
     body('assignedToName').optional().isString().isLength({ max: 120 }),
+    body('requirement').optional().trim().notEmpty().isLength({ max: 2000 }),
     body('adminNotes').optional().isString().isLength({ max: 2000 }),
     body('note').optional().isString().isLength({ max: 2000 }),
     body('followUp').optional().isObject(),
