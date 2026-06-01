@@ -11,6 +11,8 @@ import {
   type AuthUser,
 } from '../../lib/auth';
 
+const SESSION_CHECK_INTERVAL_MS = 30000;
+
 type AuthContextValue = {
   isReady: boolean;
   isAuthenticated: boolean;
@@ -80,6 +82,42 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       window.removeEventListener('storage', syncAuthState);
     };
   }, []);
+
+  useEffect(() => {
+    if (!token || !user) return;
+
+    let cancelled = false;
+
+    const verifySession = async () => {
+      if (document.visibilityState === 'hidden') return;
+      try {
+        const { data } = await axiosClient.get<{ user: AuthUser }>('/auth/me');
+        if (cancelled) return;
+        setAuth(token, data.user);
+        setUser(data.user);
+      } catch {
+        if (cancelled) return;
+        clearAuth();
+        setToken(null);
+        setUser(null);
+      }
+    };
+
+    const handleFocus = () => {
+      verifySession();
+    };
+
+    const intervalId = window.setInterval(verifySession, SESSION_CHECK_INTERVAL_MS);
+    window.addEventListener('focus', handleFocus);
+    document.addEventListener('visibilitychange', handleFocus);
+
+    return () => {
+      cancelled = true;
+      window.clearInterval(intervalId);
+      window.removeEventListener('focus', handleFocus);
+      document.removeEventListener('visibilitychange', handleFocus);
+    };
+  }, [token, user]);
 
   const value = useMemo<AuthContextValue>(
     () => ({

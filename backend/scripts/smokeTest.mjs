@@ -78,8 +78,21 @@ const run = async () => {
       .post('/api/auth/login/admin')
       .send({ email: 'admin@graven.test', password: 'Password123' });
     assertStatus(adminLogin, 200, 'admin login');
-    const adminToken = adminLogin.body?.token;
+    let adminToken = adminLogin.body?.token;
     assertTruthy(adminToken, 'admin token');
+
+    const secondAdminLogin = await request(app)
+      .post('/api/auth/login/admin')
+      .send({ email: 'admin@graven.test', password: 'Password123' });
+    assertStatus(secondAdminLogin, 200, 'second admin login');
+
+    const revokedAdminSession = await request(app)
+      .get('/api/auth/me')
+      .set('Authorization', `Bearer ${adminToken}`);
+    assertStatus(revokedAdminSession, 401, 'old admin session revoked after second login');
+
+    adminToken = secondAdminLogin.body?.token;
+    assertTruthy(adminToken, 'second admin token');
 
     const lqtLogin = await request(app)
       .post('/api/auth/login/admin')

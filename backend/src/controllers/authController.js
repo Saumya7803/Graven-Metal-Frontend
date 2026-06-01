@@ -41,7 +41,7 @@ function formatUser(user) {
   };
 }
 
-async function loginByRole(email, password, allowedRoles) {
+async function loginByRole(email, password, allowedRoles, options = {}) {
   const user = await User.findOne({ email });
   if (!user || !(await user.comparePassword(password))) {
     return { error: 'Invalid credentials' };
@@ -51,6 +51,9 @@ async function loginByRole(email, password, allowedRoles) {
   }
   user.lastLoginAt = new Date();
   user.lastActiveAt = user.lastLoginAt;
+  if (options.singleActiveSession && user.role !== 'user') {
+    user.sessionVersion = (user.sessionVersion || 0) + 1;
+  }
   await user.save();
   return { data: formatAuthResponse(user) };
 }
@@ -65,7 +68,7 @@ export const login = asyncHandler(async (req, res) => {
     'admin',
     'editor',
     'user',
-  ]);
+  ], { singleActiveSession: true });
   if (result.error) {
     return res.status(401).json({ message: result.error });
   }
@@ -74,7 +77,9 @@ export const login = asyncHandler(async (req, res) => {
 
 export const loginAdmin = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
-  const result = await loginByRole(email, password, ['lqt', 'sales', 'procurement', 'admin', 'editor']);
+  const result = await loginByRole(email, password, ['lqt', 'sales', 'procurement', 'admin', 'editor'], {
+    singleActiveSession: true,
+  });
   if (result.error) {
     return res.status(401).json({ message: result.error });
   }
@@ -83,7 +88,7 @@ export const loginAdmin = asyncHandler(async (req, res) => {
 
 export const loginSuperAdmin = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
-  const result = await loginByRole(email, password, ['super_admin']);
+  const result = await loginByRole(email, password, ['super_admin'], { singleActiveSession: true });
   if (result.error) {
     return res.status(401).json({ message: result.error });
   }
