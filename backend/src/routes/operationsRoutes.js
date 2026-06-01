@@ -8,6 +8,13 @@ import {
   updateOperationRecord,
   updateQuoteOperation,
 } from '../controllers/operationsController.js';
+import {
+  createLqtLead as createLqtLeadRecord,
+  getLqtWorkspace as getLqtWorkspaceRecord,
+  listLqtLeads as listLqtLeadsRecord,
+  listLqtTeamMembers as listLqtTeamMembersRecord,
+  updateLqtLead as updateLqtLeadRecord,
+} from '../controllers/lqtController.js';
 import { authorize, protect } from '../middlewares/authMiddleware.js';
 import { validate } from '../middlewares/validateMiddleware.js';
 
@@ -32,6 +39,42 @@ const quoteModules = [
 ];
 
 router.use(protect, authorize(...teamRoles));
+
+router.get('/lqt/workspace', getLqtWorkspaceRecord);
+router.get('/lqt/leads', listLqtLeadsRecord);
+router.get('/lqt/members', listLqtTeamMembersRecord);
+router.post(
+  '/lqt/leads',
+  [
+    body('leadName').trim().notEmpty().isLength({ max: 140 }),
+    body('companyName').trim().notEmpty().isLength({ max: 180 }),
+    body('leadSource').optional().isIn(['Website', 'IndiaMART', 'TradeIndia', 'WhatsApp', 'Referral', 'Email', 'Direct Call']),
+    body('priority').optional().isIn(['low', 'medium', 'high', 'urgent']),
+    body('stage').optional().isIn(['newLead', 'contacted', 'requirementGathering', 'qualified', 'assigned', 'accepted', 'returned', 'rejected']),
+    body('checklist').optional().isObject(),
+    body('followUps').optional().isArray(),
+    body('history').optional().isArray(),
+  ],
+  validate,
+  createLqtLeadRecord
+);
+router.patch(
+  '/lqt/leads/:id',
+  [
+    param('id').isMongoId(),
+    body('leadName').optional().trim().notEmpty().isLength({ max: 140 }),
+    body('companyName').optional().trim().notEmpty().isLength({ max: 180 }),
+    body('leadSource').optional().isIn(['Website', 'IndiaMART', 'TradeIndia', 'WhatsApp', 'Referral', 'Email', 'Direct Call']),
+    body('priority').optional().isIn(['low', 'medium', 'high', 'urgent']),
+    body('stage').optional().isIn(['newLead', 'contacted', 'requirementGathering', 'qualified', 'assigned', 'accepted', 'returned', 'rejected']),
+    body('checklist').optional().isObject(),
+    body('nextActionAt').optional().isISO8601(),
+    body('followUps').optional().isArray(),
+    body('history').optional().isArray(),
+  ],
+  validate,
+  updateLqtLeadRecord
+);
 
 router.get('/:team/dashboard', [param('team').isIn(['lqt', 'sales', 'procurement'])], validate, getOperationsDashboard);
 router.get('/:team/members', [param('team').isIn(['lqt', 'sales', 'procurement'])], validate, listOperationMembers);

@@ -64,6 +64,7 @@ export const login = asyncHandler(async (req, res) => {
     'procurement',
     'admin',
     'editor',
+    'user',
   ]);
   if (result.error) {
     return res.status(401).json({ message: result.error });
