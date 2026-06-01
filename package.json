@@ -13,6 +13,7 @@
     "dev:server": "npm run dev:backend",
     "dev": "concurrently \"npm run dev:frontend\" \"npm run dev:admin\" \"npm run dev:backend\"",
     "dev:full": "npm run dev",
+    "build:vercel": "npm --prefix frontend run build",
     "build": "npm --prefix frontend run build && npm --prefix admin-panel run build",
     "start:backend": "npm --prefix backend run start"
   },
