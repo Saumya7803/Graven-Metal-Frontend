@@ -10,6 +10,7 @@ import {
   Clock,
   FileSpreadsheet,
   FileText,
+  Globe2,
   History,
   LogOut,
   Mail,
@@ -166,6 +167,13 @@ const toneClass: Record<Tone, { icon: string; bar: string; chip: string; ring: s
   },
 };
 
+const statusMixClass: Record<string, string> = {
+  Hot: 'bg-gradient-to-r from-red-600 via-orange-500 to-orange-300',
+  Warm: 'bg-gradient-to-r from-amber-500 via-yellow-400 to-yellow-200',
+  Cold: 'bg-gradient-to-r from-slate-500 via-sky-500 to-cyan-300',
+  Rejected: 'bg-gradient-to-r from-zinc-700 via-red-900 to-red-500',
+};
+
 const roleClass = {
   page: 'bg-[rgb(var(--role-page))]',
   shell: 'bg-[rgb(var(--role-page))]',
@@ -192,6 +200,41 @@ const roleClass = {
     'from-[rgb(var(--role-accent-strong))] via-[rgb(var(--role-accent))] to-[rgb(var(--role-accent-light))]',
   overlay: 'to-[rgb(var(--role-accent)_/_0.06)]',
 };
+
+function getStatusMixBar(status: StatusMetric) {
+  return statusMixClass[status.label] || `bg-gradient-to-r ${toneClass[status.tone].bar}`;
+}
+
+function getSlaClass(metric: string, helper: string) {
+  const isSla = helper.toLowerCase().includes('sla');
+  if (!isSla) return `${roleClass.cta} text-black`;
+
+  const value = Number.parseFloat(metric);
+  if (!Number.isFinite(value)) return 'border border-sky-400/30 bg-sky-400/10 text-sky-100';
+  if (value >= 90) return 'border border-emerald-400/40 bg-emerald-400/15 text-emerald-100';
+  if (value >= 85) return 'border border-amber-400/45 bg-amber-400/15 text-amber-100';
+  return 'border border-red-400/45 bg-red-400/15 text-red-100';
+}
+
+function getSlaLabel(metric: string, helper: string) {
+  const isSla = helper.toLowerCase().includes('sla');
+  if (!isSla) return metric;
+
+  const value = Number.parseFloat(metric);
+  const health = Number.isFinite(value) && value >= 90 ? 'On track' : Number.isFinite(value) && value >= 85 ? 'Watch' : 'At risk';
+  return `${metric} ${health}`;
+}
+
+function getSourceLabel(row: WorkRow) {
+  if (row.sourceLabel) return row.sourceLabel.replace(/\s*Lead$/i, '');
+  if (row.source === 'lead') return 'Website';
+  if (row.source === 'quote') return 'Quote';
+  return 'Manual';
+}
+
+function getModuleCountTooltip(item: ModuleItem, metric: string) {
+  return `${metric} ${item.helper || item.label}`;
+}
 
 const roleThemes: Record<DashboardKind, RoleTheme> = {
   lqt: {
@@ -395,7 +438,7 @@ function StatCard({ stat }: { stat: Metric }) {
         <div>
           <p className="text-xs uppercase tracking-[0.18em] text-zinc-400">{stat.label}</p>
           <p className="mt-3 text-3xl font-extrabold text-white">{stat.value}</p>
-          <p className="mt-1 text-xs text-zinc-500">{stat.helper}</p>
+          <p className="mt-1 text-xs font-medium text-zinc-300">{stat.helper}</p>
         </div>
         <span className={`rounded-2xl p-3 ring-1 ${toneClass[stat.tone].icon}`}>
           <Icon size={20} />
@@ -453,12 +496,14 @@ function WorkTable({
   rows: WorkRow[];
   onOpenForm?: (row: WorkRow) => void;
 }) {
+  const showSourceColumn = rows.some((row) => row.source || row.sourceLabel);
   return (
     <div className={`overflow-x-auto rounded-2xl border ${roleClass.borderSoft} ${roleClass.inner}`}>
-      <table className="w-full min-w-[760px] text-sm">
-        <thead className={`border-b ${roleClass.borderSoft} text-left text-xs uppercase tracking-[0.14em] text-zinc-500`}>
+      <table className="w-full min-w-[860px] text-sm">
+        <thead className={`border-b ${roleClass.borderSoft} text-left text-xs uppercase tracking-[0.14em] text-zinc-400`}>
           <tr>
             <th className="px-4 py-3">{config.primaryColumn}</th>
+            {showSourceColumn ? <th className="px-4 py-3">Source</th> : null}
             <th className="px-4 py-3">Owner</th>
             <th className="px-4 py-3">{config.detailColumn}</th>
             <th className="px-4 py-3">Status</th>
@@ -472,12 +517,15 @@ function WorkTable({
             <tr key={row.id || `${row.account}-${row.detail}`} className={`border-t ${roleClass.borderSoft}`}>
               <td className="px-4 py-3 font-semibold text-white">
                 <span>{row.account}</span>
-                {row.sourceLabel ? (
-                  <span className="mt-1 block w-fit rounded-full border border-sky-400/30 bg-sky-400/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-sky-200">
-                    {row.sourceLabel}
-                  </span>
-                ) : null}
               </td>
+              {showSourceColumn ? (
+                <td className="px-4 py-3">
+                  <span className="inline-flex items-center gap-1.5 rounded-full border border-sky-400/30 bg-sky-400/10 px-2.5 py-1 text-xs font-semibold text-sky-100">
+                    <Globe2 size={13} />
+                    {getSourceLabel(row)}
+                  </span>
+                </td>
+              ) : null}
               <td className="px-4 py-3 text-zinc-300">{row.owner}</td>
               <td className="px-4 py-3 text-zinc-400">{row.detail}</td>
               <td className="px-4 py-3">
@@ -490,9 +538,10 @@ function WorkTable({
                   <button
                     type="button"
                     onClick={() => onOpenForm(row)}
-                    className={`rounded-lg border ${roleClass.border} ${roleClass.bgSoft} px-2.5 py-1.5 text-xs font-semibold ${roleClass.text}`}
+                    className={`inline-flex items-center gap-1.5 rounded-lg ${roleClass.cta} px-3 py-2 text-xs font-extrabold text-black shadow-glow hover:brightness-110`}
                   >
-                    Open Form
+                    Open
+                    <ArrowRight size={13} />
                   </button>
                 </td>
               ) : null}
@@ -531,7 +580,7 @@ function SideRail({
                   <span className="font-semibold text-white">{status.value}</span>
                 </div>
                 <div className="h-2 overflow-hidden rounded-full bg-zinc-800">
-                  <div className={`h-full rounded-full bg-gradient-to-r ${toneClass[status.tone].bar}`} style={{ width: `${width}%` }} />
+                  <div className={`h-full rounded-full ${getStatusMixBar(status)}`} style={{ width: `${width}%` }} />
                 </div>
               </div>
             );
@@ -569,13 +618,14 @@ function SideRail({
 }
 
 function OverviewWorkspace({ config, filteredRows, queueMode, setQueueMode, selectedModule, statusTotal, onOpenForm }: WorkspaceProps) {
+  const queueTitle = selectedModule.key === 'overview' ? 'Active Work Queue' : selectedModule.label;
   return (
     <div className="grid gap-5 xl:grid-cols-[1.35fr_0.65fr]">
       <Panel>
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div>
             <p className="text-xs uppercase tracking-[0.18em] text-zinc-500">Work Queue</p>
-            <h3 className="mt-1 font-display text-2xl text-white">{selectedModule.label}</h3>
+            <h3 className="mt-1 font-display text-2xl text-white">{queueTitle}</h3>
           </div>
           <QueueModeControl queueMode={queueMode} setQueueMode={setQueueMode} />
         </div>
@@ -1587,7 +1637,7 @@ export function OperationsDashboardPage({ kind }: { kind: DashboardKind }) {
     kind === 'lqt' && websiteLeadStats
       ? [
           { ...config.stats[0], label: 'Total Inquiries', value: String(websiteLeadStats.totalInquiries), helper: 'Website lead capture' },
-          { ...config.stats[1], label: 'Qualified Leads', value: String(websiteLeadStats.qualifiedLeads), helper: 'Validated by LQT' },
+          { ...config.stats[1], label: 'Qualified Leads', value: String(websiteLeadStats.qualifiedLeads), helper: 'Validated by qualification team' },
           { ...config.stats[2], label: 'Sales Assigned', value: String(websiteLeadStats.salesAssigned), helper: 'Routed to executives' },
           { ...config.stats[3], label: 'Orders Won', value: String(websiteLeadStats.ordersWon), helper: `${websiteLeadStats.conversionRate}% conversion rate` },
         ]
@@ -1661,10 +1711,12 @@ export function OperationsDashboardPage({ kind }: { kind: DashboardKind }) {
                       ? `border ${roleClass.borderStrong} ${roleClass.bgSoft} text-white shadow-glow`
                       : 'border border-transparent text-zinc-400 hover:border-[rgb(var(--role-accent)_/_0.18)] hover:bg-[rgb(var(--role-inner)_/_0.95)] hover:text-zinc-100'
                   }`}
+                  title={getModuleCountTooltip(item, metric)}
+                  aria-label={`${item.label}: ${getModuleCountTooltip(item, metric)}`}
                 >
                   <Icon size={17} className={active ? roleClass.text : 'text-zinc-500'} />
                   <span className="min-w-0 flex-1 truncate">{item.label}</span>
-                  <span className={`rounded-md border ${roleClass.borderSoft} bg-black/20 px-1.5 py-0.5 text-[10px] text-zinc-500`}>
+                  <span className={`rounded-md border ${roleClass.borderSoft} bg-black/20 px-1.5 py-0.5 text-[10px] font-semibold text-zinc-300`}>
                     {metric}
                   </span>
                 </button>
@@ -1707,10 +1759,14 @@ export function OperationsDashboardPage({ kind }: { kind: DashboardKind }) {
                 </div>
                 <button
                   type="button"
-                  className={`inline-flex items-center justify-center gap-2 rounded-xl ${roleClass.cta} px-4 py-2.5 text-sm font-extrabold text-black shadow-glow hover:brightness-110`}
+                  className={`inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-extrabold shadow-glow hover:brightness-110 ${getSlaClass(
+                    selectedModule.metric,
+                    selectedModule.helper
+                  )}`}
+                  title={selectedModule.helper}
                 >
                   <SelectedIcon size={16} />
-                  {loadingOperations ? 'Syncing' : selectedModule.metric}
+                  {loadingOperations ? 'Syncing' : getSlaLabel(selectedModule.metric, selectedModule.helper)}
                 </button>
               </div>
             </div>
@@ -1725,16 +1781,21 @@ export function OperationsDashboardPage({ kind }: { kind: DashboardKind }) {
           {kind === 'lqt' && websiteLeadStats ? (
             <section className={`grid gap-3 rounded-2xl border ${roleClass.borderSoft} ${roleClass.card} p-4 sm:grid-cols-2 xl:grid-cols-4`}>
               {[
-                ['New Website Leads', websiteLeadStats.newWebsiteLeads],
-                ['Quotations Sent', websiteLeadStats.quotationsSent],
-                ['Converted Leads', websiteLeadStats.convertedLeads],
-                ['Lead Source Performance', `Website: ${websiteLeadStats.leadSourcePerformance.Website || 0}`],
-              ].map(([label, value]) => (
-                <div key={String(label)} className={`rounded-xl border ${roleClass.borderSoft} ${roleClass.inner} px-3 py-3`}>
-                  <p className="text-xs uppercase tracking-[0.14em] text-zinc-500">{label}</p>
-                  <p className={`mt-2 text-2xl font-black ${roleClass.text}`}>{value}</p>
-                </div>
-              ))}
+                { label: 'New Website Leads', value: websiteLeadStats.newWebsiteLeads, icon: UserCheck },
+                { label: 'Quotations Sent', value: websiteLeadStats.quotationsSent, icon: FileText },
+                { label: 'Converted Leads', value: websiteLeadStats.convertedLeads, icon: Target },
+                { label: 'Lead Source Performance', value: `Website: ${websiteLeadStats.leadSourcePerformance.Website || 0}`, icon: Globe2 },
+              ].map(({ label, value, icon: StatIcon }) => {
+                return (
+                  <div key={label} className={`relative overflow-hidden rounded-xl border ${roleClass.borderSoft} ${roleClass.inner} px-3 py-3`}>
+                    <div className="absolute right-3 top-3 opacity-20">
+                      <StatIcon size={28} className={roleClass.text} />
+                    </div>
+                    <p className="relative text-xs font-semibold uppercase tracking-[0.14em] text-zinc-300">{label}</p>
+                    <p className={`relative mt-2 text-2xl font-black ${roleClass.text}`}>{value}</p>
+                  </div>
+                );
+              })}
             </section>
           ) : null}
 
@@ -1772,7 +1833,7 @@ export function OperationsDashboardPage({ kind }: { kind: DashboardKind }) {
                     </span>
                     <span className="min-w-0 flex-1">
                       <span className="block font-semibold text-white">{module.label}</span>
-                      <span className="mt-1 block text-sm text-zinc-500">{module.helper}</span>
+                      <span className="mt-1 block text-sm font-medium text-zinc-300">{module.helper}</span>
                       <span className={`mt-3 inline-flex items-center gap-1 text-xs font-semibold ${roleClass.text}`}>
                         {module.metric}
                         <ArrowRight size={13} className="transition group-hover:translate-x-0.5" />
