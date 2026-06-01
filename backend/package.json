@@ -9,6 +9,7 @@
     "start": "node src/server.js",
     "start:prod": "node src/server.js",
     "env:check:render": "node scripts/checkRenderEnv.mjs",
+    "admin:reset": "node scripts/resetSuperAdmin.mjs",
     "migrate:leads": "node scripts/migrateWebsiteLeads.mjs",
     "test:admin": "node scripts/adminSystemTest.mjs",
     "test:smoke": "node scripts/smokeTest.mjs"
