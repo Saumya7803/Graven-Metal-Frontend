@@ -62,6 +62,29 @@ export type QuotePayload = {
   file?: File | null;
 };
 
+export type WebsiteLeadPayload = {
+  fullName: string;
+  companyName: string;
+  designation?: string;
+  phone: string;
+  email: string;
+  whatsappNumber?: string;
+  industryType: string;
+  companyLocation: string;
+  city?: string;
+  state?: string;
+  country?: string;
+  gstNumber?: string;
+  product: string;
+  quantity: number;
+  unit: string;
+  deliveryLocation: string;
+  requirement: string;
+  purchaseTimeline: string;
+  preferredContactMethod?: string;
+  file?: File | null;
+};
+
 export type AuthPayload = { email: string; password: string };
 export type RegisterPayload = AuthPayload & { name: string; phone?: string; company?: string };
 export type AuthResponse = { token: string; user: AuthUser };
@@ -120,6 +143,23 @@ export const publicApi = {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
     return unwrapResponse(res.data);
+  },
+
+  async submitWebsiteLead(payload: WebsiteLeadPayload) {
+    const formData = new FormData();
+    Object.entries(payload).forEach(([key, value]) => {
+      if (value === undefined || value === null || value === '') return;
+      if (key === 'file' && value instanceof File) {
+        formData.append(key, value);
+        return;
+      }
+      if (key !== 'file') formData.append(key, String(value));
+    });
+
+    const res = await axiosClient.post('/leads', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return unwrapResponse<{ leadId: string; status: string; source: string; priority: string; priorityScore: number }>(res.data);
   },
 
   async getMyQuotes() {
