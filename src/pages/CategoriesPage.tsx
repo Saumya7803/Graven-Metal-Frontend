@@ -1,11 +1,9 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import toast from 'react-hot-toast';
 import { MotionReveal } from '../components/MotionReveal';
 import { SkeletonCard } from '../components/ui/Skeleton';
 import { SEO } from '../components/seo/SEO';
-import { getApiErrorMessage } from '../lib/apiUtils';
 import { publicApi } from '../lib/publicApi';
 import type { ApiCategory } from '../lib/publicApi';
 import { demoCategories } from '../data/demoContent';
@@ -35,9 +33,8 @@ export function CategoriesPage() {
     publicApi
       .getCategories()
       .then((data) => setCategories(data.length ? data : demoCategories))
-      .catch((error) => {
+      .catch(() => {
         setCategories(demoCategories);
-        toast.error(getApiErrorMessage(error));
       })
       .finally(() => setLoading(false));
   }, []);
