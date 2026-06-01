@@ -111,6 +111,27 @@ async function ensureDevCatalog() {
 }
 
 export const ensureDevUsers = async () => {
+  if (process.env.SUPER_ADMIN_EMAIL && process.env.SUPER_ADMIN_PASSWORD) {
+    const email = process.env.SUPER_ADMIN_EMAIL;
+    const existing = await User.findOne({ email });
+
+    if (existing) {
+      existing.name = process.env.SUPER_ADMIN_NAME || existing.name || 'Super Admin';
+      existing.role = 'super_admin';
+      existing.password = process.env.SUPER_ADMIN_PASSWORD;
+      await existing.save();
+      console.log(`Updated configured super admin: ${email}`);
+    } else {
+      await User.create({
+        name: process.env.SUPER_ADMIN_NAME || 'Super Admin',
+        email,
+        password: process.env.SUPER_ADMIN_PASSWORD,
+        role: 'super_admin',
+      });
+      console.log(`Created configured super admin: ${email}`);
+    }
+  }
+
   if (process.env.NODE_ENV === 'production') return;
   if (process.env.DEV_BOOTSTRAP_USERS === 'false') return;
 
