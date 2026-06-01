@@ -43,6 +43,7 @@ Node.js + Express + MongoDB API for GRAVEN METAL.
 - Products: `/api/products`
 - Categories: `/api/categories`
 - Quotes: `/api/quotes`
+- Website leads: `POST /api/leads`
 - Contacts: `/api/contacts`
 - Blogs: `/api/blogs`
 - Super Admin: `/api/super-admin/*`
@@ -52,3 +53,6 @@ Node.js + Express + MongoDB API for GRAVEN METAL.
 - Set `CLIENT_URLS` to your Vercel domains (comma-separated).
 - Health check path: `/api/health`.
 - Build command recommended: `npm ci --omit=dev`.
+- Run `npm run migrate:leads` after configuring `MONGODB_URI` to synchronize website-lead indexes.
+- Configure `SMTP_HOST`, `SMTP_PORT`, `SMTP_FROM`, and `LEAD_NOTIFICATION_EMAIL` to notify admins about new website inquiries.
+- Configure `SMTP_USER` and `SMTP_PASS` when the SMTP server requires authentication.

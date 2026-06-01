@@ -9,6 +9,7 @@
     "start": "node src/server.js",
     "start:prod": "node src/server.js",
     "env:check:render": "node scripts/checkRenderEnv.mjs",
+    "migrate:leads": "node scripts/migrateWebsiteLeads.mjs",
     "test:admin": "node scripts/adminSystemTest.mjs",
     "test:smoke": "node scripts/smokeTest.mjs"
   },
@@ -26,11 +27,12 @@
     "jsonwebtoken": "^9.0.3",
     "mongoose": "^9.6.2",
     "morgan": "^1.10.1",
-    "multer": "^2.1.1"
+    "multer": "^2.1.1",
+    "nodemailer": "^7.0.10"
   },
   "devDependencies": {
     "mongodb-memory-server": "^10.3.0",
-    "supertest": "^7.1.4",
-    "nodemon": "^3.1.14"
+    "nodemon": "^3.1.14",
+    "supertest": "^7.1.4"
   }
 }

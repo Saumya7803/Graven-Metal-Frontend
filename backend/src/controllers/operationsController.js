@@ -1,4 +1,5 @@
 import { Quote } from '../models/Quote.js';
+import { Lead } from '../models/Lead.js';
 import { OperationRecord } from '../models/OperationRecord.js';
 import { User } from '../models/User.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
@@ -65,6 +66,44 @@ function formatQuoteRow(quote) {
   };
 }
 
+function formatLeadRow(lead) {
+  const pendingFollowUp = lead.followUps?.find((item) => item.status === 'pending');
+  return {
+    id: lead._id,
+    source: 'lead',
+    sourceLabel: 'Website Lead',
+    leadId: lead.leadId,
+    account: lead.fullName,
+    companyName: lead.companyName,
+    owner: lead.assignedToName || 'Unassigned',
+    detail: `${lead.product}, ${lead.quantity} ${lead.unit}`,
+    product: lead.product,
+    quantity: `${lead.quantity} ${lead.unit}`,
+    status: lead.status,
+    leadStatus: lead.status,
+    next: pendingFollowUp?.note || 'Review website inquiry',
+    lastFollowUp: pendingFollowUp?.dueAt || '',
+    value: `${lead.priority} (${lead.priorityScore})`,
+    priority: lead.priority,
+    priorityScore: lead.priorityScore,
+    buyerType: lead.industryType,
+    email: lead.email,
+    phone: lead.phone,
+    whatsappNumber: lead.whatsappNumber,
+    requirement: lead.requirement,
+    assignedTeam: lead.assignedTeam,
+    assignedTo: lead.assignedTo,
+    leadTemperature: lead.leadTemperature,
+    quotation: lead.quotation,
+    order: lead.order,
+    callNotes: lead.notes || [],
+    followUps: lead.followUps || [],
+    meetings: lead.meetings || [],
+    createdAt: lead.createdAt,
+    updatedAt: lead.updatedAt,
+  };
+}
+
 function formatRecord(record) {
   return {
     id: record._id,
@@ -98,6 +137,42 @@ function teamQuoteFilter(team) {
   return {};
 }
 
+function teamLeadFilter(team) {
+  if (team === 'lqt') return { $or: [{ assignedTeam: 'lqt' }, { assignedTeam: '' }, { assignedTeam: { $exists: false } }] };
+  if (team === 'sales') return { assignedTeam: 'sales' };
+  return {};
+}
+
+function websiteLeadAnalytics(leads) {
+  const totalInquiries = leads.length;
+  const qualifiedStatuses = new Set([
+    'Qualified',
+    'Sales Assigned',
+    'Follow-up',
+    'Quotation Sent',
+    'Negotiation',
+    'Order Confirmed',
+    'Won',
+  ]);
+  const qualifiedLeads = leads.filter((lead) => qualifiedStatuses.has(lead.status)).length;
+  const salesAssigned = leads.filter((lead) => lead.assignedTeam === 'sales').length;
+  const quotationsSent = leads.filter((lead) => lead.quotation?.status === 'sent').length;
+  const ordersWon = leads.filter((lead) => lead.status === 'Won' || lead.order?.status === 'fulfilled').length;
+
+  return {
+    totalInquiries,
+    totalWebsiteLeads: totalInquiries,
+    newWebsiteLeads: leads.filter((lead) => lead.status === 'New').length,
+    qualifiedLeads,
+    salesAssigned,
+    quotationsSent,
+    ordersWon,
+    convertedLeads: ordersWon,
+    conversionRate: totalInquiries ? Number(((ordersWon / totalInquiries) * 100).toFixed(1)) : 0,
+    leadSourcePerformance: { Website: totalInquiries },
+  };
+}
+
 export const getOperationsDashboard = asyncHandler(async (req, res) => {
   const { team } = req.params;
   const accessError = assertTeamAccess(req, team);
@@ -117,19 +192,26 @@ export const getOperationsDashboard = asyncHandler(async (req, res) => {
     });
   }
 
-  const quotes = await Quote.find(teamQuoteFilter(team)).sort({ updatedAt: -1 }).limit(200);
-  const rows = quotes.map(formatQuoteRow);
+  const [quotes, leads, allWebsiteLeads] = await Promise.all([
+    Quote.find(teamQuoteFilter(team)).sort({ updatedAt: -1 }).limit(200),
+    Lead.find(teamLeadFilter(team)).sort({ updatedAt: -1 }).limit(200),
+    Lead.find({ source: 'Website' }).select('status assignedTeam quotation.status order.status').lean(),
+  ]);
+  const rows = [...leads.map(formatLeadRow), ...quotes.map(formatQuoteRow)].sort(
+    (a, b) => new Date(b.updatedAt || 0).getTime() - new Date(a.updatedAt || 0).getTime()
+  );
   return res.json({
     team,
     rows,
+    websiteLeadStats: websiteLeadAnalytics(allWebsiteLeads),
     counts: {
       quoteStatus: statusCounts(rows, 'quoteStatus'),
       leadTemperature: statusCounts(rows, 'leadTemperature'),
     },
     modules: {
-      'new-leads': rows.filter((row) => row.quoteStatus === 'new').length,
+      'new-leads': rows.filter((row) => row.quoteStatus === 'new' || row.leadStatus === 'New').length,
       'assigned-leads': rows.filter((row) => row.owner !== 'Unassigned').length,
-      qualification: rows.filter((row) => row.quoteStatus === 'in_review').length,
+      qualification: rows.filter((row) => row.quoteStatus === 'in_review' || row.leadStatus === 'Qualified').length,
       'lead-status': Object.keys(statusCounts(rows, 'leadTemperature')).length,
       'follow-ups': rows.reduce((sum, row) => sum + row.followUps.filter((item) => item.status === 'pending').length, 0),
       'call-notes': rows.reduce((sum, row) => sum + row.callNotes.length, 0),
@@ -143,7 +225,8 @@ export const getOperationsDashboard = asyncHandler(async (req, res) => {
 
 export const listOperationMembers = asyncHandler(async (req, res) => {
   const { team } = req.params;
-  const accessError = assertTeamAccess(req, team);
+  const canListSalesForHandoff = req.user.role === 'lqt' && team === 'sales';
+  const accessError = canListSalesForHandoff ? null : assertTeamAccess(req, team);
   if (accessError) return res.status(403).json({ message: accessError });
 
   const members = await User.find({ role: team }).select('_id name email role').sort({ name: 1 });

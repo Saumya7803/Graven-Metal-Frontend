@@ -4,17 +4,28 @@ export type OperationTeam = 'lqt' | 'sales' | 'procurement';
 
 export type OperationRow = {
   id: string;
-  source: 'quote' | 'operation';
+  source: 'quote' | 'lead' | 'operation';
+  sourceLabel?: string;
+  leadId?: string;
   account: string;
+  companyName?: string;
   owner: string;
   detail: string;
   status: string;
+  leadStatus?: string;
   quoteStatus?: string;
   next: string;
   value: string;
   assignedTeam?: string;
   assignedTo?: string;
   leadTemperature?: string;
+  product?: string;
+  quantity?: string;
+  priority?: string;
+  priorityScore?: number;
+  buyerType?: string;
+  whatsappNumber?: string;
+  lastFollowUp?: string;
   requirement?: string;
   email?: string;
   phone?: string;
@@ -29,11 +40,25 @@ export type OperationMember = {
   role: OperationTeam;
 };
 
+export type WebsiteLeadStats = {
+  totalInquiries: number;
+  totalWebsiteLeads: number;
+  newWebsiteLeads: number;
+  qualifiedLeads: number;
+  salesAssigned: number;
+  quotationsSent: number;
+  ordersWon: number;
+  convertedLeads: number;
+  conversionRate: number;
+  leadSourcePerformance: Record<string, number>;
+};
+
 export type OperationsDashboard = {
   team: OperationTeam;
   rows: OperationRow[];
   counts: Record<string, unknown>;
   modules: Record<string, number>;
+  websiteLeadStats?: WebsiteLeadStats;
 };
 
 export const operationsApi = {
@@ -49,6 +74,11 @@ export const operationsApi = {
 
   async updateQuote(team: 'lqt' | 'sales', id: string, payload: Record<string, unknown>) {
     const res = await axiosClient.patch(`/operations/${team}/quotes/${id}`, payload);
+    return res.data;
+  },
+
+  async updateLead(id: string, payload: Record<string, unknown>) {
+    const res = await axiosClient.patch(`/leads/${id}`, payload);
     return res.data;
   },
 

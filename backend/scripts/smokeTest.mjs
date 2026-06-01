@@ -180,6 +180,80 @@ const run = async () => {
     assertStatus(lqtMembers, 200, 'lqt members api');
     assertTruthy(lqtMembers.body?.data?.some((member) => `${member.id}` === `${lqtUser._id}`), 'lqt members contains lqt user');
 
+    const websiteLeadCreate = await request(app)
+      .post('/api/leads')
+      .field('fullName', 'Industrial Buyer')
+      .field('companyName', 'Precision Forge Industries')
+      .field('designation', 'Procurement Head')
+      .field('phone', '+919988776655')
+      .field('email', 'buyer@precisionforge.example')
+      .field('whatsappNumber', '+919988776655')
+      .field('industryType', 'Manufacturing')
+      .field('companyLocation', 'Pune, Maharashtra')
+      .field('product', 'Copper Cathodes')
+      .field('quantity', '8')
+      .field('unit', 'MT')
+      .field('deliveryLocation', 'Pune Plant')
+      .field('requirement', 'Need LME grade copper cathodes for monthly production supply.')
+      .field('purchaseTimeline', 'Immediate')
+      .field('preferredContactMethod', 'WhatsApp');
+    assertStatus(websiteLeadCreate, 201, 'website lead create');
+    const websiteLeadId = websiteLeadCreate.body?.data?.id;
+    assertTruthy(websiteLeadId, 'website lead id');
+    assertTruthy(websiteLeadCreate.body?.data?.priority === 'High', 'website lead scoring');
+
+    const lqtDashboardWithWebsiteLead = await request(app)
+      .get('/api/operations/lqt/dashboard')
+      .set('Authorization', `Bearer ${lqtToken}`);
+    assertStatus(lqtDashboardWithWebsiteLead, 200, 'lqt dashboard website lead api');
+    assertTruthy(
+      lqtDashboardWithWebsiteLead.body?.rows?.some(
+        (row) => `${row.id}` === `${websiteLeadId}` && row.sourceLabel === 'Website Lead'
+      ),
+      'lqt dashboard contains website lead'
+    );
+
+    const salesMembersForHandoff = await request(app)
+      .get('/api/operations/sales/members')
+      .set('Authorization', `Bearer ${lqtToken}`);
+    assertStatus(salesMembersForHandoff, 200, 'lqt sales members handoff api');
+    assertTruthy(
+      salesMembersForHandoff.body?.data?.some((member) => `${member.id}` === `${salesUser._id}`),
+      'lqt can select sales employee'
+    );
+
+    const websiteLeadAssignment = await request(app)
+      .patch(`/api/leads/${websiteLeadId}`)
+      .set('Authorization', `Bearer ${lqtToken}`)
+      .send({
+        status: 'Sales Assigned',
+        leadTemperature: 'hot',
+        assignedTeam: 'sales',
+        assignedTo: salesUser._id.toString(),
+        note: 'Buyer verified and assigned to Sales.',
+      });
+    assertStatus(websiteLeadAssignment, 200, 'website lead sales assignment');
+
+    const websiteLeadQuotation = await request(app)
+      .patch(`/api/leads/${websiteLeadId}`)
+      .set('Authorization', `Bearer ${salesToken}`)
+      .send({
+        status: 'Follow-up',
+        quotation: { amount: 6350000, currency: 'INR', status: 'sent' },
+        note: 'Quotation sent to industrial buyer.',
+      });
+    assertStatus(websiteLeadQuotation, 200, 'website lead quotation');
+    assertTruthy(websiteLeadQuotation.body?.data?.status === 'Quotation Sent', 'website lead quotation workflow status');
+
+    const salesDashboardWithWebsiteLead = await request(app)
+      .get('/api/operations/sales/dashboard')
+      .set('Authorization', `Bearer ${salesToken}`);
+    assertStatus(salesDashboardWithWebsiteLead, 200, 'sales dashboard website lead api');
+    assertTruthy(
+      salesDashboardWithWebsiteLead.body?.websiteLeadStats?.quotationsSent === 1,
+      'website lead analytics quotation count'
+    );
+
     const adminOperations = await request(app)
       .get('/api/operations/lqt/dashboard')
       .set('Authorization', `Bearer ${adminToken}`);

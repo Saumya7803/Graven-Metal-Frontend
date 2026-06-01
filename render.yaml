@@ -43,9 +43,27 @@ services:
         value: 900000
       - key: AUTH_RATE_LIMIT_MAX
         value: 10
+      - key: LEAD_FORM_RATE_LIMIT_WINDOW_MS
+        value: 900000
+      - key: LEAD_FORM_RATE_LIMIT_MAX
+        value: 120
       - key: CLOUDINARY_CLOUD_NAME
         sync: false
       - key: CLOUDINARY_API_KEY
         sync: false
       - key: CLOUDINARY_API_SECRET
+        sync: false
+      - key: SMTP_HOST
+        sync: false
+      - key: SMTP_PORT
+        value: 587
+      - key: SMTP_SECURE
+        value: false
+      - key: SMTP_USER
+        sync: false
+      - key: SMTP_PASS
+        sync: false
+      - key: SMTP_FROM
+        sync: false
+      - key: LEAD_NOTIFICATION_EMAIL
         sync: false

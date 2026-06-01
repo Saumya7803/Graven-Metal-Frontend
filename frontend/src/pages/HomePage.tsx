@@ -1,3 +1,5 @@
+import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { motion } from 'framer-motion';
 import {
   ArrowRight,
@@ -13,10 +15,10 @@ import {
   TrendingUp,
   Truck,
   UserRound,
+  X,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { BrandLogo } from '../components/BrandLogo';
-import { MotionReveal } from '../components/MotionReveal';
 import { SEO } from '../components/seo/SEO';
 import { useCustomerAuth } from '../components/auth/AuthProvider';
 
@@ -83,6 +85,21 @@ const processSteps = [
 
 export function HomePage() {
   const { isAuthenticated, user } = useCustomerAuth();
+  const [showQuotePrompt, setShowQuotePrompt] = useState(false);
+  const [portalTarget, setPortalTarget] = useState<HTMLElement | null>(null);
+
+  useEffect(() => {
+    setPortalTarget(document.body);
+  }, []);
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => setShowQuotePrompt(true), 900);
+    return () => window.clearTimeout(timer);
+  }, []);
+
+  const closeQuotePrompt = () => {
+    setShowQuotePrompt(false);
+  };
 
   return (
     <div className="bg-[#03070b]">
@@ -93,8 +110,58 @@ export function HomePage() {
         keywords={['industrial automation', 'automation spare parts', 'plc systems', 'cnc systems', 'automation support']}
       />
 
-      <MotionReveal>
-        <>
+      {showQuotePrompt && portalTarget
+        ? createPortal(
+        <div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/68 px-4 py-6 backdrop-blur-sm">
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="quote-prompt-title"
+            className="relative w-full max-w-lg overflow-hidden rounded-md border border-gold/25 bg-[#071018] p-5 shadow-halo sm:p-6"
+          >
+            <button
+              type="button"
+              onClick={closeQuotePrompt}
+              aria-label="Close request quote popup"
+              className="absolute right-3 top-3 rounded border border-white/10 bg-black/25 p-2 text-zinc-300 transition hover:border-gold/40 hover:text-gold"
+            >
+              <X size={16} />
+            </button>
+            <p className="pr-10 text-[11px] uppercase tracking-[0.24em] text-gold">Buying metal?</p>
+            <h2 id="quote-prompt-title" className="mt-3 pr-8 font-display text-3xl text-white">
+              Request price and availability.
+            </h2>
+            <p className="mt-3 text-sm leading-6 text-zinc-400">
+              Submit your product, quantity, and delivery details. Our metal sourcing team will review it and contact
+              you within 24 hours.
+            </p>
+            <div className="mt-5 grid gap-2 text-sm text-zinc-300 sm:grid-cols-2">
+              <span className="rounded border border-white/10 bg-black/20 px-3 py-2">Bulk purchase support</span>
+              <span className="rounded border border-white/10 bg-black/20 px-3 py-2">LQT verified follow-up</span>
+            </div>
+            <div className="mt-6 flex flex-wrap gap-3">
+              <Link
+                to="/quote-request"
+                onClick={closeQuotePrompt}
+                className="inline-flex items-center gap-2 rounded bg-gold-cta px-5 py-3 text-sm font-bold text-black shadow-gold hover:brightness-110"
+              >
+                Go to Request Quote <ArrowRight size={15} />
+              </Link>
+              <button
+                type="button"
+                onClick={closeQuotePrompt}
+                className="rounded border border-gold/30 px-5 py-3 text-sm font-semibold text-gold transition hover:bg-gold/10"
+              >
+                Not Interested
+              </button>
+            </div>
+          </div>
+        </div>,
+          portalTarget,
+        )
+        : null}
+
+      <>
           <section className="relative min-h-[600px] overflow-hidden bg-[#050b11] sm:min-h-[660px] lg:min-h-[calc(100svh-72px)]">
             <img
               src="/imgs/background.png"
@@ -362,8 +429,7 @@ export function HomePage() {
               </div>
             </div>
           </section>
-        </>
-      </MotionReveal>
+      </>
     </div>
   );
 }

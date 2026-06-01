@@ -8,6 +8,8 @@ const QUOTE_FORM_WINDOW_MS = Number(process.env.QUOTE_FORM_RATE_LIMIT_WINDOW_MS 
 const QUOTE_FORM_MAX_REQUESTS = Number(process.env.QUOTE_FORM_RATE_LIMIT_MAX || 240);
 const CONTACT_FORM_WINDOW_MS = Number(process.env.CONTACT_FORM_RATE_LIMIT_WINDOW_MS || 15 * 60 * 1000);
 const CONTACT_FORM_MAX_REQUESTS = Number(process.env.CONTACT_FORM_RATE_LIMIT_MAX || 240);
+const LEAD_FORM_WINDOW_MS = Number(process.env.LEAD_FORM_RATE_LIMIT_WINDOW_MS || 15 * 60 * 1000);
+const LEAD_FORM_MAX_REQUESTS = Number(process.env.LEAD_FORM_RATE_LIMIT_MAX || 120);
 const ADMIN_WINDOW_MS = Number(process.env.ADMIN_RATE_LIMIT_WINDOW_MS || 15 * 60 * 1000);
 const ADMIN_MAX_REQUESTS = Number(process.env.ADMIN_RATE_LIMIT_MAX || 900);
 
@@ -88,6 +90,12 @@ export const contactSubmitRateLimit = createRateLimiter({
   windowMs: CONTACT_FORM_WINDOW_MS,
   max: CONTACT_FORM_MAX_REQUESTS,
   keyPrefix: 'contact-submit',
+});
+
+export const leadSubmitRateLimit = createRateLimiter({
+  windowMs: LEAD_FORM_WINDOW_MS,
+  max: LEAD_FORM_MAX_REQUESTS,
+  keyPrefix: 'lead-submit',
 });
 
 export const adminRateLimit = createRateLimiter({

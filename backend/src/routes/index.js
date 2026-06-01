@@ -8,6 +8,7 @@ import blogRoutes from './blogRoutes.js';
 import superAdminRoutes from './superAdminRoutes.js';
 import settingsRoutes from './settingsRoutes.js';
 import operationsRoutes from './operationsRoutes.js';
+import leadRoutes from './leadRoutes.js';
 import {
   adminRateLimit,
   apiRateLimit,
@@ -22,6 +23,7 @@ router.use('/categories', publicReadRateLimit, categoryRoutes);
 router.use('/blogs', publicReadRateLimit, blogRoutes);
 router.use('/quotes', quoteRoutes);
 router.use('/contacts', contactRoutes);
+router.use('/leads', leadRoutes);
 router.use('/settings', adminRateLimit, settingsRoutes);
 router.use('/super-admin', adminRateLimit, superAdminRoutes);
 router.use('/operations', adminRateLimit, operationsRoutes);

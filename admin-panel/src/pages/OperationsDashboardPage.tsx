@@ -32,7 +32,7 @@ import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { SEO } from '../components/seo/SEO';
 import { clearAuth, getAuthUser } from '../lib/auth';
-import { operationsApi, type OperationMember, type OperationRow } from '../lib/operationsApi';
+import { operationsApi, type OperationMember, type OperationRow, type WebsiteLeadStats } from '../lib/operationsApi';
 
 type DashboardKind = 'lqt' | 'sales' | 'procurement';
 type Tone = 'gold' | 'green' | 'blue' | 'red' | 'violet';
@@ -53,8 +53,11 @@ type StatusMetric = {
 
 type WorkRow = {
   id?: string;
-  source?: 'quote' | 'operation';
+  source?: 'quote' | 'lead' | 'operation';
+  sourceLabel?: string;
+  leadId?: string;
   account: string;
+  companyName?: string;
   owner: string;
   detail: string;
   status: string;
@@ -65,6 +68,14 @@ type WorkRow = {
   email?: string;
   phone?: string;
   requirement?: string;
+  leadStatus?: string;
+  product?: string;
+  quantity?: string;
+  priority?: string;
+  priorityScore?: number;
+  buyerType?: string;
+  whatsappNumber?: string;
+  lastFollowUp?: string;
 };
 
 type ModuleItem = {
@@ -459,7 +470,14 @@ function WorkTable({
         <tbody>
           {rows.map((row) => (
             <tr key={row.id || `${row.account}-${row.detail}`} className={`border-t ${roleClass.borderSoft}`}>
-              <td className="px-4 py-3 font-semibold text-white">{row.account}</td>
+              <td className="px-4 py-3 font-semibold text-white">
+                <span>{row.account}</span>
+                {row.sourceLabel ? (
+                  <span className="mt-1 block w-fit rounded-full border border-sky-400/30 bg-sky-400/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-sky-200">
+                    {row.sourceLabel}
+                  </span>
+                ) : null}
+              </td>
               <td className="px-4 py-3 text-zinc-300">{row.owner}</td>
               <td className="px-4 py-3 text-zinc-400">{row.detail}</td>
               <td className="px-4 py-3">
@@ -596,6 +614,11 @@ function IntakeWorkspace({ kind, filteredRows, selectedModule, actionBusy, onOpe
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <p className="font-semibold text-white">{row.account}</p>
+                  {row.sourceLabel ? (
+                    <p className="mt-1 w-fit rounded-full border border-sky-400/30 bg-sky-400/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-sky-200">
+                      {row.sourceLabel}
+                    </p>
+                  ) : null}
                   <p className="mt-1 text-sm text-zinc-400">{row.detail}</p>
                 </div>
                 <StatusChip status={row.status} />
@@ -604,15 +627,32 @@ function IntakeWorkspace({ kind, filteredRows, selectedModule, actionBusy, onOpe
                 <span className={`rounded-xl border ${roleClass.borderSoft} ${roleClass.inner} px-3 py-2 text-zinc-400`}>Owner: {row.owner}</span>
                 <span className={`rounded-xl border ${roleClass.borderSoft} ${roleClass.inner} px-3 py-2 text-zinc-400`}>Priority: {row.value}</span>
               </div>
-              <button
-                type="button"
-                disabled={actionBusy}
-                onClick={() => onOpenForm(row)}
-                className={`mt-4 inline-flex items-center gap-2 rounded-xl ${roleClass.cta} px-3 py-2 text-xs font-bold text-black disabled:opacity-60`}
-              >
-                Open Intake
-                <ArrowRight size={14} />
-              </button>
+              <div className="mt-4 flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  disabled={actionBusy}
+                  onClick={() => onOpenForm(row)}
+                  className={`inline-flex items-center gap-2 rounded-xl ${roleClass.cta} px-3 py-2 text-xs font-bold text-black disabled:opacity-60`}
+                >
+                  Open Lead
+                  <ArrowRight size={14} />
+                </button>
+                {row.phone ? (
+                  <a href={`tel:${row.phone}`} className={`inline-flex items-center gap-1 rounded-xl border ${roleClass.border} ${roleClass.bgSoft} px-3 py-2 text-xs ${roleClass.text}`}>
+                    <Phone size={13} /> Call
+                  </a>
+                ) : null}
+                {row.whatsappNumber || row.phone ? (
+                  <a
+                    href={`https://wa.me/${(row.whatsappNumber || row.phone || '').replace(/\D/g, '')}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className={`inline-flex items-center gap-1 rounded-xl border ${roleClass.border} ${roleClass.bgSoft} px-3 py-2 text-xs ${roleClass.text}`}
+                  >
+                    <MessageSquare size={13} /> WhatsApp
+                  </a>
+                ) : null}
+              </div>
             </article>
           ))}
         </div>
@@ -990,14 +1030,16 @@ type OperationsFormModalProps = {
   kind: DashboardKind;
   row: WorkRow;
   members: OperationMember[];
+  salesMembers: OperationMember[];
   activeModule: string;
   busy: boolean;
   onClose: () => void;
   onSave: (row: WorkRow, payload: Record<string, unknown>) => void;
 };
 
-function OperationsFormModal({ kind, row, members, activeModule, busy, onClose, onSave }: OperationsFormModalProps) {
+function OperationsFormModal({ kind, row, members, salesMembers, activeModule, busy, onClose, onSave }: OperationsFormModalProps) {
   const isQuote = row.source === 'quote';
+  const isLead = row.source === 'lead';
   const [title, setTitle] = useState(row.account || '');
   const [assigneeId, setAssigneeId] = useState(
     row.assignedTo || members.find((member) => member.name === row.owner)?.id || ''
@@ -1011,14 +1053,17 @@ function OperationsFormModal({ kind, row, members, activeModule, busy, onClose, 
   const [followUpAt, setFollowUpAt] = useState('');
   const [quotationAmount, setQuotationAmount] = useState('');
   const [handoffToSales, setHandoffToSales] = useState(kind === 'lqt' && activeModule === 'sales-assignment');
+  const [leadStatus, setLeadStatus] = useState(row.leadStatus || (kind === 'lqt' ? 'Qualified' : 'Follow-up'));
+  const [meetingAt, setMeetingAt] = useState('');
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const memberById = new Map(members.map((member) => [member.id, member]));
+  const availableMembers = handoffToSales ? salesMembers : members;
+  const memberById = new Map(availableMembers.map((member) => [member.id, member]));
   const inputClass = `w-full rounded-xl border ${roleClass.border} ${roleClass.inner} px-3 py-2.5 text-sm text-zinc-100 outline-none placeholder:text-zinc-500 ${roleClass.focus}`;
 
   const submit = () => {
     const nextErrors: Record<string, string> = {};
     if (!isQuote && !title.trim()) nextErrors.title = 'Name is required';
-    if (!handoffToSales && !assigneeId) nextErrors.assignee = 'Select an assigned employee';
+    if (!assigneeId) nextErrors.assignee = handoffToSales ? 'Select a sales employee' : 'Select an assigned employee';
     if (!detail.trim()) nextErrors.detail = 'Requirement details are required';
     if (!note.trim() || note.trim().length < 3) nextErrors.note = 'Add a note with at least 3 characters';
     if (kind === 'procurement' && !nextStep.trim()) nextErrors.nextStep = 'Next step is required';
@@ -1028,6 +1073,41 @@ function OperationsFormModal({ kind, row, members, activeModule, busy, onClose, 
 
     if (Object.keys(nextErrors).length) {
       setErrors(nextErrors);
+      return;
+    }
+
+    if (isLead && kind === 'lqt') {
+      onSave(row, {
+        status: handoffToSales ? 'Sales Assigned' : leadStatus,
+        leadTemperature,
+        assignedTeam: handoffToSales ? 'sales' : 'lqt',
+        assignedTo: assigneeId,
+        requirement: detail.trim(),
+        note: note.trim(),
+        ...(followUpAt
+          ? { followUp: { note: nextStep.trim() || 'LQT follow-up', dueAt: new Date(followUpAt).toISOString() } }
+          : {}),
+        ...(meetingAt
+          ? { meeting: { note: 'Buyer meeting scheduled from LQT dashboard', scheduledAt: new Date(meetingAt).toISOString() } }
+          : {}),
+      });
+      return;
+    }
+
+    if (isLead && kind === 'sales') {
+      onSave(row, {
+        status: leadStatus,
+        assignedTeam: 'sales',
+        assignedTo: assigneeId,
+        requirement: detail.trim(),
+        note: note.trim(),
+        ...(followUpAt
+          ? { followUp: { note: nextStep.trim() || 'Sales follow-up', dueAt: new Date(followUpAt).toISOString() } }
+          : {}),
+        ...(quotationAmount
+          ? { quotation: { amount: Number(quotationAmount), currency: 'INR', status: 'sent' } }
+          : {}),
+      });
       return;
     }
 
@@ -1104,10 +1184,9 @@ function OperationsFormModal({ kind, row, members, activeModule, busy, onClose, 
               className={`${inputClass} mt-2`}
               value={assigneeId}
               onChange={(event) => setAssigneeId(event.target.value)}
-              disabled={handoffToSales}
             >
               <option value="">Select {kind} employee</option>
-              {members.map((member) => (
+              {availableMembers.map((member) => (
                 <option key={member.id} value={member.id}>
                   {member.name} ({member.email})
                 </option>
@@ -1122,6 +1201,19 @@ function OperationsFormModal({ kind, row, members, activeModule, busy, onClose, 
             {errors.detail ? <span className="mt-1 block text-xs text-red-300">{errors.detail}</span> : null}
           </label>
 
+          {isLead ? (
+            <div className={`md:col-span-2 grid gap-2 rounded-xl border ${roleClass.border} ${roleClass.inner} p-3 text-xs text-zinc-400 sm:grid-cols-2 lg:grid-cols-4`}>
+              <span><strong className="text-zinc-200">Lead ID:</strong> {row.leadId}</span>
+              <span><strong className="text-zinc-200">Company:</strong> {row.companyName}</span>
+              <span><strong className="text-zinc-200">Buyer type:</strong> {row.buyerType}</span>
+              <span><strong className="text-zinc-200">Priority score:</strong> {row.priorityScore}</span>
+              <span><strong className="text-zinc-200">Source:</strong> {row.sourceLabel}</span>
+              <span><strong className="text-zinc-200">Product:</strong> {row.product}</span>
+              <span><strong className="text-zinc-200">Quantity:</strong> {row.quantity}</span>
+              <span><strong className="text-zinc-200">Last follow-up:</strong> {row.lastFollowUp || 'Not scheduled'}</span>
+            </div>
+          ) : null}
+
           {kind === 'lqt' ? (
             <>
               <label>
@@ -1134,14 +1226,29 @@ function OperationsFormModal({ kind, row, members, activeModule, busy, onClose, 
                 </select>
               </label>
               <label className={`flex items-center gap-3 rounded-xl border ${roleClass.border} ${roleClass.inner} px-3 py-2.5`}>
-                <input type="checkbox" checked={handoffToSales} onChange={(event) => setHandoffToSales(event.target.checked)} />
+                <input
+                  type="checkbox"
+                  checked={handoffToSales}
+                  onChange={(event) => {
+                    setHandoffToSales(event.target.checked);
+                    setAssigneeId('');
+                  }}
+                />
                 <span className="text-sm text-zinc-300">Qualified: hand off to Sales queue</span>
               </label>
             </>
           ) : (
             <label>
               <span className="text-xs uppercase tracking-[0.14em] text-zinc-500">Status</span>
-              <input className={`${inputClass} mt-2`} value={status} onChange={(event) => setStatus(event.target.value)} />
+              {isLead ? (
+                <select className={`${inputClass} mt-2`} value={leadStatus} onChange={(event) => setLeadStatus(event.target.value)}>
+                  {['Sales Assigned', 'Follow-up', 'Quotation Sent', 'Negotiation', 'Order Confirmed', 'Won', 'Lost'].map((item) => (
+                    <option key={item}>{item}</option>
+                  ))}
+                </select>
+              ) : (
+                <input className={`${inputClass} mt-2`} value={status} onChange={(event) => setStatus(event.target.value)} />
+              )}
             </label>
           )}
 
@@ -1169,6 +1276,21 @@ function OperationsFormModal({ kind, row, members, activeModule, busy, onClose, 
               <span className="text-xs uppercase tracking-[0.14em] text-zinc-500">Follow-up date</span>
               <input className={`${inputClass} mt-2`} type="datetime-local" value={followUpAt} onChange={(event) => setFollowUpAt(event.target.value)} />
             </label>
+          ) : null}
+
+          {isLead ? (
+            <>
+              <label>
+                <span className="text-xs uppercase tracking-[0.14em] text-zinc-500">Follow-up date</span>
+                <input className={`${inputClass} mt-2`} type="datetime-local" value={followUpAt} onChange={(event) => setFollowUpAt(event.target.value)} />
+              </label>
+              {kind === 'lqt' ? (
+                <label>
+                  <span className="text-xs uppercase tracking-[0.14em] text-zinc-500">Schedule meeting</span>
+                  <input className={`${inputClass} mt-2`} type="datetime-local" value={meetingAt} onChange={(event) => setMeetingAt(event.target.value)} />
+                </label>
+              ) : null}
+            </>
           ) : null}
 
           <label className="md:col-span-2">
@@ -1245,8 +1367,10 @@ export function OperationsDashboardPage({ kind }: { kind: DashboardKind }) {
   const [queueMode, setQueueMode] = useState<'open' | 'due' | 'closed'>('open');
   const [serverRows, setServerRows] = useState<WorkRow[]>([]);
   const [members, setMembers] = useState<OperationMember[]>([]);
+  const [salesMembers, setSalesMembers] = useState<OperationMember[]>([]);
   const [formRow, setFormRow] = useState<WorkRow | null>(null);
   const [moduleCounts, setModuleCounts] = useState<Record<string, number>>({});
+  const [websiteLeadStats, setWebsiteLeadStats] = useState<WebsiteLeadStats | null>(null);
   const [loadingOperations, setLoadingOperations] = useState(false);
   const [actionBusy, setActionBusy] = useState(false);
 
@@ -1275,10 +1399,16 @@ export function OperationsDashboardPage({ kind }: { kind: DashboardKind }) {
   const loadOperations = async () => {
     setLoadingOperations(true);
     try {
-      const [data, teamMembers] = await Promise.all([operationsApi.getDashboard(kind), operationsApi.getMembers(kind)]);
+      const [data, teamMembers, handoffMembers] = await Promise.all([
+        operationsApi.getDashboard(kind),
+        operationsApi.getMembers(kind),
+        kind === 'lqt' ? operationsApi.getMembers('sales') : Promise.resolve([]),
+      ]);
       setServerRows(data.rows.map((row: OperationRow) => ({ ...row, id: String(row.id) })));
       setMembers(teamMembers);
+      setSalesMembers(kind === 'sales' ? teamMembers : handoffMembers);
       setModuleCounts(data.modules || {});
+      setWebsiteLeadStats(data.websiteLeadStats || null);
     } catch (error) {
       toast.error((error as Error).message);
     } finally {
@@ -1298,7 +1428,42 @@ export function OperationsDashboardPage({ kind }: { kind: DashboardKind }) {
 
     setActionBusy(true);
     try {
-      if (row.source === 'quote' && (kind === 'lqt' || kind === 'sales')) {
+      if (row.source === 'lead' && (kind === 'lqt' || kind === 'sales')) {
+        const leadPayload: Record<string, unknown> = {
+          note: `${selectedModule.label}: ${action}`,
+        };
+
+        if (kind === 'lqt') {
+          if (['new-leads', 'qualification'].includes(activeModule)) {
+            leadPayload.status = 'Qualified';
+            leadPayload.leadTemperature = 'hot';
+          }
+          if (activeModule === 'lead-status') leadPayload.leadTemperature = String(action).toLowerCase();
+          if (activeModule === 'sales-assignment') leadPayload.status = 'Sales Assigned';
+          if (activeModule === 'follow-ups') {
+            leadPayload.status = 'Follow-up';
+            leadPayload.followUp = { note: 'Follow-up logged from LQT dashboard', dueAt: new Date().toISOString() };
+          }
+          if (activeModule === 'meeting-scheduling') {
+            leadPayload.meeting = { note: 'Meeting scheduled from LQT dashboard', scheduledAt: new Date().toISOString() };
+          }
+        }
+
+        if (kind === 'sales') {
+          if (activeModule === 'quotation-management') {
+            leadPayload.quotation = { amount: 100000, currency: 'INR', status: 'sent' };
+          }
+          if (activeModule === 'order-management') {
+            leadPayload.order = { status: 'pending', amount: 100000 };
+          }
+          if (activeModule === 'follow-ups') {
+            leadPayload.status = 'Follow-up';
+            leadPayload.followUp = { note: 'Sales follow-up logged', dueAt: new Date().toISOString() };
+          }
+        }
+
+        await operationsApi.updateLead(row.id, leadPayload);
+      } else if (row.source === 'quote' && (kind === 'lqt' || kind === 'sales')) {
         const quotePayload: Record<string, unknown> = {
           module: activeModule,
           note: `${selectedModule.label}: ${action}`,
@@ -1391,7 +1556,9 @@ export function OperationsDashboardPage({ kind }: { kind: DashboardKind }) {
   const handleSaveForm = async (row: WorkRow, payload: Record<string, unknown>) => {
     setActionBusy(true);
     try {
-      if (row.source === 'quote' && row.id && (kind === 'lqt' || kind === 'sales')) {
+      if (row.source === 'lead' && row.id && (kind === 'lqt' || kind === 'sales')) {
+        await operationsApi.updateLead(row.id, payload);
+      } else if (row.source === 'quote' && row.id && (kind === 'lqt' || kind === 'sales')) {
         await operationsApi.updateQuote(kind, row.id, payload);
       } else if (row.source === 'operation' && row.id && (kind === 'sales' || kind === 'procurement')) {
         await operationsApi.updateRecord(kind, row.id, payload);
@@ -1415,6 +1582,16 @@ export function OperationsDashboardPage({ kind }: { kind: DashboardKind }) {
     clearAuth();
     navigate('/auth', { replace: true });
   };
+
+  const dashboardStats =
+    kind === 'lqt' && websiteLeadStats
+      ? [
+          { ...config.stats[0], label: 'Total Inquiries', value: String(websiteLeadStats.totalInquiries), helper: 'Website lead capture' },
+          { ...config.stats[1], label: 'Qualified Leads', value: String(websiteLeadStats.qualifiedLeads), helper: 'Validated by LQT' },
+          { ...config.stats[2], label: 'Sales Assigned', value: String(websiteLeadStats.salesAssigned), helper: 'Routed to executives' },
+          { ...config.stats[3], label: 'Orders Won', value: String(websiteLeadStats.ordersWon), helper: `${websiteLeadStats.conversionRate}% conversion rate` },
+        ]
+      : config.stats;
 
   return (
     <div
@@ -1540,10 +1717,26 @@ export function OperationsDashboardPage({ kind }: { kind: DashboardKind }) {
           </header>
 
           <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-            {config.stats.map((stat) => (
+            {dashboardStats.map((stat) => (
               <StatCard key={stat.label} stat={stat} />
             ))}
           </section>
+
+          {kind === 'lqt' && websiteLeadStats ? (
+            <section className={`grid gap-3 rounded-2xl border ${roleClass.borderSoft} ${roleClass.card} p-4 sm:grid-cols-2 xl:grid-cols-4`}>
+              {[
+                ['New Website Leads', websiteLeadStats.newWebsiteLeads],
+                ['Quotations Sent', websiteLeadStats.quotationsSent],
+                ['Converted Leads', websiteLeadStats.convertedLeads],
+                ['Lead Source Performance', `Website: ${websiteLeadStats.leadSourcePerformance.Website || 0}`],
+              ].map(([label, value]) => (
+                <div key={String(label)} className={`rounded-xl border ${roleClass.borderSoft} ${roleClass.inner} px-3 py-3`}>
+                  <p className="text-xs uppercase tracking-[0.14em] text-zinc-500">{label}</p>
+                  <p className={`mt-2 text-2xl font-black ${roleClass.text}`}>{value}</p>
+                </div>
+              ))}
+            </section>
+          ) : null}
 
           <ModuleWorkspace
             kind={kind}
@@ -1596,6 +1789,7 @@ export function OperationsDashboardPage({ kind }: { kind: DashboardKind }) {
           kind={kind}
           row={formRow}
           members={members}
+          salesMembers={salesMembers}
           activeModule={activeModule}
           busy={actionBusy}
           onClose={() => setFormRow(null)}
