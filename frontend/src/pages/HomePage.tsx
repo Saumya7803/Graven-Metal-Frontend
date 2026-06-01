@@ -86,6 +86,7 @@ const processSteps = [
 export function HomePage() {
   const { isAuthenticated, user } = useCustomerAuth();
   const [showQuotePrompt, setShowQuotePrompt] = useState(false);
+  const [quotePromptDismissed, setQuotePromptDismissed] = useState(false);
   const [portalTarget, setPortalTarget] = useState<HTMLElement | null>(null);
 
   useEffect(() => {
@@ -93,21 +94,47 @@ export function HomePage() {
   }, []);
 
   useEffect(() => {
-    const timer = window.setTimeout(() => setShowQuotePrompt(true), 900);
-    return () => window.clearTimeout(timer);
-  }, []);
+    if (quotePromptDismissed || showQuotePrompt) return;
+
+    const openPrompt = () => setShowQuotePrompt(true);
+    const timer = window.setTimeout(openPrompt, 4500);
+    const onScroll = () => {
+      const pageHeight = document.documentElement.scrollHeight - window.innerHeight;
+      if (pageHeight <= 0) return;
+      const scrollProgress = window.scrollY / pageHeight;
+      if (scrollProgress >= 0.28) openPrompt();
+    };
+
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => {
+      window.clearTimeout(timer);
+      window.removeEventListener('scroll', onScroll);
+    };
+  }, [quotePromptDismissed, showQuotePrompt]);
+
+  useEffect(() => {
+    if (!showQuotePrompt) return;
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') closeQuotePrompt();
+    };
+
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [showQuotePrompt]);
 
   const closeQuotePrompt = () => {
+    setQuotePromptDismissed(true);
     setShowQuotePrompt(false);
   };
 
   return (
     <div className="bg-[#03070b]">
       <SEO
-        title="Industrial Automation Solutions"
-        description="GRAVEN METAL delivers industrial automation solutions and international spare parts support for modern manufacturing businesses."
+        title="Industrial Metal & Automation Supply"
+        description="GRAVEN METAL supplies industrial metals, automation support, and procurement follow-up for manufacturing businesses."
         path="/"
-        keywords={['industrial automation', 'automation spare parts', 'plc systems', 'cnc systems', 'automation support']}
+        keywords={['industrial metal supply', 'metal procurement', 'automation spare parts', 'copper supply', 'aluminium supply']}
       />
 
       {showQuotePrompt && portalTarget
@@ -117,13 +144,14 @@ export function HomePage() {
             role="dialog"
             aria-modal="true"
             aria-labelledby="quote-prompt-title"
+            aria-describedby="quote-prompt-description"
             className="relative w-full max-w-lg overflow-hidden rounded-md border border-gold/25 bg-[#071018] p-5 shadow-halo sm:p-6"
           >
             <button
               type="button"
               onClick={closeQuotePrompt}
               aria-label="Close request quote popup"
-              className="absolute right-3 top-3 rounded border border-white/10 bg-black/25 p-2 text-zinc-300 transition hover:border-gold/40 hover:text-gold"
+              className="absolute right-3 top-3 grid min-h-11 min-w-11 place-items-center rounded border border-white/10 bg-black/25 text-zinc-200 transition hover:border-gold/40 hover:text-gold"
             >
               <X size={16} />
             </button>
@@ -131,13 +159,13 @@ export function HomePage() {
             <h2 id="quote-prompt-title" className="mt-3 pr-8 font-display text-3xl text-white">
               Request price and availability.
             </h2>
-            <p className="mt-3 text-sm leading-6 text-zinc-400">
+            <p id="quote-prompt-description" className="mt-3 text-sm leading-6 text-zinc-300">
               Submit your product, quantity, and delivery details. Our metal sourcing team will review it and contact
               you within 24 hours.
             </p>
-            <div className="mt-5 grid gap-2 text-sm text-zinc-300 sm:grid-cols-2">
-              <span className="rounded border border-white/10 bg-black/20 px-3 py-2">Bulk purchase support</span>
-              <span className="rounded border border-white/10 bg-black/20 px-3 py-2">LQT verified follow-up</span>
+            <div className="mt-5 grid gap-2 text-sm font-semibold text-zinc-100 sm:grid-cols-2">
+              <span className="rounded border border-white/15 bg-white/[0.04] px-3 py-2.5">Bulk purchase support</span>
+              <span className="rounded border border-white/15 bg-white/[0.04] px-3 py-2.5">Quality-assured follow-up</span>
             </div>
             <div className="mt-6 flex flex-wrap gap-3">
               <Link
@@ -206,15 +234,15 @@ export function HomePage() {
               <div className="grid flex-1 items-center gap-8 py-10 lg:grid-cols-[minmax(0,1fr)_360px] lg:py-12">
                 <div className="w-full max-w-[700px]">
                   <p className="inline-flex items-center gap-2 border-l-2 border-gold pl-3 text-xs font-semibold uppercase tracking-[0.2em] text-champagne">
-                    Industrial metal supply
+                    Industrial metal and automation supply
                   </p>
                   <h1 className="mt-5 font-display text-[2.75rem] font-semibold leading-[1.04] text-white sm:text-[4rem] lg:text-[5.15rem]">
                     GRAVEN METAL
-                    <span className="block text-gold">scales with precision.</span>
+                    <span className="block text-gold">powers procurement.</span>
                   </h1>
                   <p className="mt-5 max-w-[560px] text-base leading-7 text-zinc-300 sm:text-lg">
-                    Automation solutions, controls, and spare parts support for teams that need dependable supply,
-                    responsive service, and reliable delivery.
+                    Industrial metals, automation support, and sourcing follow-up for teams that need dependable
+                    supply, responsive pricing, and reliable delivery.
                   </p>
 
                   <div className="mt-8 grid max-w-[610px] grid-cols-2 gap-x-5 gap-y-4 sm:grid-cols-4">
