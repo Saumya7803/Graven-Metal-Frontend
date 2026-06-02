@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <defs>
+    <radialGradient id="g1" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#ffcf4b"/>
+      <stop offset="52%" stop-color="#ff7a18"/>
+      <stop offset="100%" stop-color="#ff2e00"/>
+    </radialGradient>
+    <linearGradient id="g2" x1="18" y1="14" x2="46" y2="50" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#ffcf4b"/>
+      <stop offset="100%" stop-color="#ff3b00"/>
+    </linearGradient>
+  </defs>
+  <circle cx="32" cy="32" r="29" fill="#0b0f14"/>
+  <circle cx="32" cy="32" r="24" fill="url(#g1)"/>
+  <circle cx="32" cy="32" r="17" fill="#171b20"/>
+  <path
+    d="M24.2 18.6C24.2 15.7 26.5 13.4 29.4 13.4H33.9C43.8 13.4 50.7 20.5 50.7 30.5C50.7 39.9 44.2 46.6 34.9 46.6H28.6C24.2 46.6 20.8 43.2 20.8 38.8V24.4C20.8 21.5 22.1 19.2 24.2 18.6Z"
+    fill="url(#g2)"
+  />
+  <path
+    d="M28.7 20.9H33.7C40.2 20.9 44.4 25.4 44.4 31.7C44.4 37.7 40.4 41.8 34.5 41.8H28.7C26.9 41.8 25.4 40.3 25.4 38.5V24.2C25.4 22.4 26.9 20.9 28.7 20.9Z"
+    fill="#101319"
+  />
+  <path d="M30.7 24.7H34.5C37.7 24.7 39.7 26.8 39.7 30.1C39.7 33.2 37.9 35.3 34.8 35.3H30.7V24.7Z" fill="url(#g1)"/>
+  <path d="M19 49.2L25.4 42.8" stroke="#ffd55b" stroke-width="2.2" stroke-linecap="round" opacity="0.9"/>
+  <path d="M45 15.4L38.9 21.5" stroke="#ff6a1f" stroke-width="2.2" stroke-linecap="round" opacity="0.8"/>
+</svg>

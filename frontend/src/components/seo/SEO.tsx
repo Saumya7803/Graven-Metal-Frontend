@@ -15,7 +15,7 @@ export function SEO({
   title,
   description,
   path = '/',
-  image = '/favicon.svg',
+  image = '/imgs/brand-logo.svg',
   type = 'website',
   noIndex = false,
   keywords = [],
