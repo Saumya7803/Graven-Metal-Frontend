@@ -32,3 +32,20 @@ export const getApiErrorMessage = (error: unknown) => {
   if (error instanceof Error) return error.message;
   return 'Something went wrong. Please try again.';
 };
+
+export const getRequestDebugInfo = (error: unknown) => {
+  if (!axios.isAxiosError(error)) return '';
+
+  const method = typeof error.config?.method === 'string' ? error.config.method.toUpperCase() : '';
+  const baseURL = typeof error.config?.baseURL === 'string' ? error.config.baseURL.trim() : '';
+  const requestUrl = typeof error.config?.url === 'string' ? error.config.url.trim() : '';
+
+  if (!method && !baseURL && !requestUrl) return '';
+
+  const normalizedBaseURL = baseURL.replace(/\/+$/, '');
+  const normalizedUrl = requestUrl.startsWith('/') ? requestUrl : requestUrl ? `/${requestUrl}` : '';
+  const target = normalizedBaseURL ? `${normalizedBaseURL}${normalizedUrl}` : requestUrl || baseURL || 'unknown request';
+  const methodPrefix = method ? `${method} ` : '';
+
+  return `Request: ${methodPrefix}${target}`;
+};

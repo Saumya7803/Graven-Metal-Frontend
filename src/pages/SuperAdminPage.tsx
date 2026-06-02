@@ -259,6 +259,49 @@ function formatPermission(permission: string) {
   return permission.replace(/_/g, ' ');
 }
 
+function formatAuditAction(action: string) {
+  return action
+    .split('.')
+    .map((part) => formatPermission(part))
+    .join(' · ');
+}
+
+function formatAuditValue(value: unknown): string {
+  if (value == null) return '—';
+  if (typeof value === 'string') return value;
+  if (typeof value === 'number' || typeof value === 'boolean') return String(value);
+  if (Array.isArray(value)) {
+    if (!value.length) return '—';
+    return value.map((item) => formatAuditValue(item)).join(', ');
+  }
+  if (typeof value === 'object') {
+    const record = value as Record<string, unknown>;
+    if (typeof record.label === 'string' && record.label.trim()) return record.label;
+    if (typeof record.name === 'string' && record.name.trim()) return record.name;
+    if (typeof record.email === 'string' && record.email.trim()) return record.email;
+
+    const pairs = Object.entries(record)
+      .filter(([, entry]) => entry != null && entry !== '')
+      .slice(0, 2)
+      .map(([key, entry]) => `${formatPermission(key)}: ${formatAuditValue(entry)}`);
+
+    return pairs.length ? pairs.join(' · ') : '—';
+  }
+
+  return String(value);
+}
+
+function getAuditMetadataSummary(metadata?: Record<string, unknown>) {
+  if (!metadata) return [];
+
+  return Object.entries(metadata)
+    .filter(([, value]) => value != null && value !== '' && !(Array.isArray(value) && value.length === 0))
+    .map(([key, value]) => ({
+      label: formatPermission(key),
+      value: formatAuditValue(value),
+    }));
+}
+
 function formatDate(date?: string) {
   if (!date) return 'Recently';
   return new Intl.DateTimeFormat('en-IN', {
@@ -1172,12 +1215,20 @@ export function SuperAdminPage() {
                       <tr key={log._id} className="border-t border-gold/10 align-top">
                         <td className="px-4 py-4">
                           <span className="rounded-full border border-gold/20 bg-gold/10 px-2.5 py-1 text-xs font-semibold text-gold">
-                            {formatPermission(log.action)}
+                            {formatAuditAction(log.action)}
                           </span>
-                          {log.metadata && Object.keys(log.metadata).length ? (
-                            <pre className="mt-2 max-w-md overflow-x-auto rounded-xl border border-gold/10 bg-[#05080d] p-2 text-[11px] leading-5 text-zinc-400">
-                              {JSON.stringify(log.metadata, null, 2)}
-                            </pre>
+                          {getAuditMetadataSummary(log.metadata).length ? (
+                            <div className="mt-2 max-w-md rounded-xl border border-gold/10 bg-[#05080d] p-3 text-xs text-zinc-400">
+                              <p className="text-[11px] uppercase tracking-[0.14em] text-zinc-500">Details</p>
+                              <div className="mt-2 space-y-1.5">
+                                {getAuditMetadataSummary(log.metadata).map((item) => (
+                                  <div key={`${log._id}-${item.label}`} className="flex flex-wrap gap-x-2 gap-y-1">
+                                    <span className="font-medium text-zinc-300">{item.label}:</span>
+                                    <span className="text-zinc-400">{item.value}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
                           ) : null}
                         </td>
                         <td className="px-4 py-4">

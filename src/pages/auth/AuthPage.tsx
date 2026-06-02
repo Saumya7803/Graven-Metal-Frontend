@@ -4,7 +4,7 @@ import { LockKeyhole, Mail, ShieldCheck } from 'lucide-react';
 import { BrandLogo } from '../../components/BrandLogo';
 import { SEO } from '../../components/seo/SEO';
 import { getDefaultRouteForRole, setAuth } from '../../lib/auth';
-import { getApiErrorMessage } from '../../lib/apiUtils';
+import { getApiErrorMessage, getRequestDebugInfo } from '../../lib/apiUtils';
 import { publicApi } from '../../lib/publicApi';
 
 const MIN_PASSWORD_LENGTH = 8;
@@ -14,6 +14,7 @@ export function AuthPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [requestDebugInfo, setRequestDebugInfo] = useState('');
   const [touched, setTouched] = useState({ email: false, password: false });
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -35,6 +36,7 @@ export function AuthPage() {
     e.preventDefault();
     setTouched({ email: true, password: true });
     setError('');
+    setRequestDebugInfo('');
     if (!formValid) return;
 
     setLoading(true);
@@ -44,6 +46,7 @@ export function AuthPage() {
       navigate(getDefaultRouteForRole(res.user.role), { replace: true });
     } catch (err) {
       setError(getApiErrorMessage(err));
+      setRequestDebugInfo(getRequestDebugInfo(err));
     } finally {
       setLoading(false);
     }
@@ -109,6 +112,7 @@ export function AuthPage() {
                     onChange={(e) => {
                       setEmail(e.target.value);
                       setError('');
+                      setRequestDebugInfo('');
                     }}
                   />
                 </span>
@@ -135,6 +139,7 @@ export function AuthPage() {
                     onChange={(e) => {
                       setPassword(e.target.value);
                       setError('');
+                      setRequestDebugInfo('');
                     }}
                   />
                 </span>
@@ -147,7 +152,12 @@ export function AuthPage() {
 
               {error ? (
                 <p aria-live="assertive" className="rounded-md border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-300">
-                  {error}
+                  <span className="block">{error}</span>
+                  {requestDebugInfo ? (
+                    <span className="mt-1 block text-xs text-red-200/80">
+                      {requestDebugInfo}
+                    </span>
+                  ) : null}
                 </p>
               ) : null}
 
