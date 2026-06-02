@@ -31,6 +31,7 @@ import {
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
+import { BrandLogo } from '../components/BrandLogo';
 import { SEO } from '../components/seo/SEO';
 import { clearAuth, getAuthUser } from '../lib/auth';
 import { operationsApi, type OperationMember, type OperationRow, type WebsiteLeadStats } from '../lib/operationsApi';
@@ -1729,7 +1730,7 @@ export function OperationsDashboardPage({ kind }: { kind: DashboardKind }) {
         >
           <Menu size={18} />
         </button>
-        <p className="font-display text-lg text-white">{config.roleLabel}</p>
+        <BrandLogo className="h-8" />
         <ShieldCheck size={18} className={roleClass.text} />
       </div>
 
@@ -1741,10 +1742,7 @@ export function OperationsDashboardPage({ kind }: { kind: DashboardKind }) {
         >
           <div className="mb-5 flex items-start justify-between gap-3">
             <div>
-              <div className={`mb-3 inline-flex rounded-2xl border ${roleClass.border} ${roleClass.bgSoft} p-3 ${roleClass.text}`}>
-                <ShieldCheck size={24} />
-              </div>
-              <h1 className="font-display text-2xl text-white">{config.title}</h1>
+              <BrandLogo className="h-11" />
               <p className="mt-1 text-xs text-zinc-400">{config.eyebrow}</p>
             </div>
             <button

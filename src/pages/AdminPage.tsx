@@ -35,6 +35,7 @@ import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 import { adminApi, type ApiContact, type ApiQuote, type SiteSettingsPayload } from '../lib/adminApi';
 import { clearAuth, getAuthUser } from '../lib/auth';
+import { BrandLogo } from '../components/BrandLogo';
 import { LoadingOverlay } from '../components/ui/LoadingOverlay';
 import { SEO } from '../components/seo/SEO';
 import type { ApiBlog, ApiCategory, ApiProduct } from '../lib/publicApi';
@@ -1122,10 +1123,7 @@ export function AdminPage() {
           } fixed inset-y-0 left-0 z-40 w-[280px] border-r border-gold/15 bg-[#070c11] p-4 shadow-halo transition-transform md:sticky md:top-4 md:h-[calc(100vh-2rem)] md:w-auto md:rounded-2xl md:border md:border-gold/20 md:bg-[#0a0f14]`}
         >
           <div className="flex items-center justify-between">
-            <div>
-              <p className="text-xs uppercase tracking-[0.16em] text-zinc-500">Graven Metal</p>
-              <h2 className="font-display text-2xl text-white">Admin Panel</h2>
-            </div>
+            <BrandLogo className="h-11" />
             <button
               type="button"
               onClick={() => setSidebarOpen(false)}

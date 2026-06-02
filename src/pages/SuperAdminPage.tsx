@@ -36,6 +36,7 @@ import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 import { superAdminApi } from '../lib/superAdminApi';
 import { clearAuth, getAuthUser } from '../lib/auth';
+import { BrandLogo } from '../components/BrandLogo';
 import { LoadingOverlay } from '../components/ui/LoadingOverlay';
 import { SEO } from '../components/seo/SEO';
 
@@ -649,7 +650,7 @@ export function SuperAdminPage() {
         >
           <Menu size={18} />
         </button>
-        <p className="font-display text-lg text-white">Super Admin</p>
+        <BrandLogo className="h-8" />
         <Shield size={18} className="text-gold" />
       </div>
 
@@ -661,10 +662,7 @@ export function SuperAdminPage() {
         >
           <div className="mb-5 flex items-start justify-between gap-3">
             <div>
-              <div className="mb-3 inline-flex rounded-2xl border border-gold/25 bg-gold/10 p-3 text-gold">
-                <ShieldCheck size={24} />
-              </div>
-              <h1 className="font-display text-2xl text-white">GRAVEN Control</h1>
+              <BrandLogo className="h-11" />
               <p className="mt-1 text-xs text-zinc-400">Super admin command panel</p>
             </div>
             <button
