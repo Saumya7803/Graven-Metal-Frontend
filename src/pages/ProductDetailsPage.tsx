@@ -79,7 +79,7 @@ export function ProductDetailsPage() {
           '@type': 'Product',
           name: product.name,
           description: product.description || `${product.name} details`,
-          image: heroImage || '/imgs/brand-logo.svg',
+          image: heroImage || '/imgs/brand-mark.png',
           sku: product.slug || product._id,
           offers: {
             '@type': 'Offer',
