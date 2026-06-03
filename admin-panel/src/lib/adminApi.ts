@@ -39,6 +39,7 @@ type ProductPayload = {
   unit?: string;
   unitType?: string;
   weightPerUnit?: number;
+  weightUnit?: string;
   moq?: number;
   stockQty?: number;
   file?: File | null;
@@ -113,10 +114,11 @@ export const adminApi = {
     appendDefined(fd, 'description', payload.description || '');
     appendDefined(fd, 'category', payload.category);
     appendDefined(fd, 'price', payload.price);
-    appendDefined(fd, 'currency', payload.currency || 'INR');
-    appendDefined(fd, 'unit', payload.unit || 'kg');
-    appendDefined(fd, 'unitType', payload.unitType || payload.unit || 'kg');
+    appendDefined(fd, 'currency', payload.currency || 'USD');
+    appendDefined(fd, 'unit', payload.unit || payload.weightUnit || 'kg');
+    appendDefined(fd, 'unitType', payload.unitType || 'unit');
     appendDefined(fd, 'weightPerUnit', payload.weightPerUnit ?? 1);
+    appendDefined(fd, 'weightUnit', payload.weightUnit || payload.unit || 'kg');
     appendDefined(fd, 'moq', payload.moq ?? 1);
     appendDefined(fd, 'stockQty', payload.stockQty ?? 0);
     if (payload.file) fd.append('image', payload.file);
@@ -134,6 +136,7 @@ export const adminApi = {
     appendDefined(fd, 'unit', payload.unit);
     appendDefined(fd, 'unitType', payload.unitType);
     appendDefined(fd, 'weightPerUnit', payload.weightPerUnit);
+    appendDefined(fd, 'weightUnit', payload.weightUnit);
     appendDefined(fd, 'moq', payload.moq);
     appendDefined(fd, 'stockQty', payload.stockQty);
     if (payload.file) fd.append('image', payload.file);

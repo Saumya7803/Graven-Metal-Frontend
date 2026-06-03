@@ -90,6 +90,7 @@ type ProductForm = {
   unit: string;
   unitType: string;
   weightPerUnit: number;
+  weightUnit: string;
   moq: number;
   stockQty: number;
   file: File | null;
@@ -153,10 +154,11 @@ const defaultProductForm: ProductForm = {
   description: '',
   category: '',
   price: 0,
-  currency: 'INR',
+  currency: 'USD',
   unit: 'kg',
   unitType: 'Rod',
   weightPerUnit: 1,
+  weightUnit: 'kg',
   moq: 1,
   stockQty: 0,
   file: null,
@@ -258,8 +260,31 @@ function getUnitType(product: Pick<ApiProduct, 'unitType' | 'unit'>) {
   return product.unitType || product.unit || 'unit';
 }
 
-function getUnitPrice(product: Pick<ApiProduct, 'price' | 'weightPerUnit'>) {
-  return (product.price || 0) * (product.weightPerUnit || 1);
+function getWeightMultiplier(weightUnit?: string) {
+  const unit = (weightUnit || '').trim().toLowerCase();
+  const lookup: Record<string, number> = {
+    g: 0.001,
+    gram: 0.001,
+    grams: 0.001,
+    kg: 1,
+    kilogram: 1,
+    kilograms: 1,
+    lb: 0.45359237,
+    lbs: 0.45359237,
+    pound: 0.45359237,
+    pounds: 0.45359237,
+    oz: 0.028349523125,
+    ounce: 0.028349523125,
+    ounces: 0.028349523125,
+    ton: 1000,
+    tonne: 1000,
+    t: 1000,
+  };
+  return lookup[unit] ?? 1;
+}
+
+function getUnitPrice(product: Pick<ApiProduct, 'price' | 'weightPerUnit' | 'weightUnit' | 'unit'>) {
+  return (product.price || 0) * (product.weightPerUnit || 1) * getWeightMultiplier(product.weightUnit || product.unit);
 }
 
 function sectionTitle(section: Section) {
@@ -800,10 +825,11 @@ export function AdminPage() {
       description: item.description || '',
       category: typeof item.category === 'string' ? item.category : item.category?._id || '',
       price: item.price,
-      currency: item.currency || 'INR',
+      currency: 'USD',
       unit: item.unit || 'kg',
       unitType: item.unitType || item.unit || 'kg',
       weightPerUnit: item.weightPerUnit || 1,
+      weightUnit: item.weightUnit || item.unit || 'kg',
       moq: item.moq || 1,
       stockQty: item.stockQty || 0,
       file: null,
@@ -928,6 +954,7 @@ export function AdminPage() {
       const iUnit = index('unit');
       const iUnitType = index('unittype');
       const iWeightPerUnit = index('weightperunit');
+      const iWeightUnit = index('weightunit');
       const iMoq = index('moq');
 
       if (iName < 0 || iSlug < 0 || iPrice < 0) {
@@ -947,10 +974,11 @@ export function AdminPage() {
           description: iDescription >= 0 ? columns[iDescription] || '' : '',
           category: categoryId,
           price: Number(columns[iPrice] || 0),
-          currency: iCurrency >= 0 ? columns[iCurrency] || 'INR' : 'INR',
+          currency: iCurrency >= 0 ? columns[iCurrency] || 'USD' : 'USD',
           unit: iUnit >= 0 ? columns[iUnit] || 'kg' : 'kg',
           unitType: iUnitType >= 0 ? columns[iUnitType] || columns[iUnit] || 'kg' : columns[iUnit] || 'kg',
           weightPerUnit: iWeightPerUnit >= 0 ? Number(columns[iWeightPerUnit] || 1) : 1,
+          weightUnit: iWeightUnit >= 0 ? columns[iWeightUnit] || columns[iUnit] || 'kg' : columns[iUnit] || 'kg',
           moq: iMoq >= 0 ? Number(columns[iMoq] || 1) : 1,
           stockQty: iStock >= 0 ? Number(columns[iStock] || 0) : 0,
           file: null,
@@ -1447,7 +1475,7 @@ export function AdminPage() {
                           </div>
                           <div className="text-right">
                             <p className="text-sm font-semibold text-gold">
-                              {formatCurrency(item.currency || 'INR', getUnitPrice(item))} / {getUnitType(item)}
+                              {formatCurrency('USD', getUnitPrice(item))} / {getUnitType(item)}
                             </p>
                             <p className="text-xs text-zinc-500">Stock {item.stockQty || 0}</p>
                           </div>
@@ -1594,7 +1622,7 @@ export function AdminPage() {
                           {typeof item.category === 'string' ? item.category : item.category?.name || '-'}
                         </td>
                         <td className="px-3 py-3 text-zinc-100">
-                          {formatCurrency(item.currency || 'INR', getUnitPrice(item))} / {getUnitType(item)}
+                          {formatCurrency('USD', getUnitPrice(item))} / {getUnitType(item)}
                         </td>
                         <td className="px-3 py-3 text-zinc-300">{item.stockQty || 0}</td>
                         <td className="px-3 py-3">
@@ -1657,7 +1685,7 @@ export function AdminPage() {
                   <p className="text-sm font-semibold text-zinc-100">Bulk Upload Support (CSV)</p>
                 </div>
                 <p className="mt-1 text-xs text-zinc-500">
-                  Headers: `name,slug,price,stockQty,category,description,currency,unit,unitType,weightPerUnit,moq`
+                  Headers: `name,slug,price,stockQty,category,description,currency,unit,unitType,weightPerUnit,weightUnit,moq`
                 </p>
                 <div className="mt-3 grid gap-2 md:grid-cols-[1fr_1fr_auto]">
                   <input
@@ -2561,7 +2589,7 @@ export function AdminPage() {
                 required
               />
               <p className="mt-1 text-xs text-zinc-500">
-                Unit price: {formatCurrency(productForm.currency || 'INR', productForm.price * (productForm.weightPerUnit || 1))} /{' '}
+                Unit price: {formatCurrency('USD', getUnitPrice(productForm))} /{' '}
                 {productForm.unitType || productForm.unit || 'unit'}
               </p>
             </label>
@@ -2578,7 +2606,7 @@ export function AdminPage() {
               <input
                 className={inputClass}
                 value={productForm.unitType}
-                onChange={(e) => setProductForm((s) => ({ ...s, unitType: e.target.value, unit: e.target.value }))}
+                onChange={(e) => setProductForm((s) => ({ ...s, unitType: e.target.value }))}
               />
             </label>
             <label className="space-y-1">
@@ -2591,6 +2619,25 @@ export function AdminPage() {
                 value={productForm.weightPerUnit}
                 onChange={(e) => setProductForm((s) => ({ ...s, weightPerUnit: Number(e.target.value) }))}
               />
+            </label>
+            <label className="space-y-1">
+              <span className={labelClass}>Weight Unit</span>
+              <select
+                className={inputClass}
+                value={productForm.weightUnit}
+                onChange={(e) =>
+                  setProductForm((s) => ({
+                    ...s,
+                    weightUnit: e.target.value,
+                    unit: e.target.value,
+                  }))
+                }
+              >
+                <option value="kg">Kilogram (kg)</option>
+                <option value="g">Gram (g)</option>
+                <option value="lb">Pound (lb)</option>
+                <option value="oz">Ounce (oz)</option>
+              </select>
             </label>
             <label className="space-y-1">
               <span className={labelClass}>MOQ</span>

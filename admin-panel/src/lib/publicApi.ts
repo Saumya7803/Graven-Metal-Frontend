@@ -11,6 +11,7 @@ export type ApiProduct = {
   unit?: string;
   unitType?: string;
   weightPerUnit?: number;
+  weightUnit?: string;
   moq?: number;
   unitPrice?: number;
   stockQty?: number;
