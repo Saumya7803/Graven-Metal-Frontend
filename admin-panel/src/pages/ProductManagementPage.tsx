@@ -9,6 +9,7 @@ import {
   Search,
   Sparkles,
   ShieldAlert,
+  LogOut,
   Trash2,
   Upload,
 } from 'lucide-react';
@@ -17,7 +18,7 @@ import { useNavigate } from 'react-router-dom';
 import { BrandLogo } from '../components/BrandLogo';
 import { SEO } from '../components/seo/SEO';
 import { adminApi } from '../lib/adminApi';
-import { getAuthUser } from '../lib/auth';
+import { clearAuth, getAuthUser } from '../lib/auth';
 import { LoadingOverlay } from '../components/ui/LoadingOverlay';
 import type { ApiCategory } from '../lib/publicApi';
 import type { ApiProduct } from '../lib/publicApi';
@@ -128,6 +129,11 @@ export function ProductManagementPage() {
   const [statusFilter, setStatusFilter] = useState<ModerationFilter>('all');
   const [productForm, setProductForm] = useState<ProductForm>(defaultForm);
   const [formPreviewUrl, setFormPreviewUrl] = useState('');
+
+  const logout = () => {
+    clearAuth();
+    navigate('/auth');
+  };
 
   const load = async () => {
     setLoading(true);
@@ -376,6 +382,15 @@ export function ProductManagementPage() {
                 <p className="mt-2 truncate text-sm font-semibold text-white">{user?.name || 'Admin User'}</p>
                 <p className="truncate text-xs text-zinc-400">{user?.email || 'admin@graven.local'}</p>
               </div>
+
+              <button
+                type="button"
+                onClick={logout}
+                className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-300 hover:bg-red-500/20"
+              >
+                <LogOut size={16} />
+                Logout
+              </button>
             </aside>
 
             <main className="min-w-0 p-4 md:p-6">
