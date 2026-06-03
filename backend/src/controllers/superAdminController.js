@@ -213,9 +213,25 @@ export const updateUser = asyncHandler(async (req, res) => {
   }
 
   const { name, role, permissions } = req.body;
+  const originalRole = user.role;
+  const originalPermissions = JSON.stringify(user.permissions || []);
   if (name) user.name = name;
-  if (role && MANAGED_ROLES.includes(role)) user.role = role;
-  if (permissions) user.permissions = permissions;
+  if (role && !MANAGED_ROLES.includes(role)) {
+    return res.status(400).json({ message: 'Role cannot be changed to that value' });
+  }
+  if (role && MANAGED_ROLES.includes(role)) {
+    user.role = role;
+    if (!Array.isArray(permissions) || permissions.length === 0) {
+      user.permissions = ROLE_DEFAULT_PERMISSIONS[role] || [];
+    }
+  }
+  if (Array.isArray(permissions)) user.permissions = permissions;
+
+  const roleChanged = user.role !== originalRole;
+  const permissionsChanged = JSON.stringify(user.permissions || []) !== originalPermissions;
+  if (roleChanged || permissionsChanged) {
+    user.sessionVersion = (user.sessionVersion || 0) + 1;
+  }
 
   await user.save();
   await recordAudit(
@@ -224,7 +240,7 @@ export const updateUser = asyncHandler(async (req, res) => {
     { type: 'user', id: user._id.toString(), label: user.email },
     { role: user.role, permissions: user.permissions }
   );
-  res.json({ id: user._id, name: user.name, role: user.role, permissions: user.permissions });
+  res.json({ id: user._id, name: user.name, role: user.role, permissions: user.permissions, sessionVersion: user.sessionVersion || 0 });
 });
 
 export const deleteUser = asyncHandler(async (req, res) => {
