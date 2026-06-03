@@ -36,6 +36,7 @@ import {
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 import { superAdminApi } from '../lib/superAdminApi';
+import { getApiErrorMessage } from '../lib/apiUtils';
 import { clearAuth, getAuthUser } from '../lib/auth';
 import { BrandLogo } from '../components/BrandLogo';
 import { LoadingOverlay } from '../components/ui/LoadingOverlay';
@@ -2284,15 +2285,33 @@ export function SuperAdminPage() {
             disabled={saving}
             className="mt-5 inline-flex items-center gap-2 rounded-xl bg-gold-cta px-5 py-2.5 font-extrabold text-black shadow-gold hover:brightness-110 disabled:opacity-60"
             onClick={async () => {
+              const payload = {
+                ...newAdmin,
+                name: newAdmin.name.trim(),
+                email: newAdmin.email.trim().toLowerCase(),
+                role: newAdmin.role || 'lqt',
+                permissions: newAdmin.permissions.length ? newAdmin.permissions : getRolePreset(newAdmin.role || 'lqt'),
+              };
+
+              if (!payload.name || !payload.email || !payload.password) {
+                toast.error('Name, email, and password are required');
+                return;
+              }
+
+              if (payload.password.trim().length < 8) {
+                toast.error('Password must be at least 8 characters long');
+                return;
+              }
+
               setSaving(true);
               try {
-                await superAdminApi.createAdmin(newAdmin);
+                await superAdminApi.createAdmin(payload);
                 toast.success('Team account created');
-                setNewAdmin({ name: '', email: '', password: '', role: 'lqt', permissions: [] });
+                setNewAdmin({ name: '', email: '', password: '', role: 'lqt', permissions: getRolePreset('lqt') });
                 setCreateAdminOpen(false);
                 await load();
               } catch (e) {
-                toast.error((e as Error).message);
+                toast.error(getApiErrorMessage(e));
               } finally {
                 setSaving(false);
               }

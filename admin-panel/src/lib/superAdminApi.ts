@@ -1,4 +1,5 @@
-﻿import { axiosClient } from './axiosClient';
+import { axiosClient } from './axiosClient';
+import { getApiErrorMessage } from './apiUtils';
 
 export const superAdminApi = {
   async getAdmins() {
@@ -6,8 +7,12 @@ export const superAdminApi = {
     return res.data;
   },
   async createAdmin(payload: any) {
-    const res = await axiosClient.post('/super-admin/admins', payload);
-    return res.data;
+    try {
+      const res = await axiosClient.post('/super-admin/admins', payload);
+      return res.data;
+    } catch (error) {
+      throw new Error(getApiErrorMessage(error));
+    }
   },
   async deleteAdmin(id: string) {
     const res = await axiosClient.delete(`/super-admin/admins/${id}`);
