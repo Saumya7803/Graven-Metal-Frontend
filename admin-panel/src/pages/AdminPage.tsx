@@ -1213,15 +1213,15 @@ export function AdminPage() {
   const notifications = useMemo(() => activities.slice(0, 5), [activities]);
 
   return (
-    <div className="min-h-screen bg-[radial-gradient(circle_at_top_right,rgba(214,182,118,0.08),transparent_38%)] px-4 py-4 md:px-6">
+    <div className="gm-admin-page bg-[radial-gradient(circle_at_top_right,rgba(214,182,118,0.08),transparent_38%)]">
       <SEO title="Admin Dashboard" description="Enterprise admin control center for Graven Metal." path="/admin" noIndex />
       {loading ? <LoadingOverlay /> : null}
 
-      <div className="mx-auto grid max-w-[1540px] gap-4 md:grid-cols-[260px_1fr]">
+      <div className="gm-admin-layout gm-admin-dashboard-grid">
         <aside
           className={`${
             sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
-          } fixed inset-y-0 left-0 z-40 w-[280px] border-r border-gold/15 bg-[#070c11] p-4 shadow-halo transition-transform md:sticky md:top-4 md:h-[calc(100vh-2rem)] md:w-auto md:rounded-2xl md:border md:border-gold/20 md:bg-[#0a0f14]`}
+          } gm-admin-sidebar fixed inset-y-0 left-0 z-40 w-[280px] border-r border-gold/15 bg-[#070c11] p-4 shadow-halo transition-transform md:sticky md:top-3 md:w-auto md:rounded-2xl md:border md:border-gold/20 md:bg-[#0a0f14]`}
         >
           <div className="flex items-center justify-between">
             <BrandLogo className="h-11" />
@@ -1287,7 +1287,7 @@ export function AdminPage() {
           />
         ) : null}
 
-        <main className="space-y-4">
+        <main className="gm-admin-main space-y-4">
           <section className="sticky top-2 z-20 rounded-2xl border border-gold/20 bg-[#090e14]/95 p-3 shadow-glow backdrop-blur-xl">
             <div className="flex flex-wrap items-center gap-2 sm:gap-3">
               <button

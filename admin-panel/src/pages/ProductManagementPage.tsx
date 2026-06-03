@@ -337,7 +337,7 @@ export function ProductManagementPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#03070b] px-4 py-4 text-zinc-200 md:px-6 md:py-6">
+    <div className="gm-admin-page bg-[#03070b] text-zinc-200">
       <SEO
         title="Product Management"
         description="Manage products, prices, stock, and new inventory entries from the admin panel."
@@ -346,11 +346,11 @@ export function ProductManagementPage() {
       />
       {loading ? <LoadingOverlay /> : null}
 
-      <div className="mx-auto max-w-[1560px]">
-        <div className="relative overflow-hidden rounded-[2rem] border border-gold/15 bg-[#0a0f14]/95 shadow-glow">
+      <div className="gm-admin-layout">
+        <div className="relative overflow-hidden rounded-[clamp(1rem,1.6vw,2rem)] border border-gold/15 bg-[#0a0f14]/95 shadow-glow">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(214,182,118,0.12),transparent_34%),linear-gradient(180deg,rgba(255,255,255,0.02),transparent)]" />
-          <div className="relative grid min-h-[calc(100vh-2rem)] md:grid-cols-[240px_1fr]">
-            <aside className="border-b border-gold/10 bg-[#080d13] p-4 md:border-b-0 md:border-r md:border-gold/10">
+          <div className="gm-product-manager-grid relative">
+            <aside className="gm-admin-sidebar border-b border-gold/10 bg-[#080d13] p-4 md:sticky md:top-3 md:border-b-0 md:border-r md:border-gold/10">
               <div className="flex items-start justify-between gap-3">
                 <BrandLogo className="h-10" />
                 <button
@@ -405,8 +405,8 @@ export function ProductManagementPage() {
               </button>
             </aside>
 
-            <main className="min-w-0 p-4 md:p-6">
-              <section className="rounded-[1.75rem] border border-gold/15 bg-[#0a0f14]/95 p-5 shadow-halo">
+            <main className="gm-admin-main p-4 md:p-5 2xl:p-6">
+              <section className="gm-admin-section border border-gold/15 bg-[#0a0f14]/95 shadow-halo">
                 <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
                   <div>
                     <p className="text-xs uppercase tracking-[0.24em] text-gold">Admin Panel</p>

@@ -157,6 +157,90 @@ textarea {
   @apply rounded-md border border-gold/20 bg-[#0d1218] px-3 py-2 text-xs uppercase tracking-[0.14em] text-zinc-300 transition hover:border-gold/50 hover:text-champagne;
 }
 
+.gm-admin-page {
+  min-height: 100vh;
+  overflow-x: hidden;
+  padding: clamp(0.75rem, 1.2vw, 1.5rem);
+}
+
+.gm-admin-layout {
+  width: 100%;
+  max-width: min(100%, 1840px);
+  margin-inline: auto;
+}
+
+.gm-super-admin-grid,
+.gm-admin-dashboard-grid,
+.gm-product-manager-grid {
+  display: grid;
+  gap: clamp(0.75rem, 1vw, 1.25rem);
+}
+
+.gm-super-admin-grid {
+  grid-template-columns: clamp(240px, 18vw, 290px) minmax(0, 1fr);
+}
+
+.gm-admin-dashboard-grid {
+  grid-template-columns: clamp(220px, 17vw, 260px) minmax(0, 1fr);
+}
+
+.gm-product-manager-grid {
+  min-height: calc(100vh - clamp(1rem, 2.4vw, 3rem));
+  grid-template-columns: clamp(210px, 16vw, 240px) minmax(0, 1fr);
+}
+
+.gm-admin-sidebar {
+  max-height: calc(100vh - clamp(1rem, 2.4vw, 3rem));
+  overflow-y: auto;
+}
+
+.gm-admin-main {
+  min-width: 0;
+}
+
+.gm-admin-section {
+  border-radius: clamp(1rem, 1.5vw, 1.75rem);
+  padding: clamp(1rem, 1.2vw, 1.5rem);
+}
+
+@media (min-width: 1900px) {
+  .gm-admin-layout {
+    max-width: min(94vw, 2100px);
+  }
+}
+
+@media (max-height: 760px) and (min-width: 768px) {
+  .gm-admin-page {
+    padding: 0.5rem;
+  }
+
+  .gm-super-admin-grid,
+  .gm-admin-dashboard-grid,
+  .gm-product-manager-grid {
+    gap: 0.75rem;
+  }
+
+  .gm-admin-sidebar {
+    max-height: calc(100vh - 1rem);
+  }
+
+  .gm-admin-section {
+    padding: 1rem;
+  }
+}
+
+@media (max-width: 767px) {
+  .gm-super-admin-grid,
+  .gm-admin-dashboard-grid,
+  .gm-product-manager-grid {
+    display: block;
+  }
+
+  .gm-admin-sidebar {
+    max-height: none;
+  }
+}
+
 .gm-hover-lift {
   @apply transition duration-300 ease-out hover:-translate-y-1.5 hover:shadow-gold;
 }

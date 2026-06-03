@@ -749,7 +749,7 @@ export function SuperAdminPage() {
     permissions: getRolePreset('lqt'),
   });
 
-  const panel = 'rounded-3xl border border-gold/20 bg-[#0a0f14]/95 p-5 shadow-glow';
+  const panel = 'gm-admin-section border border-gold/20 bg-[#0a0f14]/95 shadow-glow';
   const input =
     'w-full rounded-xl border border-gold/20 bg-[#0d1218] px-3.5 py-2.5 text-sm text-zinc-100 outline-none placeholder:text-zinc-500 focus:border-gold/60';
   const label = 'text-xs uppercase tracking-[0.18em] text-zinc-400';
@@ -1045,7 +1045,7 @@ export function SuperAdminPage() {
   const ActiveIcon = activeTab.icon;
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-[#03070b] px-4 py-4 text-zinc-200 md:px-6 md:py-6">
+    <div className="gm-admin-page relative bg-[#03070b] text-zinc-200">
       <SEO title="Super Admin Dashboard" description="Super admin panel" path="/super-admin" noIndex />
       {loading ? <LoadingOverlay /> : null}
 
@@ -1055,7 +1055,7 @@ export function SuperAdminPage() {
         <div className="absolute inset-0 bg-metal-grid bg-[length:72px_72px] opacity-[0.16]" />
       </div>
 
-      <div className="relative mx-auto flex max-w-[1500px] items-center justify-between rounded-2xl border border-gold/15 bg-[#0a0f14]/95 px-4 py-3 shadow-glow md:hidden">
+      <div className="gm-admin-layout relative flex items-center justify-between rounded-2xl border border-gold/15 bg-[#0a0f14]/95 px-4 py-3 shadow-glow md:hidden">
         <button
           type="button"
           onClick={() => setSidebarOpen(true)}
@@ -1068,11 +1068,11 @@ export function SuperAdminPage() {
         <Shield size={18} className="text-gold" />
       </div>
 
-      <div className="relative mx-auto mt-4 grid max-w-[1500px] gap-5 md:mt-0 md:grid-cols-[290px_1fr]">
+      <div className="gm-admin-layout gm-super-admin-grid relative mt-4 md:mt-0">
         <aside
           className={`${
             sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
-          } fixed inset-y-0 left-0 z-40 flex w-[285px] flex-col border-r border-gold/15 bg-[#070b10] p-4 shadow-glow transition-transform md:sticky md:top-6 md:h-[calc(100vh-3rem)] md:w-auto md:rounded-[1.7rem] md:border md:border-gold/20 md:bg-[#0a0f14]/95`}
+          } gm-admin-sidebar fixed inset-y-0 left-0 z-40 flex w-[285px] flex-col border-r border-gold/15 bg-[#070b10] p-4 shadow-glow transition-transform md:sticky md:top-3 md:w-auto md:rounded-[1.7rem] md:border md:border-gold/20 md:bg-[#0a0f14]/95`}
         >
           <div className="mb-5 flex items-start justify-between gap-3">
             <div>
@@ -1141,8 +1141,8 @@ export function SuperAdminPage() {
           />
         ) : null}
 
-        <main className="space-y-5">
-          <section className="relative overflow-hidden rounded-[2rem] border border-gold/20 bg-[#0a0f14] p-5 shadow-halo md:p-6">
+        <main className="gm-admin-main space-y-5">
+          <section className="gm-admin-section relative overflow-hidden border border-gold/20 bg-[#0a0f14] shadow-halo">
             <div className="absolute inset-0 bg-gold-veil opacity-70" />
             <div className="absolute right-6 top-6 hidden h-28 w-28 rounded-full border border-gold/20 bg-gold/5 md:block" />
             <div className="relative flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
