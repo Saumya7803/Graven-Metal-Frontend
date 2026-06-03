@@ -31,6 +31,9 @@ const demoProducts = [
     price: 805,
     currency: 'INR',
     unit: 'kg',
+    unitType: 'Sheet',
+    weightPerUnit: 10,
+    moq: 5,
     stockQty: 140,
   },
   {
@@ -41,6 +44,9 @@ const demoProducts = [
     price: 62,
     currency: 'INR',
     unit: 'kg',
+    unitType: 'Coil',
+    weightPerUnit: 15,
+    moq: 2,
     stockQty: 400,
   },
   {
@@ -51,6 +57,9 @@ const demoProducts = [
     price: 245,
     currency: 'INR',
     unit: 'kg',
+    unitType: 'Ingot',
+    weightPerUnit: 20,
+    moq: 10,
     stockQty: 220,
   },
   {
@@ -61,6 +70,9 @@ const demoProducts = [
     price: 540,
     currency: 'INR',
     unit: 'kg',
+    unitType: 'Rod',
+    weightPerUnit: 18,
+    moq: 5,
     stockQty: 95,
   },
   {
@@ -71,6 +83,9 @@ const demoProducts = [
     price: 58,
     currency: 'INR',
     unit: 'kg',
+    unitType: 'Bar',
+    weightPerUnit: 12,
+    moq: 25,
     stockQty: 500,
   },
 ];
