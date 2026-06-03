@@ -43,6 +43,7 @@ import type { ApiBlog, ApiCategory, ApiProduct } from '../lib/publicApi';
 type Section =
   | 'dashboard'
   | 'products'
+  | 'approvals'
   | 'categories'
   | 'blogs'
   | 'quotes'
@@ -365,6 +366,7 @@ function EmptyState({ title, message }: { title: string; message: string }) {
 const sidebarItems: SidebarItem[] = [
   { key: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { key: 'products', label: 'Products', icon: Package },
+  { key: 'approvals', label: 'Approvals', icon: CheckCircle2 },
   { key: 'categories', label: 'Categories', icon: FolderOpen },
   { key: 'blogs', label: 'Blogs', icon: FileText },
   { key: 'quotes', label: 'Quotes', icon: ClipboardList },
@@ -759,6 +761,14 @@ export function AdminPage() {
     });
   }, [products, normalizedSearch, productQuery, productStatusFilter, productCategoryFilter]);
 
+  const pendingProducts = useMemo(
+    () =>
+      products.filter(
+        (item) => item.approvalStatus === 'pending' || item.removalRequested || item.approvalStatus === 'rejected'
+      ),
+    [products]
+  );
+
   const filteredCategories = useMemo(() => {
     return categories.filter((c) => `${c.name} ${c.slug}`.toLowerCase().includes(normalizedSearch));
   }, [categories, normalizedSearch]);
@@ -849,6 +859,27 @@ export function AdminPage() {
       metaDescription: item.metaDescription || '',
       file: null,
     });
+  };
+
+  const approveProductReview = async (item: ApiProduct) => {
+    try {
+      await adminApi.approveProduct(item._id);
+      toast.success(`Approved ${item.name}`);
+      await loadAll();
+    } catch (err) {
+      toast.error((err as Error).message);
+    }
+  };
+
+  const rejectProductReview = async (item: ApiProduct) => {
+    if (!window.confirm(`Reject product "${item.name}"?`)) return;
+    try {
+      await adminApi.rejectProduct(item._id);
+      toast.success(`Rejected ${item.name}`);
+      await loadAll();
+    } catch (err) {
+      toast.error((err as Error).message);
+    }
   };
 
   const openAddProductForCategory = (category: ApiCategory) => {
@@ -1730,6 +1761,114 @@ export function AdminPage() {
                     {bulkProcessing ? 'Uploading...' : 'Run Bulk Upload'}
                   </button>
                 </div>
+              </div>
+            </section>
+          ) : null}
+
+          {section === 'approvals' ? (
+            <section className={panelClass}>
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div>
+                  <p className="text-xs uppercase tracking-[0.16em] text-zinc-500">Product Approvals</p>
+                  <h3 className="mt-1 font-display text-2xl text-white">Review data entry submissions</h3>
+                  <p className="mt-1 text-sm text-zinc-400">Approve or reject pending products before they appear on the website.</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => navigate('/admin/products?view=approvals')}
+                  className="inline-flex items-center gap-2 rounded-lg border border-gold/20 bg-[#0f151e] px-4 py-2 text-sm font-semibold text-zinc-200 hover:border-gold/45 hover:text-gold"
+                >
+                  Open Full Manager
+                  <Package size={15} className="text-gold" />
+                </button>
+              </div>
+
+              <div className="mt-4 overflow-x-auto rounded-xl border border-gold/15 bg-[#0b1119]">
+                <table className="w-full min-w-[920px] text-sm">
+                  <thead className="border-b border-gold/10 text-left text-xs uppercase tracking-[0.14em] text-zinc-500">
+                    <tr>
+                      <th className="px-3 py-3">Product</th>
+                      <th className="px-3 py-3">Category</th>
+                      <th className="px-3 py-3">State</th>
+                      <th className="px-3 py-3">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {pendingProducts.map((item) => (
+                      <tr key={item._id} className="border-t border-gold/10">
+                        <td className="px-3 py-3">
+                          <p className="text-zinc-100">{item.name}</p>
+                          <p className="text-xs text-zinc-500">{item.slug}</p>
+                        </td>
+                        <td className="px-3 py-3 text-zinc-300">
+                          {typeof item.category === 'string' ? item.category : item.category?.name || '-'}
+                        </td>
+                        <td className="px-3 py-3">
+                          <span
+                            className={`inline-flex rounded-full border px-3 py-1 text-xs font-semibold ${
+                              item.removalRequested
+                                ? 'border-gold/30 bg-gold/10 text-gold'
+                                : item.approvalStatus === 'rejected'
+                                  ? 'border-red-500/30 bg-red-500/10 text-red-300'
+                                  : 'border-emerald-500/30 bg-emerald-500/10 text-emerald-300'
+                            }`}
+                          >
+                            {item.removalRequested ? 'Removal Requested' : item.approvalStatus === 'rejected' ? 'Rejected' : 'Pending Approval'}
+                          </span>
+                        </td>
+                        <td className="px-3 py-3">
+                          <div className="flex flex-wrap gap-2">
+                            {item.approvalStatus === 'pending' ? (
+                              <>
+                                <button
+                                  type="button"
+                                  onClick={() => approveProductReview(item)}
+                                  className="rounded-md border border-emerald-500/35 bg-emerald-500/10 px-3 py-2 text-xs font-semibold text-emerald-300"
+                                >
+                                  Approve
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => rejectProductReview(item)}
+                                  className="rounded-md border border-red-500/35 bg-red-500/10 px-3 py-2 text-xs font-semibold text-red-300"
+                                >
+                                  Reject
+                                </button>
+                              </>
+                            ) : null}
+                            {item.removalRequested ? (
+                              <button
+                                type="button"
+                                onClick={async () => {
+                                  if (!window.confirm(`Approve removal of "${item.name}"?`)) return;
+                                  try {
+                                    await adminApi.deleteProduct(item._id);
+                                    toast.success('Removal approved');
+                                    await loadAll();
+                                  } catch (err) {
+                                    toast.error((err as Error).message);
+                                  }
+                                }}
+                                className="rounded-md border border-red-500/35 bg-red-500/10 px-3 py-2 text-xs font-semibold text-red-300"
+                              >
+                                Approve Removal
+                              </button>
+                            ) : null}
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+
+                {!pendingProducts.length ? (
+                  <div className="p-5">
+                    <EmptyState
+                      title="No product approvals pending"
+                      message="New products from data entry and removal requests will appear here."
+                    />
+                  </div>
+                ) : null}
               </div>
             </section>
           ) : null}

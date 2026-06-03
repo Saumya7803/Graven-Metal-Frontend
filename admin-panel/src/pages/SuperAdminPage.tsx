@@ -35,12 +35,14 @@ import {
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
+import { adminApi } from '../lib/adminApi';
 import { superAdminApi } from '../lib/superAdminApi';
 import { getApiErrorMessage } from '../lib/apiUtils';
 import { clearAuth, getAuthUser } from '../lib/auth';
 import { BrandLogo } from '../components/BrandLogo';
 import { LoadingOverlay } from '../components/ui/LoadingOverlay';
 import { SEO } from '../components/seo/SEO';
+import type { ApiProduct } from '../lib/publicApi';
 
 const allPermissions = [
   'manage_leads',
@@ -95,6 +97,7 @@ const tabs = [
   { key: 'analytics', label: 'Dashboard Overview', icon: BarChart3 },
   { key: 'blueprint', label: 'Business Blueprint', icon: FileText },
   { key: 'admins', label: 'Role & Permissions', icon: ShieldCheck },
+  { key: 'approvals', label: 'Product Approvals', icon: CheckCircle2 },
   { key: 'users', label: 'User Management', icon: Users },
   { key: 'customers', label: 'Customers', icon: UserCog },
   { key: 'audit', label: 'Audit Logs', icon: History },
@@ -725,6 +728,7 @@ export function SuperAdminPage() {
 
   const [admins, setAdmins] = useState<UserRow[]>([]);
   const [users, setUsers] = useState<UserRow[]>([]);
+  const [products, setProducts] = useState<ApiProduct[]>([]);
   const [customerActivity, setCustomerActivity] = useState<CustomerActivityRow[]>([]);
   const [auditLogs, setAuditLogs] = useState<AuditLogRow[]>([]);
   const [settings, setSettings] = useState<Settings>({
@@ -755,7 +759,8 @@ export function SuperAdminPage() {
   const load = async () => {
     setLoading(true);
     try {
-      const [adminRows, userRows, customerRows, siteSettings, analyticsData, seoData, auditRows] = await Promise.all([
+      const [adminRows, userRows, customerRows, siteSettings, analyticsData, seoData, auditRows, productRows] =
+        await Promise.all([
         superAdminApi.getAdmins(),
         superAdminApi.getUsers(),
         superAdminApi.getCustomerActivity(),
@@ -763,10 +768,12 @@ export function SuperAdminPage() {
         superAdminApi.getAnalytics(),
         superAdminApi.getSEO(),
         superAdminApi.getAuditLogs(),
+        adminApi.getProducts(),
       ]);
 
       setAdmins(Array.isArray(adminRows) ? adminRows : []);
       setUsers(Array.isArray(userRows) ? userRows : []);
+      setProducts(Array.isArray(productRows) ? productRows : []);
       setCustomerActivity(Array.isArray(customerRows) ? customerRows : []);
       setAuditLogs(Array.isArray(auditRows) ? auditRows : []);
       setSettings({
@@ -822,6 +829,14 @@ export function SuperAdminPage() {
         return matchesRole && matchesUser(user, userSearch);
       }),
     [roleFilter, userSearch, users]
+  );
+
+  const pendingProducts = useMemo(
+    () =>
+      products.filter(
+        (item) => item.approvalStatus === 'pending' || item.removalRequested || item.approvalStatus === 'rejected'
+      ),
+    [products]
   );
 
   const filteredCustomerActivity = useMemo(() => {
@@ -993,6 +1008,27 @@ export function SuperAdminPage() {
       toast.error((error as Error).message);
     } finally {
       setSaving(false);
+    }
+  };
+
+  const approveProductReview = async (product: ApiProduct) => {
+    try {
+      await adminApi.approveProduct(product._id);
+      toast.success(`Approved ${product.name}`);
+      await load();
+    } catch (error) {
+      toast.error((error as Error).message);
+    }
+  };
+
+  const rejectProductReview = async (product: ApiProduct) => {
+    if (!window.confirm(`Reject product "${product.name}"?`)) return;
+    try {
+      await adminApi.rejectProduct(product._id);
+      toast.success(`Rejected ${product.name}`);
+      await load();
+    } catch (error) {
+      toast.error((error as Error).message);
     }
   };
 
@@ -1672,6 +1708,120 @@ export function SuperAdminPage() {
                     <EmptyState
                       title="No audit logs yet"
                       message="Privileged actions will appear here as admins change settings, permissions, sessions, and backups."
+                    />
+                  </div>
+                ) : null}
+              </div>
+            </section>
+          ) : null}
+
+          {tab === 'approvals' ? (
+            <section className={panel}>
+              <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                <div>
+                  <p className={label}>Product Approvals</p>
+                  <h3 className="mt-1 font-display text-3xl text-white">Approve data entry products</h3>
+                  <p className="mt-2 max-w-2xl text-sm text-zinc-400">
+                    Review pending product submissions and removal requests from the data entry team.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => navigate('/admin/products?view=approvals')}
+                  className="inline-flex items-center justify-center gap-2 rounded-xl border border-gold/25 bg-gold/10 px-4 py-2 text-sm font-semibold text-gold hover:border-gold/50"
+                >
+                  Open Full Manager
+                  <Package size={15} />
+                </button>
+              </div>
+
+              <div className={`mt-5 ${tableWrap}`}>
+                <table className="w-full min-w-[920px] text-sm">
+                  <thead className="border-b border-gold/10">
+                    <tr className={tableHead}>
+                      <th className="px-4 py-3">Product</th>
+                      <th className="px-4 py-3">Category</th>
+                      <th className="px-4 py-3">State</th>
+                      <th className="px-4 py-3">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {pendingProducts.map((product) => (
+                      <tr key={product._id} className="border-t border-gold/10 align-top">
+                        <td className="px-4 py-4">
+                          <p className="font-semibold text-white">{product.name}</p>
+                          <p className="mt-1 text-xs text-zinc-400">{product.slug}</p>
+                        </td>
+                        <td className="px-4 py-4 text-zinc-300">
+                          {typeof product.category === 'string' ? product.category : product.category?.name || '-'}
+                        </td>
+                        <td className="px-4 py-4">
+                          <span
+                            className={`inline-flex rounded-full border px-3 py-1 text-xs font-semibold ${
+                              product.removalRequested
+                                ? 'border-gold/30 bg-gold/10 text-gold'
+                                : product.approvalStatus === 'rejected'
+                                  ? 'border-red-500/30 bg-red-500/10 text-red-300'
+                                  : 'border-emerald-500/30 bg-emerald-500/10 text-emerald-300'
+                            }`}
+                          >
+                            {product.removalRequested
+                              ? 'Removal Requested'
+                              : product.approvalStatus === 'rejected'
+                                ? 'Rejected'
+                                : 'Pending Approval'}
+                          </span>
+                        </td>
+                        <td className="px-4 py-4">
+                          <div className="flex flex-wrap gap-2">
+                            {product.approvalStatus === 'pending' ? (
+                              <>
+                                <button
+                                  type="button"
+                                  onClick={() => approveProductReview(product)}
+                                  className="rounded-xl border border-emerald-400/25 bg-emerald-400/10 px-3 py-2 text-xs font-semibold text-emerald-200 hover:border-emerald-300/60"
+                                >
+                                  Approve
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => rejectProductReview(product)}
+                                  className="rounded-xl border border-red-500/30 bg-red-500/10 px-3 py-2 text-xs font-semibold text-red-300 hover:border-red-400/60"
+                                >
+                                  Reject
+                                </button>
+                              </>
+                            ) : null}
+                            {product.removalRequested ? (
+                              <button
+                                type="button"
+                                onClick={async () => {
+                                  if (!window.confirm(`Approve removal of "${product.name}"?`)) return;
+                                  try {
+                                    await adminApi.deleteProduct(product._id);
+                                    toast.success('Removal approved');
+                                    await load();
+                                  } catch (error) {
+                                    toast.error((error as Error).message);
+                                  }
+                                }}
+                                className="rounded-xl border border-red-500/30 bg-red-500/10 px-3 py-2 text-xs font-semibold text-red-300 hover:border-red-400/60"
+                              >
+                                Approve Removal
+                              </button>
+                            ) : null}
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+
+                {!pendingProducts.length ? (
+                  <div className="p-5">
+                    <EmptyState
+                      title="No product approvals pending"
+                      message="Pending submissions from data entry and removal requests will appear here."
                     />
                   </div>
                 ) : null}

@@ -14,7 +14,7 @@ import {
   Upload,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { BrandLogo } from '../components/BrandLogo';
 import { SEO } from '../components/seo/SEO';
 import { adminApi } from '../lib/adminApi';
@@ -116,10 +116,11 @@ function ProductFallback({ name }: { name: string }) {
 
 export function ProductManagementPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const user = getAuthUser();
   const isAdmin = user?.role === 'admin' || user?.role === 'super_admin';
   const canRequestRemoval = ['data_entry', 'editor', 'admin', 'super_admin'].includes(user?.role || '');
-  const [viewMode, setViewMode] = useState<ViewMode>('list');
+  const [viewMode, setViewMode] = useState<ViewMode | 'approvals'>('list');
   const [products, setProducts] = useState<ApiProduct[]>([]);
   const [categories, setCategories] = useState<ApiCategory[]>([]);
   const [loading, setLoading] = useState(true);
@@ -153,6 +154,13 @@ export function ProductManagementPage() {
   useEffect(() => {
     load();
   }, []);
+
+  useEffect(() => {
+    const view = new URLSearchParams(location.search).get('view');
+    if (view === 'list' || view === 'add' || view === 'approvals') {
+      setViewMode(view);
+    }
+  }, [location.search]);
 
   const categoryOptions = useMemo(
     () => [{ _id: 'all', name: 'All Categories' }, ...categories],
@@ -283,6 +291,9 @@ export function ProductManagementPage() {
   const pendingCount = products.filter((item) => getModerationLabel(item).label === 'Pending Approval').length;
   const removalCount = products.filter((item) => getModerationLabel(item).label === 'Removal Requested').length;
   const currentFormImage = formPreviewUrl || productForm.existingImageUrl;
+  const pendingProducts = products.filter(
+    (item) => item.approvalStatus === 'pending' || item.removalRequested || item.approvalStatus === 'rejected'
+  );
   const isListView = viewMode === 'list';
 
   const approveProduct = async (product: ApiProduct) => {
@@ -355,6 +366,7 @@ export function ProductManagementPage() {
               <div className="mt-6 space-y-2">
                 {[
                   { key: 'list' as const, label: 'All Products', icon: Package },
+                  { key: 'approvals' as const, label: 'Approvals', icon: CheckCircle2 },
                   { key: 'add' as const, label: 'Add Product', icon: ImagePlus },
                 ].map((item) => {
                   const Icon = item.icon;
@@ -606,6 +618,116 @@ export function ProductManagementPage() {
                       <div className="p-8 text-center">
                         <p className="font-display text-xl text-white">No products found</p>
                         <p className="mt-2 text-sm text-zinc-500">Try a different search or add a new product.</p>
+                      </div>
+                    ) : null}
+                  </div>
+                </section>
+              ) : viewMode === 'approvals' ? (
+                <section className="mt-5 rounded-[1.75rem] border border-gold/15 bg-[#070c12] p-4 shadow-halo sm:p-5">
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div>
+                      <p className="text-xs uppercase tracking-[0.2em] text-gold">Approvals</p>
+                      <h2 className="mt-1 font-display text-2xl text-white">Pending product approvals</h2>
+                      <p className="mt-1 text-sm text-zinc-400">Review submissions from data entry and action them here.</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setViewMode('list')}
+                      className="rounded-xl border border-gold/20 bg-[#0d1218] px-4 py-2 text-sm font-semibold text-zinc-300 hover:border-gold/50 hover:text-white"
+                    >
+                      Back to Products
+                    </button>
+                  </div>
+
+                  <div className="mt-5 overflow-hidden rounded-2xl border border-gold/10">
+                    <table className="w-full min-w-[920px] text-sm">
+                      <thead className="border-b border-gold/10 bg-[#0d1218]">
+                        <tr className="text-left text-xs uppercase tracking-[0.16em] text-zinc-500">
+                          <th className="px-4 py-3">Product</th>
+                          <th className="px-4 py-3">Category</th>
+                          <th className="px-4 py-3">Status</th>
+                          <th className="px-4 py-3">Requested</th>
+                          <th className="px-4 py-3">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {pendingProducts.map((product) => {
+                          const moderation = getModerationLabel(product);
+                          const StatusIcon = moderation.icon;
+                          return (
+                            <tr key={product._id} className="border-t border-gold/10 align-top">
+                              <td className="px-4 py-3">
+                                <p className="font-semibold text-white">{product.name}</p>
+                                <p className="mt-1 text-xs text-zinc-500">{product.slug}</p>
+                              </td>
+                              <td className="px-4 py-3 text-zinc-300">{getCategoryName(product) || 'Uncategorized'}</td>
+                              <td className="px-4 py-3">
+                                <span
+                                  className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-semibold ${
+                                    moderation.tone === 'green'
+                                      ? 'border-emerald-400/30 bg-emerald-400/10 text-emerald-200'
+                                      : moderation.tone === 'gold'
+                                        ? 'border-gold/30 bg-gold/10 text-gold'
+                                        : 'border-red-400/30 bg-red-400/10 text-red-200'
+                                  }`}
+                                >
+                                  <StatusIcon size={12} />
+                                  {moderation.label}
+                                </span>
+                              </td>
+                              <td className="px-4 py-3 text-zinc-400">
+                                {product.removalRequestedAt || product.reviewedAt || product.createdAt ? 'Recent' : '-'}
+                              </td>
+                              <td className="px-4 py-3">
+                                <div className="flex flex-wrap gap-2">
+                                  {product.approvalStatus === 'pending' ? (
+                                    <>
+                                      <button
+                                        type="button"
+                                        onClick={() => approveProduct(product)}
+                                        className="rounded-xl border border-emerald-400/30 bg-emerald-400/10 px-3 py-2 text-xs font-semibold text-emerald-200 hover:border-emerald-300/60"
+                                      >
+                                        Approve
+                                      </button>
+                                      <button
+                                        type="button"
+                                        onClick={() => rejectProduct(product)}
+                                        className="rounded-xl border border-red-500/30 bg-red-500/10 px-3 py-2 text-xs font-semibold text-red-300 hover:border-red-400/60"
+                                      >
+                                        Reject
+                                      </button>
+                                    </>
+                                  ) : null}
+                                  {product.removalRequested ? (
+                                    <button
+                                      type="button"
+                                      onClick={async () => {
+                                        if (!window.confirm(`Approve removal of "${product.name}"?`)) return;
+                                        try {
+                                          await adminApi.deleteProduct(product._id);
+                                          toast.success('Removal approved');
+                                          await load();
+                                        } catch (error) {
+                                          toast.error((error as Error).message);
+                                        }
+                                      }}
+                                      className="rounded-xl border border-red-500/30 bg-red-500/10 px-3 py-2 text-xs font-semibold text-red-300 hover:border-red-400/60"
+                                    >
+                                      Approve Removal
+                                    </button>
+                                  ) : null}
+                                </div>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+
+                    {!loading && pendingProducts.length === 0 ? (
+                      <div className="p-8 text-center">
+                        <p className="font-display text-xl text-white">No pending approvals</p>
+                        <p className="mt-2 text-sm text-zinc-500">Everything is approved right now.</p>
                       </div>
                     ) : null}
                   </div>
