@@ -43,7 +43,11 @@ router.post(
 router.delete('/admins/:id', [param('id').isMongoId()], validate, deleteAdmin);
 router.patch(
   '/admins/:id/permissions',
-  [param('id').isMongoId(), body('permissions').isArray().withMessage('permissions must be an array')],
+  [
+    param('id').isMongoId(),
+    body('permissions').isArray().withMessage('permissions must be an array'),
+    body('role').optional().isIn(['lqt', 'sales', 'procurement', 'admin', 'data_entry', 'editor', 'developer', 'user']),
+  ],
   validate,
   assignPermissions
 );

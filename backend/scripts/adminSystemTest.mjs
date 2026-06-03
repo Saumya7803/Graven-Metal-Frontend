@@ -3,6 +3,7 @@ import request from 'supertest';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import { createApp } from '../src/app.js';
 import { User } from '../src/models/User.js';
+import { signToken } from '../src/utils/jwt.js';
 
 const app = createApp();
 
@@ -248,6 +249,56 @@ const run = async () => {
       .send({ email: 'data-entry-change@graven.test', password: 'Password123' });
     assertStatus(updatedDataEntryLogin, 200, 'data entry candidate relogin');
     assertTruthy(updatedDataEntryLogin.body?.user?.role === 'admin', 'updated role is admin after relogin');
+
+    const salesToProcurementCandidate = await request(app)
+      .post('/api/super-admin/admins')
+      .set('Authorization', `Bearer ${superToken}`)
+      .send({
+        name: 'Sales To Procurement',
+        email: 'sales-procurement-change@graven.test',
+        password: 'Password123',
+        role: 'sales',
+      });
+    assertStatus(salesToProcurementCandidate, 201, 'create sales to procurement candidate');
+    const salesToProcurementCandidateId = salesToProcurementCandidate.body?.id;
+    assertTruthy(salesToProcurementCandidateId, 'sales to procurement candidate id');
+
+    const initialSalesLogin = await request(app)
+      .post('/api/auth/login/admin')
+      .send({ email: 'sales-procurement-change@graven.test', password: 'Password123' });
+    assertStatus(initialSalesLogin, 200, 'sales to procurement candidate initial login');
+    const initialSalesToken = initialSalesLogin.body?.token;
+    assertTruthy(initialSalesToken, 'initial sales token');
+    assertTruthy(initialSalesLogin.body?.user?.role === 'sales', 'initial role is sales');
+
+    const salesToProcurementUpdate = await request(app)
+      .patch(`/api/super-admin/admins/${salesToProcurementCandidateId}/permissions`)
+      .set('Authorization', `Bearer ${superToken}`)
+      .send({
+        role: 'procurement',
+        permissions: ['manage_suppliers', 'manage_price_requests', 'compare_vendors', 'manage_purchase_orders', 'view_analytics'],
+      });
+    assertStatus(salesToProcurementUpdate, 200, 'role update from sales to procurement');
+    assertTruthy(salesToProcurementUpdate.body?.role === 'procurement', 'updated role response is procurement');
+
+    const revokedSalesSession = await request(app)
+      .get('/api/auth/me')
+      .set('Authorization', `Bearer ${initialSalesToken}`);
+    assertStatus(revokedSalesSession, 401, 'old sales session revoked after role update');
+
+    const updatedProcurementUser = await User.findById(salesToProcurementCandidateId).select('-password');
+    assertTruthy(updatedProcurementUser?.role === 'procurement', 'updated role is procurement in database');
+    const updatedProcurementToken = signToken({
+      id: updatedProcurementUser._id,
+      role: updatedProcurementUser.role,
+      permissions: updatedProcurementUser.permissions,
+      sessionVersion: updatedProcurementUser.sessionVersion || 0,
+    });
+    const updatedProcurementSession = await request(app)
+      .get('/api/auth/me')
+      .set('Authorization', `Bearer ${updatedProcurementToken}`);
+    assertStatus(updatedProcurementSession, 200, 'sales to procurement updated auth session');
+    assertTruthy(updatedProcurementSession.body?.user?.role === 'procurement', 'updated auth role is procurement');
 
     const assignPerms = await request(app)
       .patch(`/api/super-admin/admins/${createdAdminId}/permissions`)

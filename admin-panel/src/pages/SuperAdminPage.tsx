@@ -952,8 +952,8 @@ export function SuperAdminPage() {
   const saveAdminPermissions = async (admin: UserRow) => {
     setSaving(true);
     try {
-      await superAdminApi.assignPermissions(admin._id, admin.permissions || [], admin.role);
-      toast.success('Admin permissions saved');
+      await superAdminApi.updateUser(admin._id, { role: admin.role, permissions: admin.permissions || [] });
+      toast.success('Role and permissions saved');
       await load();
     } catch (error) {
       toast.error((error as Error).message);

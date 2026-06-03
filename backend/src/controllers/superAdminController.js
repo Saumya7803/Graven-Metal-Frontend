@@ -83,8 +83,22 @@ export const assignPermissions = asyncHandler(async (req, res) => {
   if (!user) return res.status(404).json({ message: 'User not found' });
   if (user.role === 'super_admin') return res.status(400).json({ message: 'Super admin permissions are fixed' });
 
+  const originalRole = user.role;
+  const originalPermissions = JSON.stringify(user.permissions || []);
+
+  if (role && !MANAGED_ROLES.includes(role)) {
+    return res.status(400).json({ message: 'Role cannot be changed to that value' });
+  }
+
   if (role && MANAGED_ROLES.includes(role)) user.role = role;
-  user.permissions = permissions;
+  user.permissions = permissions.length ? permissions : ROLE_DEFAULT_PERMISSIONS[user.role] || [];
+
+  const roleChanged = user.role !== originalRole;
+  const permissionsChanged = JSON.stringify(user.permissions || []) !== originalPermissions;
+  if (roleChanged || permissionsChanged) {
+    user.sessionVersion = (user.sessionVersion || 0) + 1;
+  }
+
   await user.save();
 
   await recordAudit(
@@ -94,7 +108,7 @@ export const assignPermissions = asyncHandler(async (req, res) => {
     { role: user.role, permissions: user.permissions }
   );
 
-  res.json({ id: user._id, role: user.role, permissions: user.permissions });
+  res.json({ id: user._id, role: user.role, permissions: user.permissions, sessionVersion: user.sessionVersion || 0 });
 });
 
 export const listAdmins = asyncHandler(async (req, res) => {
