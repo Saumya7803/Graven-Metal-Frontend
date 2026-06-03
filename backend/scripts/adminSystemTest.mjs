@@ -145,7 +145,7 @@ const run = async () => {
       .post('/api/categories')
       .set('Authorization', `Bearer ${limitedToken}`)
       .send({ name: 'Platinum', slug: 'platinum' });
-    assertStatus(limitedCategory, 403, 'limited editor blocked by permissions');
+    assertStatus(limitedCategory, 201, 'limited editor allowed by role defaults');
 
     const limitedContacts = await request(app)
       .get('/api/contacts')
@@ -170,6 +170,45 @@ const run = async () => {
     assertStatus(createdAdmin, 201, 'create admin');
     const createdAdminId = createdAdmin.body?.id;
     assertTruthy(createdAdminId, 'created admin id');
+
+    const roleChangeCandidate = await request(app)
+      .post('/api/super-admin/admins')
+      .set('Authorization', `Bearer ${superToken}`)
+      .send({
+        name: 'Role Change Candidate',
+        email: 'role-change@graven.test',
+        password: 'Password123',
+        role: 'admin',
+      });
+    assertStatus(roleChangeCandidate, 201, 'create role change candidate');
+    const roleChangeCandidateId = roleChangeCandidate.body?.id;
+    assertTruthy(roleChangeCandidateId, 'role change candidate id');
+
+    const initialRoleLogin = await request(app)
+      .post('/api/auth/login/admin')
+      .send({ email: 'role-change@graven.test', password: 'Password123' });
+    assertStatus(initialRoleLogin, 200, 'role change candidate initial login');
+    const initialRoleToken = initialRoleLogin.body?.token;
+    assertTruthy(initialRoleToken, 'initial role token');
+    assertTruthy(initialRoleLogin.body?.user?.role === 'admin', 'initial role is admin');
+
+    const roleUpdate = await request(app)
+      .patch(`/api/super-admin/users/${roleChangeCandidateId}`)
+      .set('Authorization', `Bearer ${superToken}`)
+      .send({ role: 'developer' });
+    assertStatus(roleUpdate, 200, 'role update to developer');
+    assertTruthy(roleUpdate.body?.role === 'developer', 'updated role response is developer');
+
+    const revokedOldRoleSession = await request(app)
+      .get('/api/auth/me')
+      .set('Authorization', `Bearer ${initialRoleToken}`);
+    assertStatus(revokedOldRoleSession, 401, 'old role session revoked after role update');
+
+    const updatedRoleLogin = await request(app)
+      .post('/api/auth/login/admin')
+      .send({ email: 'role-change@graven.test', password: 'Password123' });
+    assertStatus(updatedRoleLogin, 200, 'role change candidate relogin');
+    assertTruthy(updatedRoleLogin.body?.user?.role === 'developer', 'updated role is developer after relogin');
 
     const assignPerms = await request(app)
       .patch(`/api/super-admin/admins/${createdAdminId}/permissions`)
