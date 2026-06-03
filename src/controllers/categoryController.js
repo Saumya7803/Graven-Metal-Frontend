@@ -40,7 +40,7 @@ export const getCategories = asyncHandler(async (req, res) => {
   let productsByCategory = new Map();
   if (includeProducts === 'true') {
     const products = await Product.find({ category: { $in: ids } })
-      .select('name slug price currency unit image inStock stockQty category')
+      .select('name slug price currency unit weightUnit unitType weightPerUnit image inStock stockQty category')
       .sort({ createdAt: -1 })
       .lean();
 
@@ -66,7 +66,7 @@ export const getCategoryById = asyncHandler(async (req, res) => {
   if (!category) return res.status(404).json({ message: 'Category not found' });
 
   const products = await Product.find({ category: category._id })
-    .select('name slug price currency unit image inStock stockQty')
+    .select('name slug price currency unit weightUnit unitType weightPerUnit image inStock stockQty')
     .sort({ createdAt: -1 });
 
   res.json({

@@ -10,12 +10,12 @@ function normalizeProductPayload(payload) {
   if (payload.stockQty !== undefined) payload.stockQty = Number(payload.stockQty);
   if (payload.weightPerUnit !== undefined) payload.weightPerUnit = Number(payload.weightPerUnit);
   if (payload.moq !== undefined) payload.moq = Number(payload.moq);
-  if (payload.unitType === undefined && payload.unit !== undefined) payload.unitType = String(payload.unit);
+  if (payload.weightUnit === undefined && payload.unit !== undefined) payload.weightUnit = String(payload.unit);
   if (payload.unitType !== undefined) payload.unitType = String(payload.unitType).trim();
   if (payload.unit !== undefined) payload.unit = String(payload.unit).trim();
-  if (payload.unitType !== undefined && !payload.unit) payload.unit = payload.unitType;
-  if (payload.unitType !== undefined && !payload.unitType) payload.unitType = payload.unit;
-  if (payload.unitType && !payload.unit) payload.unit = payload.unitType;
+  if (payload.weightUnit !== undefined) payload.weightUnit = String(payload.weightUnit).trim().toLowerCase();
+  if (payload.weightUnit !== undefined && !payload.unit) payload.unit = payload.weightUnit;
+  if (payload.unit && !payload.weightUnit) payload.weightUnit = payload.unit;
   return payload;
 }
 
