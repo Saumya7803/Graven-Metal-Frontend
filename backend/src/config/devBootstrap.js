@@ -11,6 +11,7 @@ const DEV_CUSTOMER_PASSWORD = process.env.DEV_CUSTOMER_PASSWORD || 'Password123'
 const DEV_LQT_EMAIL = process.env.DEV_LQT_EMAIL || 'lqt@graven.local';
 const DEV_SALES_EMAIL = process.env.DEV_SALES_EMAIL || 'sales@graven.local';
 const DEV_PROCUREMENT_EMAIL = process.env.DEV_PROCUREMENT_EMAIL || 'procurement@graven.local';
+const DEV_DEVELOPER_EMAIL = process.env.DEV_DEVELOPER_EMAIL || 'developer@graven.local';
 
 const removedCatalogCategorySlugs = ['gold', 'silver', 'lead'];
 
@@ -275,6 +276,7 @@ export const ensureDevUsers = async () => {
     { name: 'Local LQT Lead', email: DEV_LQT_EMAIL, role: 'lqt' },
     { name: 'Local Sales Lead', email: DEV_SALES_EMAIL, role: 'sales' },
     { name: 'Local Procurement Lead', email: DEV_PROCUREMENT_EMAIL, role: 'procurement' },
+    { name: 'Local Developer', email: DEV_DEVELOPER_EMAIL, role: 'developer' },
   ];
 
   for (const account of teamAccounts) {

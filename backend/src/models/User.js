@@ -22,7 +22,7 @@ const userSchema = new mongoose.Schema(
     },
     role: {
       type: String,
-      enum: ['super_admin', 'lqt', 'sales', 'procurement', 'admin', 'editor', 'user'],
+      enum: ['super_admin', 'lqt', 'sales', 'procurement', 'admin', 'data_entry', 'editor', 'developer', 'user'],
       default: 'user',
     },
     permissions: [{ type: String }],
@@ -40,6 +40,8 @@ userSchema.pre('validate', function applyRolePermissions() {
   }
   if (this.role === 'super_admin') {
     this.permissions = ROLE_DEFAULT_PERMISSIONS.super_admin;
+  } else if (this.role === 'data_entry' && (!this.permissions || this.permissions.length === 0)) {
+    this.permissions = ROLE_DEFAULT_PERMISSIONS.data_entry;
   }
 });
 

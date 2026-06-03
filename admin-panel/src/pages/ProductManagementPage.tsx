@@ -2,11 +2,13 @@ import { useEffect, useMemo, useState, type ChangeEvent, type FormEvent } from '
 import {
   ArrowLeft,
   CheckCircle2,
+  Clock3,
   Edit3,
   ImagePlus,
   Package,
   Search,
   Sparkles,
+  ShieldAlert,
   Trash2,
   Upload,
 } from 'lucide-react';
@@ -21,6 +23,7 @@ import type { ApiCategory } from '../lib/publicApi';
 import type { ApiProduct } from '../lib/publicApi';
 
 type ViewMode = 'list' | 'add';
+type ModerationFilter = 'all' | 'approved' | 'pending' | 'rejected' | 'removal';
 
 type ProductForm = {
   _id?: string;
@@ -69,10 +72,17 @@ function getCategoryName(product: ApiProduct) {
   return typeof product.category === 'string' ? product.category : product.category?.name || '';
 }
 
-function getStatusLabel(product: ApiProduct) {
-  if (product.inStock === false || (product.stockQty ?? 0) <= 0) return { label: 'Out of Stock', tone: 'red' as const };
-  if ((product.stockQty ?? 0) < 25) return { label: 'Low Stock', tone: 'gold' as const };
-  return { label: 'Active', tone: 'green' as const };
+function getModerationLabel(product: ApiProduct) {
+  if (product.removalRequested) {
+    return { label: 'Removal Requested', tone: 'gold' as const, icon: Clock3 };
+  }
+  if (product.approvalStatus === 'pending') {
+    return { label: 'Pending Approval', tone: 'gold' as const, icon: Clock3 };
+  }
+  if (product.approvalStatus === 'rejected') {
+    return { label: 'Rejected', tone: 'red' as const, icon: ShieldAlert };
+  }
+  return { label: 'Approved', tone: 'green' as const, icon: CheckCircle2 };
 }
 
 function getUnitLabel(product: ApiProduct) {
@@ -82,6 +92,8 @@ function getUnitLabel(product: ApiProduct) {
 export function ProductManagementPage() {
   const navigate = useNavigate();
   const user = getAuthUser();
+  const isAdmin = user?.role === 'admin' || user?.role === 'super_admin';
+  const canRequestRemoval = ['data_entry', 'editor', 'admin', 'super_admin'].includes(user?.role || '');
   const [viewMode, setViewMode] = useState<ViewMode>('list');
   const [products, setProducts] = useState<ApiProduct[]>([]);
   const [categories, setCategories] = useState<ApiCategory[]>([]);
@@ -89,7 +101,7 @@ export function ProductManagementPage() {
   const [saving, setSaving] = useState(false);
   const [query, setQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('all');
-  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'low' | 'out'>('all');
+  const [statusFilter, setStatusFilter] = useState<ModerationFilter>('all');
   const [productForm, setProductForm] = useState<ProductForm>(defaultForm);
 
   const load = async () => {
@@ -122,12 +134,13 @@ export function ProductManagementPage() {
       const categoryName = getCategoryName(product);
       const matchesSearch = !search || `${product.name} ${product.slug} ${categoryName}`.toLowerCase().includes(search);
       const matchesCategory = categoryFilter === 'all' || categoryName === categoryFilter;
-      const status = getStatusLabel(product).label;
+      const moderation = getModerationLabel(product).label;
       const matchesStatus =
         statusFilter === 'all' ||
-        (statusFilter === 'active' && status === 'Active') ||
-        (statusFilter === 'low' && status === 'Low Stock') ||
-        (statusFilter === 'out' && status === 'Out of Stock');
+        (statusFilter === 'approved' && moderation === 'Approved') ||
+        (statusFilter === 'pending' && moderation === 'Pending Approval') ||
+        (statusFilter === 'rejected' && moderation === 'Rejected') ||
+        (statusFilter === 'removal' && moderation === 'Removal Requested');
       return matchesSearch && matchesCategory && matchesStatus;
     });
   }, [categoryFilter, products, query, statusFilter]);
@@ -223,8 +236,49 @@ export function ProductManagementPage() {
     }
   };
 
-  const lowStockCount = products.filter((item) => getStatusLabel(item).label === 'Low Stock').length;
-  const activeCount = products.filter((item) => getStatusLabel(item).label === 'Active').length;
+  const approvedCount = products.filter((item) => getModerationLabel(item).label === 'Approved').length;
+  const pendingCount = products.filter((item) => getModerationLabel(item).label === 'Pending Approval').length;
+  const removalCount = products.filter((item) => getModerationLabel(item).label === 'Removal Requested').length;
+
+  const approveProduct = async (product: ApiProduct) => {
+    setSaving(true);
+    try {
+      await adminApi.approveProduct(product._id);
+      toast.success(`Approved "${product.name}"`);
+      await load();
+    } catch (error) {
+      toast.error((error as Error).message);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const rejectProduct = async (product: ApiProduct) => {
+    if (!window.confirm(`Reject product "${product.name}"?`)) return;
+    setSaving(true);
+    try {
+      await adminApi.rejectProduct(product._id);
+      toast.success(`Rejected "${product.name}"`);
+      await load();
+    } catch (error) {
+      toast.error((error as Error).message);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const requestRemoval = async (product: ApiProduct) => {
+    setSaving(true);
+    try {
+      await adminApi.requestProductRemoval(product._id);
+      toast.success('Removal request sent to admin');
+      await load();
+    } catch (error) {
+      toast.error((error as Error).message);
+    } finally {
+      setSaving(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-[#03070b] px-4 py-4 text-zinc-200 md:px-6 md:py-6">
@@ -293,6 +347,7 @@ export function ProductManagementPage() {
                     <h1 className="mt-2 font-display text-3xl text-white sm:text-4xl">Product Management</h1>
                     <p className="mt-2 max-w-3xl text-sm leading-6 text-zinc-400">
                       Manage the product catalog shown on the website and add new inventory records from one place.
+                      {user?.role === 'data_entry' ? ' Products you submit will wait for admin approval.' : ''}
                     </p>
                   </div>
 
@@ -320,8 +375,8 @@ export function ProductManagementPage() {
                 <div className="mt-5 grid gap-3 sm:grid-cols-3">
                   {[
                     { label: 'Total Products', value: products.length, helper: 'Catalog entries' },
-                    { label: 'Active Products', value: activeCount, helper: 'Visible and in stock' },
-                    { label: 'Low Stock', value: lowStockCount, helper: 'Needs replenishment' },
+                    { label: 'Approved', value: approvedCount, helper: 'Visible on website' },
+                    { label: 'Pending / Removal', value: pendingCount + removalCount, helper: 'Needs admin review' },
                   ].map((item) => (
                     <div key={item.label} className="rounded-2xl border border-gold/15 bg-[#0d1218] p-4">
                       <p className="text-xs uppercase tracking-[0.18em] text-zinc-500">{item.label}</p>
@@ -356,10 +411,11 @@ export function ProductManagementPage() {
                         onChange={(e) => setStatusFilter(e.target.value as typeof statusFilter)}
                         className="rounded-xl border border-gold/20 bg-[#0d1218] px-3 py-2 text-sm text-zinc-100 outline-none"
                       >
-                        <option value="all">All Status</option>
-                        <option value="active">Active</option>
-                        <option value="low">Low Stock</option>
-                        <option value="out">Out of Stock</option>
+                        <option value="all">All Moderation</option>
+                        <option value="approved">Approved</option>
+                        <option value="pending">Pending Approval</option>
+                        <option value="rejected">Rejected</option>
+                        <option value="removal">Removal Requested</option>
                       </select>
                     </div>
                   </div>
@@ -379,7 +435,8 @@ export function ProductManagementPage() {
                       </thead>
                       <tbody>
                         {filteredProducts.map((product) => {
-                          const status = getStatusLabel(product);
+                          const moderation = getModerationLabel(product);
+                          const StatusIcon = moderation.icon;
                           return (
                             <tr key={product._id} className="border-t border-gold/10 align-top">
                               <td className="px-4 py-3">
@@ -403,15 +460,21 @@ export function ProductManagementPage() {
                               <td className="px-4 py-3">
                                 <span
                                   className={`rounded-full border px-3 py-1 text-xs font-semibold ${
-                                    status.tone === 'green'
+                                    moderation.tone === 'green'
                                       ? 'border-emerald-400/30 bg-emerald-400/10 text-emerald-200'
-                                      : status.tone === 'gold'
+                                      : moderation.tone === 'gold'
                                         ? 'border-gold/30 bg-gold/10 text-gold'
                                         : 'border-red-400/30 bg-red-400/10 text-red-200'
                                   }`}
                                 >
-                                  {status.label}
+                                  <span className="inline-flex items-center gap-1.5">
+                                    <StatusIcon size={12} />
+                                    {moderation.label}
+                                  </span>
                                 </span>
+                                {product.removalRequested ? (
+                                  <p className="mt-2 text-xs text-gold/80">Removal requested by {product.removalRequestedBy || 'data entry'}</p>
+                                ) : null}
                               </td>
                               <td className="px-4 py-3">
                                 <div className="flex gap-2">
@@ -423,14 +486,56 @@ export function ProductManagementPage() {
                                     <Edit3 size={14} />
                                     Edit
                                   </button>
-                                  <button
-                                    type="button"
-                                    onClick={() => deleteProduct(product)}
-                                    className="inline-flex items-center gap-2 rounded-xl border border-red-500/30 bg-red-500/10 px-3 py-2 text-xs font-semibold text-red-300 hover:border-red-400/60"
-                                  >
-                                    <Trash2 size={14} />
-                                    Delete
-                                  </button>
+                                  {isAdmin && moderation.label === 'Pending Approval' ? (
+                                    <>
+                                      <button
+                                        type="button"
+                                        onClick={() => approveProduct(product)}
+                                        className="inline-flex items-center gap-2 rounded-xl border border-emerald-400/30 bg-emerald-400/10 px-3 py-2 text-xs font-semibold text-emerald-200 hover:border-emerald-300/60"
+                                      >
+                                        <CheckCircle2 size={14} />
+                                        Approve
+                                      </button>
+                                      <button
+                                        type="button"
+                                        onClick={() => rejectProduct(product)}
+                                        className="inline-flex items-center gap-2 rounded-xl border border-red-500/30 bg-red-500/10 px-3 py-2 text-xs font-semibold text-red-300 hover:border-red-400/60"
+                                      >
+                                        <ShieldAlert size={14} />
+                                        Reject
+                                      </button>
+                                    </>
+                                  ) : null}
+                                  {isAdmin && product.removalRequested ? (
+                                    <button
+                                      type="button"
+                                      onClick={() => deleteProduct(product)}
+                                      className="inline-flex items-center gap-2 rounded-xl border border-red-500/30 bg-red-500/10 px-3 py-2 text-xs font-semibold text-red-300 hover:border-red-400/60"
+                                    >
+                                      <Trash2 size={14} />
+                                      Approve Removal
+                                    </button>
+                                  ) : null}
+                                  {!isAdmin && canRequestRemoval && !product.removalRequested ? (
+                                    <button
+                                      type="button"
+                                      onClick={() => requestRemoval(product)}
+                                      className="inline-flex items-center gap-2 rounded-xl border border-gold/30 bg-gold/10 px-3 py-2 text-xs font-semibold text-gold hover:border-gold/60"
+                                    >
+                                      <Clock3 size={14} />
+                                      Request Removal
+                                    </button>
+                                  ) : null}
+                                  {isAdmin && !product.removalRequested && product.approvalStatus !== 'pending' ? (
+                                    <button
+                                      type="button"
+                                      onClick={() => deleteProduct(product)}
+                                      className="inline-flex items-center gap-2 rounded-xl border border-red-500/30 bg-red-500/10 px-3 py-2 text-xs font-semibold text-red-300 hover:border-red-400/60"
+                                    >
+                                      <Trash2 size={14} />
+                                      Delete
+                                    </button>
+                                  ) : null}
                                 </div>
                               </td>
                             </tr>
@@ -455,6 +560,9 @@ export function ProductManagementPage() {
                       <h2 className="mt-1 font-display text-2xl text-white">
                         {productForm._id ? 'Update catalog entry' : 'Add new product'}
                       </h2>
+                      {!isAdmin ? (
+                        <p className="mt-1 text-xs text-zinc-500">New or edited products will be queued for admin approval.</p>
+                      ) : null}
                     </div>
                     <Package className="text-gold" size={20} />
                   </div>

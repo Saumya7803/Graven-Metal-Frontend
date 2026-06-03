@@ -21,6 +21,7 @@ function normalizeProductPayload(payload) {
 
 export const createProduct = asyncHandler(async (req, res) => {
   const payload = normalizeProductPayload({ ...req.body });
+  const role = req.user?.role || 'user';
 
   const category = await Category.findById(payload.category);
   if (!category) return res.status(400).json({ message: 'Invalid category' });
@@ -35,6 +36,12 @@ export const createProduct = asyncHandler(async (req, res) => {
     payload.image = { url: uploaded.url, publicId: uploaded.publicId };
   }
   if (payload.stockQty !== undefined) payload.inStock = payload.stockQty > 0;
+  payload.approvalStatus = role === 'data_entry' ? 'pending' : 'approved';
+  payload.removalRequested = false;
+  payload.removalRequestedAt = undefined;
+  payload.removalRequestedBy = '';
+  payload.reviewedBy = role === 'data_entry' ? '' : req.user?.email || '';
+  payload.reviewedAt = role === 'data_entry' ? undefined : new Date();
 
   const product = await Product.create(payload);
   const created = await Product.findById(product._id).populate('category');
@@ -42,6 +49,19 @@ export const createProduct = asyncHandler(async (req, res) => {
 });
 
 export const getProducts = asyncHandler(async (req, res) => {
+  const { category, q, inStock } = req.query;
+  const filter = {};
+
+  if (category) filter.category = category;
+  if (q) filter.name = { $regex: q, $options: 'i' };
+  if (inStock !== undefined) filter.inStock = inStock === 'true';
+  filter.$or = [{ approvalStatus: 'approved' }, { approvalStatus: { $exists: false } }];
+
+  const products = await Product.find(filter).populate('category').sort({ createdAt: -1 });
+  res.json(products);
+});
+
+export const getManagedProducts = asyncHandler(async (req, res) => {
   const { category, q, inStock } = req.query;
   const filter = {};
 
@@ -64,6 +84,7 @@ export const updateProduct = asyncHandler(async (req, res) => {
   if (!existing) return res.status(404).json({ message: 'Product not found' });
 
   const payload = normalizeProductPayload({ ...req.body });
+  const role = req.user?.role || 'user';
 
   if (payload.category) {
     const category = await Category.findById(payload.category);
@@ -71,6 +92,11 @@ export const updateProduct = asyncHandler(async (req, res) => {
   }
 
   if (payload.stockQty !== undefined) payload.inStock = payload.stockQty > 0;
+  if (role === 'data_entry') {
+    payload.approvalStatus = 'pending';
+    payload.reviewedBy = '';
+    payload.reviewedAt = undefined;
+  }
 
   if (req.file) {
     if (existing.image?.publicId) {
@@ -92,6 +118,48 @@ export const updateProduct = asyncHandler(async (req, res) => {
   }).populate('category');
 
   res.json(product);
+});
+
+export const approveProduct = asyncHandler(async (req, res) => {
+  const product = await Product.findById(req.params.id);
+  if (!product) return res.status(404).json({ message: 'Product not found' });
+
+  product.approvalStatus = 'approved';
+  product.reviewedBy = req.user?.email || '';
+  product.reviewedAt = new Date();
+  product.removalRequested = false;
+  product.removalRequestedAt = undefined;
+  product.removalRequestedBy = '';
+  await product.save();
+
+  const updated = await Product.findById(product._id).populate('category');
+  res.json(updated);
+});
+
+export const rejectProduct = asyncHandler(async (req, res) => {
+  const product = await Product.findById(req.params.id);
+  if (!product) return res.status(404).json({ message: 'Product not found' });
+
+  product.approvalStatus = 'rejected';
+  product.reviewedBy = req.user?.email || '';
+  product.reviewedAt = new Date();
+  await product.save();
+
+  const updated = await Product.findById(product._id).populate('category');
+  res.json(updated);
+});
+
+export const requestProductRemoval = asyncHandler(async (req, res) => {
+  const product = await Product.findById(req.params.id);
+  if (!product) return res.status(404).json({ message: 'Product not found' });
+
+  product.removalRequested = true;
+  product.removalRequestedAt = new Date();
+  product.removalRequestedBy = req.user?.role || '';
+  await product.save();
+
+  const updated = await Product.findById(product._id).populate('category');
+  res.json(updated);
 });
 
 export const deleteProduct = asyncHandler(async (req, res) => {

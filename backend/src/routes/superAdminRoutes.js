@@ -35,7 +35,7 @@ router.post(
       .isString()
       .isLength({ min: 8, max: 128 })
       .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/),
-    body('role').optional().isIn(['lqt', 'sales', 'procurement', 'admin', 'editor']),
+    body('role').optional().isIn(['lqt', 'sales', 'procurement', 'admin', 'data_entry', 'editor', 'developer']),
   ],
   validate,
   createAdmin
@@ -57,7 +57,7 @@ router.patch(
   [
     param('id').isMongoId(),
     body('permissions').optional().isArray(),
-    body('role').optional().isIn(['super_admin', 'lqt', 'sales', 'procurement', 'admin', 'editor', 'user']),
+    body('role').optional().isIn(['super_admin', 'lqt', 'sales', 'procurement', 'admin', 'data_entry', 'editor', 'developer', 'user']),
   ],
   validate,
   updateUser

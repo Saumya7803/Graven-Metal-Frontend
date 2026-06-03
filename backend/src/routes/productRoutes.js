@@ -1,10 +1,14 @@
 ﻿import { Router } from 'express';
 import { body, param } from 'express-validator';
 import {
+  approveProduct,
   createProduct,
   deleteProduct,
   getProductById,
   getProducts,
+  getManagedProducts,
+  rejectProduct,
+  requestProductRemoval,
   updateProduct,
 } from '../controllers/productController.js';
 import { authorize, authorizePermission, protect } from '../middlewares/authMiddleware.js';
@@ -15,12 +19,19 @@ import { uploadImage, validateUploadedFile } from '../middlewares/uploadMiddlewa
 const router = Router();
 
 router.get('/', getProducts);
+router.get(
+  '/manage',
+  protect,
+  authorize('super_admin', 'admin', 'editor', 'developer', 'data_entry'),
+  authorizePermission(PERMISSIONS.MANAGE_PRODUCTS),
+  getManagedProducts
+);
 router.get('/:id', [param('id').isMongoId()], validate, getProductById);
 
 router.post(
   '/',
   protect,
-  authorize('super_admin', 'admin', 'editor'),
+  authorize('super_admin', 'admin', 'editor', 'developer', 'data_entry'),
   authorizePermission(PERMISSIONS.MANAGE_PRODUCTS),
   uploadImage.single('image'),
   validateUploadedFile('image'),
@@ -42,7 +53,7 @@ router.post(
 router.put(
   '/:id',
   protect,
-  authorize('super_admin', 'admin', 'editor'),
+  authorize('super_admin', 'admin', 'editor', 'developer', 'data_entry'),
   authorizePermission(PERMISSIONS.MANAGE_PRODUCTS),
   [param('id').isMongoId()],
   validate,
@@ -68,6 +79,36 @@ router.delete(
   [param('id').isMongoId()],
   validate,
   deleteProduct,
+);
+
+router.patch(
+  '/:id/approve',
+  protect,
+  authorize('super_admin', 'admin'),
+  authorizePermission(PERMISSIONS.MANAGE_PRODUCT_APPROVALS || PERMISSIONS.MANAGE_PRODUCTS),
+  [param('id').isMongoId()],
+  validate,
+  approveProduct,
+);
+
+router.patch(
+  '/:id/reject',
+  protect,
+  authorize('super_admin', 'admin'),
+  authorizePermission(PERMISSIONS.MANAGE_PRODUCT_APPROVALS || PERMISSIONS.MANAGE_PRODUCTS),
+  [param('id').isMongoId()],
+  validate,
+  rejectProduct,
+);
+
+router.patch(
+  '/:id/request-removal',
+  protect,
+  authorize('super_admin', 'admin', 'editor', 'developer', 'data_entry'),
+  authorizePermission(PERMISSIONS.MANAGE_PRODUCTS),
+  [param('id').isMongoId()],
+  validate,
+  requestProductRemoval,
 );
 
 export default router;

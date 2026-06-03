@@ -104,7 +104,7 @@ function appendDefined(formData: FormData, key: string, value: unknown) {
 
 export const adminApi = {
   async getProducts() {
-    const res = await axiosClient.get<ApiProduct[]>('/products');
+    const res = await axiosClient.get<ApiProduct[]>('/products/manage');
     return res.data;
   },
   async createProduct(payload: ProductPayload) {
@@ -145,6 +145,18 @@ export const adminApi = {
   },
   async deleteProduct(id: string) {
     const res = await axiosClient.delete(`/products/${id}`);
+    return res.data;
+  },
+  async approveProduct(id: string) {
+    const res = await axiosClient.patch(`/products/${id}/approve`);
+    return res.data;
+  },
+  async rejectProduct(id: string) {
+    const res = await axiosClient.patch(`/products/${id}/reject`);
+    return res.data;
+  },
+  async requestProductRemoval(id: string) {
+    const res = await axiosClient.patch(`/products/${id}/request-removal`);
     return res.data;
   },
 

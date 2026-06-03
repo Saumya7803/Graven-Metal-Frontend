@@ -384,6 +384,7 @@ function getRoleTone(role: string) {
   if (role === 'procurement') return 'border-violet-400/30 bg-violet-400/10 text-violet-200';
   if (role === 'admin') return 'border-sky-400/30 bg-sky-400/10 text-sky-200';
   if (role === 'editor') return 'border-emerald-400/30 bg-emerald-400/10 text-emerald-200';
+  if (role === 'developer') return 'border-cyan-400/30 bg-cyan-400/10 text-cyan-200';
   return 'border-zinc-600/60 bg-zinc-800/70 text-zinc-300';
 }
 
@@ -1460,6 +1461,7 @@ export function SuperAdminPage() {
                             <option value="procurement">procurement</option>
                             <option value="admin">admin</option>
                             <option value="editor">editor</option>
+                            <option value="developer">developer</option>
                           </select>
                         </td>
                         <td className="px-4 py-4">
@@ -1670,6 +1672,7 @@ export function SuperAdminPage() {
                     <option value="procurement">procurement</option>
                     <option value="admin">admin</option>
                     <option value="editor">editor</option>
+                    <option value="developer">developer</option>
                     <option value="user">user</option>
                   </select>
                 </div>
@@ -2185,6 +2188,7 @@ export function SuperAdminPage() {
                 <option value="procurement">procurement</option>
                 <option value="admin">admin</option>
                 <option value="editor">editor</option>
+                <option value="developer">developer</option>
               </select>
             </label>
           </div>

@@ -18,6 +18,12 @@ export type ApiProduct = {
   inStock?: boolean;
   image?: { url?: string; publicId?: string };
   category?: { _id: string; name: string; slug: string } | string;
+  approvalStatus?: 'approved' | 'pending' | 'rejected';
+  reviewedBy?: string;
+  reviewedAt?: string;
+  removalRequested?: boolean;
+  removalRequestedAt?: string;
+  removalRequestedBy?: string;
   createdAt?: string;
   updatedAt?: string;
 };

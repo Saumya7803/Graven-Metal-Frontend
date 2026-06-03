@@ -16,7 +16,7 @@ import { ROLE_DEFAULT_PERMISSIONS } from '../constants/permissions.js';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const BACKUP_DIR = path.resolve(__dirname, '../../backups');
-const STAFF_ROLES = ['lqt', 'sales', 'procurement', 'admin', 'editor'];
+const STAFF_ROLES = ['lqt', 'sales', 'procurement', 'admin', 'data_entry', 'editor', 'developer'];
 const MANAGED_ROLES = [...STAFF_ROLES, 'user'];
 
 async function recordAudit(req, action, target = {}, metadata = {}) {
@@ -36,7 +36,7 @@ async function recordAudit(req, action, target = {}, metadata = {}) {
 export const createAdmin = asyncHandler(async (req, res) => {
   const { name, email, password, role = 'admin', permissions } = req.body;
   if (!STAFF_ROLES.includes(role)) {
-    return res.status(400).json({ message: 'Role must be LQT, sales, procurement, admin, or editor' });
+    return res.status(400).json({ message: 'Role must be LQT, sales, procurement, admin, data_entry, editor, or developer' });
   }
 
   const exists = await User.findOne({ email });

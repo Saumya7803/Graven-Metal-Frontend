@@ -24,6 +24,12 @@ const productSchema = new mongoose.Schema(
     image: { type: productImageSchema, default: () => ({}) },
     stockQty: { type: Number, default: 0, min: 0 },
     inStock: { type: Boolean, default: true },
+    approvalStatus: { type: String, enum: ['approved', 'pending', 'rejected'], default: 'approved' },
+    reviewedBy: { type: String, default: '' },
+    reviewedAt: { type: Date },
+    removalRequested: { type: Boolean, default: false },
+    removalRequestedAt: { type: Date },
+    removalRequestedBy: { type: String, default: '' },
   },
   {
     timestamps: true,
