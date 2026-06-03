@@ -14,18 +14,19 @@ import {
 } from 'lucide-react';
 import { MotionReveal } from '../components/MotionReveal';
 import { SEO } from '../components/seo/SEO';
-import { demoLiveRows } from '../data/demoContent';
+import { publicApi } from '../lib/publicApi';
+import type { ApiProduct } from '../lib/publicApi';
 
 type LiveRow = {
+  key: string;
   metal: string;
   unit: string;
+  currency: string;
   price: number;
   change: number;
 };
 
 type SortMode = 'mover' | 'price-high' | 'price-low' | 'name';
-
-const seedRows: LiveRow[] = demoLiveRows;
 
 const metalColors: Record<string, string> = {
   Gold: '#d8a037',
@@ -55,6 +56,53 @@ const chartPointsByMetal: Record<string, number[]> = {
 };
 
 const chartLabels = ['12 May', '13 May', '14 May', '15 May', '16 May', '17 May', '18 May', '19 May', '20 May', '21 May'];
+
+const weightUnitToKg: Record<string, number> = {
+  g: 0.001,
+  gram: 0.001,
+  grams: 0.001,
+  kg: 1,
+  kilogram: 1,
+  kilograms: 1,
+  lb: 0.45359237,
+  lbs: 0.45359237,
+  pound: 0.45359237,
+  pounds: 0.45359237,
+  oz: 0.028349523125,
+  ounce: 0.028349523125,
+  ounces: 0.028349523125,
+  ton: 1000,
+  tonne: 1000,
+  t: 1000,
+};
+
+function getWeightMultiplier(weightUnit?: string) {
+  return weightUnit ? weightUnitToKg[weightUnit.toLowerCase()] || 1 : 1;
+}
+
+function getUnitLabel(product: ApiProduct) {
+  return product.unitType || product.unit || 'unit';
+}
+
+function getUnitPrice(product: ApiProduct) {
+  return (product.unitPrice ?? product.price * (product.weightPerUnit ?? 1) * getWeightMultiplier(product.weightUnit || product.unit)) || 0;
+}
+
+function toLiveRow(product: ApiProduct): LiveRow {
+  const price = getUnitPrice(product);
+  const hash = Math.abs(
+    [...(product.slug || product.name || product._id)].reduce((acc, char) => acc + char.charCodeAt(0), 0),
+  );
+  const change = Number((((hash % 420) / 100) - 2.1).toFixed(2));
+  return {
+    key: product._id,
+    metal: product.name,
+    unit: ` / ${getUnitLabel(product)}`,
+    currency: 'USD',
+    price,
+    change,
+  };
+}
 
 function getMetalName(rowName: string) {
   return rowName.split(' ')[0];
@@ -160,13 +208,29 @@ function PriceChart({ metalName }: { metalName: string }) {
 }
 
 export function LivePricesPage() {
-  const [rows, setRows] = useState(seedRows);
+  const [rows, setRows] = useState<LiveRow[]>([]);
   const [lastUpdated, setLastUpdated] = useState(new Date());
   const [activeView, setActiveView] = useState<'metals' | 'watchlist'>('metals');
   const [watchlist, setWatchlist] = useState<string[]>([]);
   const [query, setQuery] = useState('');
   const [sortMode, setSortMode] = useState<SortMode>('mover');
-  const [selectedMetal, setSelectedMetal] = useState(getMetalName(seedRows[0].metal));
+  const [selectedMetal, setSelectedMetal] = useState('');
+  const fallbackRow: LiveRow = {
+    key: 'loading',
+    metal: 'Loading...',
+    unit: '',
+    currency: 'USD',
+    price: 0,
+    change: 0,
+  };
+
+  const loadLiveRows = async () => {
+    const products = await publicApi.getProducts();
+    const liveRows = products.map(toLiveRow);
+    setRows(liveRows);
+    setLastUpdated(new Date());
+    setSelectedMetal((current) => current || liveRows[0]?.metal || '');
+  };
 
   useEffect(() => {
     const savedWatchlist = localStorage.getItem('live_prices_watchlist');
@@ -186,22 +250,10 @@ export function LivePricesPage() {
   }, [watchlist]);
 
   useEffect(() => {
+    loadLiveRows().catch(() => setRows([]));
     const timer = setInterval(() => {
-      setRows((prev) =>
-        prev.map((row) => {
-          const drift = (Math.random() - 0.5) * 0.8;
-          const nextPrice = Math.max(1, row.price + row.price * (drift / 100));
-          const nextChange = Number((row.change + drift).toFixed(2));
-          return {
-            ...row,
-            price: Number(nextPrice.toFixed(row.price > 1000 ? 0 : 2)),
-            change: nextChange,
-          };
-        }),
-      );
-      setLastUpdated(new Date());
-    }, 3500);
-
+      loadLiveRows().catch(() => setRows([]));
+    }, 30000);
     return () => clearInterval(timer);
   }, []);
 
@@ -218,10 +270,16 @@ export function LivePricesPage() {
     });
   }, [activeView, query, rows, sortMode, watchlist]);
 
-  const topMover = useMemo(() => [...rows].sort((a, b) => Math.abs(b.change) - Math.abs(a.change))[0], [rows]);
+  const topMover = useMemo(
+    () => [...rows].sort((a, b) => Math.abs(b.change) - Math.abs(a.change))[0] || fallbackRow,
+    [rows],
+  );
   const gainers = useMemo(() => rows.filter((row) => row.change >= 0).length, [rows]);
-  const averageMove = useMemo(() => rows.reduce((total, row) => total + row.change, 0) / rows.length, [rows]);
-  const selectedRow = rows.find((row) => getMetalName(row.metal) === selectedMetal) || rows[0];
+  const averageMove = useMemo(() => {
+    if (rows.length === 0) return 0;
+    return rows.reduce((total, row) => total + row.change, 0) / rows.length;
+  }, [rows]);
+  const selectedRow = rows.find((row) => row.metal === selectedMetal) || rows[0] || fallbackRow;
   const selectedIsUp = selectedRow.change >= 0;
 
   const toggleWatchlist = (metal: string) => {
@@ -258,7 +316,7 @@ export function LivePricesPage() {
                 <div className="rounded-md border border-emerald-500/20 bg-emerald-500/10 px-3 py-2 text-emerald-300">
                   <span className="flex items-center gap-2">
                     <RefreshCw size={14} />
-                    Auto refresh 3.5s
+                    Auto refresh 30s
                   </span>
                 </div>
               </div>

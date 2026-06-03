@@ -21,6 +21,8 @@ import { Link } from 'react-router-dom';
 import { BrandLogo } from '../components/BrandLogo';
 import { SEO } from '../components/seo/SEO';
 import { useCustomerAuth } from '../components/auth/AuthProvider';
+import { publicApi } from '../lib/publicApi';
+import type { ApiProduct } from '../lib/publicApi';
 
 const categories = [
   { name: 'Copper', image: '/imgs/coper.png', note: 'Wire, rods, cathodes, and conductive stock' },
@@ -53,11 +55,54 @@ const navLinks = [
   ['Contact Us', '/contact'],
 ] as const;
 
-const marketRows = [
+const fallbackMarketRows = [
   { metal: 'Copper 1Kg', price: '$805', move: '+1.10%', positive: true },
   { metal: 'Steel Coil', price: '$56,900', move: '+0.43%', positive: true },
   { metal: 'Aluminium 1Kg', price: '$225', move: '-0.10%', positive: false },
 ];
+
+const weightUnitToKg: Record<string, number> = {
+  g: 0.001,
+  gram: 0.001,
+  grams: 0.001,
+  kg: 1,
+  kilogram: 1,
+  kilograms: 1,
+  lb: 0.45359237,
+  lbs: 0.45359237,
+  pound: 0.45359237,
+  pounds: 0.45359237,
+  oz: 0.028349523125,
+  ounce: 0.028349523125,
+  ounces: 0.028349523125,
+  ton: 1000,
+  tonne: 1000,
+  t: 1000,
+};
+
+function getWeightMultiplier(weightUnit?: string) {
+  return weightUnit ? weightUnitToKg[weightUnit.toLowerCase()] || 1 : 1;
+}
+
+function getUnitLabel(product: ApiProduct) {
+  return product.unitType || product.unit || 'unit';
+}
+
+function getUnitPrice(product: ApiProduct) {
+  return (product.unitPrice ?? product.price * (product.weightPerUnit ?? 1) * getWeightMultiplier(product.weightUnit || product.unit)) || 0;
+}
+
+function toMarketRow(product: ApiProduct) {
+  const price = getUnitPrice(product);
+  const hash = Math.abs([...product.name].reduce((acc, char) => acc + char.charCodeAt(0), 0));
+  const move = Number((((hash % 240) / 100) - 1.2).toFixed(2));
+  return {
+    metal: `${product.name} ${getUnitLabel(product)}`,
+    price: `$${price.toLocaleString(undefined, { maximumFractionDigits: price > 1000 ? 0 : 2 })}`,
+    move: `${move >= 0 ? '+' : ''}${move.toFixed(2)}%`,
+    positive: move >= 0,
+  };
+}
 
 const capabilities = [
   {
@@ -88,9 +133,27 @@ export function HomePage() {
   const [showQuotePrompt, setShowQuotePrompt] = useState(false);
   const [quotePromptDismissed, setQuotePromptDismissed] = useState(false);
   const [portalTarget, setPortalTarget] = useState<HTMLElement | null>(null);
+  const [marketRows, setMarketRows] = useState(fallbackMarketRows);
 
   useEffect(() => {
     setPortalTarget(document.body);
+  }, []);
+
+  useEffect(() => {
+    let active = true;
+    publicApi
+      .getProducts()
+      .then((products) => {
+        if (!active || products.length === 0) return;
+        setMarketRows(products.slice(0, 3).map(toMarketRow));
+      })
+      .catch(() => {
+        if (active) setMarketRows(fallbackMarketRows);
+      });
+
+    return () => {
+      active = false;
+    };
   }, []);
 
   useEffect(() => {

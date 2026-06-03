@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 116 42" role="img" aria-labelledby="title">
+  <title id="title">UPI</title>
+  <rect width="116" height="42" fill="none" />
+  <text
+    x="7"
+    y="28.8"
+    fill="#565D65"
+    font-family="Arial, Helvetica, sans-serif"
+    font-size="24"
+    font-style="italic"
+    font-weight="900"
+    letter-spacing="1.1"
+  >
+    UPI
+  </text>
+  <path fill="#F58220" d="M77 9.1 92 21 72 33l5-23.9Z" />
+  <path fill="#0B8F43" d="M83.8 9.1 98.8 21 78.8 33l5-23.9Z" />
+</svg>

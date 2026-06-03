@@ -1,0 +1,1 @@
+import{u as r,j as i,m as n}from"./motion-0d38390c.js";function a({children:e,delay:o=0,className:t}){return r()?i.jsx("div",{className:t,children:e}):i.jsx(n.div,{initial:{opacity:0,y:26,filter:"blur(6px)"},whileInView:{opacity:1,y:0,filter:"blur(0px)"},viewport:{once:!0,amount:.25},transition:{duration:.62,delay:o,ease:[.2,1,.33,1]},className:t,children:e})}export{a as M};
