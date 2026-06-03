@@ -250,7 +250,6 @@ export function ProductDetailsPage() {
               key={r._id}
               id={r._id}
               name={r.name}
-              price={`${formatMoney(r.currency, getUnitPrice(r))} / ${r.unitType || r.unit || 'unit'}`}
               category={typeof r.category === 'string' ? r.category : r.category?.name || 'Metal'}
               tint="from-zinc-500/20 to-zinc-800/20"
               imageUrl={r.image?.url}

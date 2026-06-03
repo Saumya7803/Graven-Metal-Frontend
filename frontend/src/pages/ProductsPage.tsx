@@ -8,47 +8,6 @@ import { getApiErrorMessage } from '../lib/apiUtils';
 import { publicApi } from '../lib/publicApi';
 import type { ApiProduct } from '../lib/publicApi';
 
-const weightUnitToKg: Record<string, number> = {
-  g: 0.001,
-  gram: 0.001,
-  grams: 0.001,
-  kg: 1,
-  kilogram: 1,
-  kilograms: 1,
-  lb: 0.45359237,
-  lbs: 0.45359237,
-  pound: 0.45359237,
-  pounds: 0.45359237,
-  oz: 0.028349523125,
-  ounce: 0.028349523125,
-  ounces: 0.028349523125,
-  ton: 1000,
-  tonne: 1000,
-  t: 1000,
-};
-
-function getWeightMultiplier(weightUnit?: string) {
-  return weightUnit ? weightUnitToKg[weightUnit.toLowerCase()] || 1 : 1;
-}
-
-function getUnitPrice(product: ApiProduct) {
-  return (
-    product.unitPrice ??
-    product.price * (product.weightPerUnit ?? 1) * getWeightMultiplier(product.weightUnit || product.unit)
-  ) || 0;
-}
-
-function formatProductPrice(product: ApiProduct) {
-  const currency = (product.currency || 'USD').toUpperCase();
-  const locale = currency === 'INR' ? 'en-IN' : 'en-US';
-  const formatted = new Intl.NumberFormat(locale, {
-    style: 'currency',
-    currency,
-    maximumFractionDigits: getUnitPrice(product) % 1 === 0 ? 0 : 2,
-  }).format(getUnitPrice(product));
-  return `${formatted} / ${product.unitType || product.unit || 'unit'}`;
-}
-
 export function ProductsPage() {
   const [products, setProducts] = useState<ApiProduct[]>([]);
   const [loading, setLoading] = useState(true);
@@ -118,7 +77,6 @@ export function ProductsPage() {
                   key={p._id}
                   id={p._id}
                   name={p.name}
-                  price={formatProductPrice(p)}
                   category={getCategoryName(p) || 'Metal'}
                   tint="from-amber-400/20 to-zinc-800/20"
                   imageUrl={p.image?.url}

@@ -6,13 +6,13 @@ import { getProductFallbackImage, resolveProductImageUrl } from '../lib/image';
 type Props = {
   id: string;
   name: string;
-  price: string;
   category: string;
   tint: string;
   imageUrl?: string;
+  requestText?: string;
 };
 
-export function ProductCard({ id, name, price, category, tint, imageUrl }: Props) {
+export function ProductCard({ id, name, category, tint, imageUrl, requestText = 'Request for Quote' }: Props) {
   const optimizedImage = resolveProductImageUrl(imageUrl, category, 640);
   const fallbackImage = getProductFallbackImage(category);
   const handleImageError = (event: SyntheticEvent<HTMLImageElement>) => {
@@ -41,7 +41,9 @@ export function ProductCard({ id, name, price, category, tint, imageUrl }: Props
       </div>
       <h3 className="mt-3 text-base font-semibold text-white sm:text-lg">{name}</h3>
       <p className="mt-1 text-xs text-zinc-400 sm:text-sm">{category}</p>
-      <p className="mt-2 text-xl font-semibold text-amberlux">{price}</p>
+      <div className="mt-2 inline-flex rounded-full border border-gold/20 bg-gold/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-gold">
+        {requestText}
+      </div>
       <Link
         to={`/products/${id}`}
         className="mt-3 inline-flex w-full items-center justify-center rounded-md bg-gold-cta px-4 py-2 text-sm font-semibold text-black shadow-gold transition group-hover:brightness-110"
