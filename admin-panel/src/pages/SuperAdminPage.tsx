@@ -68,6 +68,28 @@ const allPermissions = [
   'backup_database',
 ];
 
+const ROLE_PERMISSION_PRESETS: Record<string, string[]> = {
+  super_admin: [...allPermissions],
+  lqt: ['manage_leads', 'qualify_leads', 'assign_leads', 'manage_quotes', 'manage_contacts', 'view_analytics'],
+  sales: [
+    'manage_leads',
+    'manage_customers',
+    'manage_rfqs',
+    'manage_quotations',
+    'manage_negotiations',
+    'manage_orders',
+    'manage_quotes',
+    'manage_contacts',
+    'view_analytics',
+  ],
+  procurement: ['manage_suppliers', 'manage_price_requests', 'compare_vendors', 'manage_purchase_orders', 'view_analytics'],
+  admin: ['manage_products', 'manage_product_approvals', 'manage_categories', 'manage_blogs', 'manage_quotes', 'manage_contacts', 'view_analytics'],
+  editor: ['manage_products', 'manage_categories', 'manage_blogs'],
+  developer: ['manage_products', 'manage_categories', 'manage_blogs', 'view_platform_monitoring'],
+  data_entry: ['manage_products'],
+  user: [],
+};
+
 const tabs = [
   { key: 'analytics', label: 'Dashboard Overview', icon: BarChart3 },
   { key: 'blueprint', label: 'Business Blueprint', icon: FileText },
@@ -386,6 +408,10 @@ function getRoleTone(role: string) {
   if (role === 'editor') return 'border-emerald-400/30 bg-emerald-400/10 text-emerald-200';
   if (role === 'developer') return 'border-cyan-400/30 bg-cyan-400/10 text-cyan-200';
   return 'border-zinc-600/60 bg-zinc-800/70 text-zinc-300';
+}
+
+function getRolePreset(role: string) {
+  return ROLE_PERMISSION_PRESETS[role] || [];
 }
 
 function matchesUser(row: UserRow, query: string) {
@@ -715,7 +741,7 @@ export function SuperAdminPage() {
     email: '',
     password: '',
     role: 'lqt',
-    permissions: [] as string[],
+    permissions: getRolePreset('lqt'),
   });
 
   const panel = 'rounded-3xl border border-gold/20 bg-[#0a0f14]/95 p-5 shadow-glow';
@@ -1452,7 +1478,11 @@ export function SuperAdminPage() {
                             value={admin.role}
                             onChange={(e) =>
                               setAdmins((prev) =>
-                                prev.map((row) => (row._id === admin._id ? { ...row, role: e.target.value } : row))
+                                prev.map((row) =>
+                                  row._id === admin._id
+                                    ? { ...row, role: e.target.value, permissions: getRolePreset(e.target.value) }
+                                    : row
+                                )
                               )
                             }
                           >
@@ -1461,6 +1491,7 @@ export function SuperAdminPage() {
                             <option value="procurement">procurement</option>
                             <option value="admin">admin</option>
                             <option value="editor">editor</option>
+                            <option value="data_entry">data_entry</option>
                             <option value="developer">developer</option>
                           </select>
                         </td>
@@ -1672,6 +1703,7 @@ export function SuperAdminPage() {
                     <option value="procurement">procurement</option>
                     <option value="admin">admin</option>
                     <option value="editor">editor</option>
+                    <option value="data_entry">data_entry</option>
                     <option value="developer">developer</option>
                     <option value="user">user</option>
                   </select>
@@ -1710,7 +1742,11 @@ export function SuperAdminPage() {
                                 value={user.role}
                                 onChange={(e) =>
                                   setUsers((prev) =>
-                                    prev.map((row) => (row._id === user._id ? { ...row, role: e.target.value } : row))
+                                    prev.map((row) =>
+                                      row._id === user._id
+                                        ? { ...row, role: e.target.value, permissions: getRolePreset(e.target.value) }
+                                        : row
+                                    )
                                   )
                                 }
                               >
@@ -1719,7 +1755,9 @@ export function SuperAdminPage() {
                                 <option value="sales">sales</option>
                                 <option value="procurement">procurement</option>
                                 <option value="editor">editor</option>
+                                <option value="data_entry">data_entry</option>
                                 <option value="admin">admin</option>
+                                <option value="developer">developer</option>
                               </select>
                             )}
                           </td>
@@ -2181,13 +2219,20 @@ export function SuperAdminPage() {
               <select
                 className="mt-2 w-full rounded-xl border border-gold/20 bg-[#0d1218] px-3.5 py-2.5 text-sm text-zinc-100 outline-none placeholder:text-zinc-500 focus:border-gold/60"
                 value={newAdmin.role}
-                onChange={(e) => setNewAdmin((prev) => ({ ...prev, role: e.target.value }))}
+                onChange={(e) =>
+                  setNewAdmin((prev) => ({
+                    ...prev,
+                    role: e.target.value,
+                    permissions: getRolePreset(e.target.value),
+                  }))
+                }
               >
                 <option value="lqt">lqt</option>
                 <option value="sales">sales</option>
                 <option value="procurement">procurement</option>
                 <option value="admin">admin</option>
                 <option value="editor">editor</option>
+                <option value="data_entry">data_entry</option>
                 <option value="developer">developer</option>
               </select>
             </label>
@@ -2204,7 +2249,7 @@ export function SuperAdminPage() {
             <button
               type="button"
               className="rounded-full border border-zinc-700 bg-zinc-900 px-3 py-1 text-xs text-zinc-300 hover:border-zinc-500"
-              onClick={() => setNewAdmin((prev) => ({ ...prev, permissions: [] }))}
+              onClick={() => setNewAdmin((prev) => ({ ...prev, permissions: getRolePreset(prev.role) }))}
             >
               Use role defaults
             </button>
