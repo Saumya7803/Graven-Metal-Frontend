@@ -2,7 +2,7 @@ import axios from 'axios';
 import { clearAuth } from './auth';
 
 const apiBaseUrl =
-  import.meta.env.VITE_API_BASE_URL || (import.meta.env.PROD ? '/api' : 'http://localhost:5000/api');
+  import.meta.env.VITE_API_BASE_URL || 'https://graven-metal-backend.onrender.com/api';
 
 export const axiosClient = axios.create({
   baseURL: apiBaseUrl,
