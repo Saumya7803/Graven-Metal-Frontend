@@ -15,7 +15,7 @@ export function SEO({
   title,
   description,
   path = '/',
-  image = '/imgs/brand-mark.png',
+  image = '/imgs/brand-logo.png',
   type = 'website',
   noIndex = false,
   keywords = [],
