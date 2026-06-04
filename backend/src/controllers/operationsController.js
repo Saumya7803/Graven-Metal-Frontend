@@ -22,16 +22,47 @@ const quoteModules = new Set([
   'lead-conversion',
 ]);
 
+const procurementWorkflowStages = ['Sales Order', 'Awaiting Price', 'RFQ', 'Supplier Quotation', 'Final Cost', 'Purchase Order'];
+
+const procurementModuleAliases = {
+  'supplier-management': 'approved-suppliers',
+  'price-requests': 'procurement-queue',
+  'vendor-comparison': 'pricing-intelligence',
+  'cost-analysis': 'pricing-intelligence',
+  'availability-tracking': 'procurement-queue',
+  'procurement-reports': 'pricing-intelligence',
+  'supplier-communication': 'rfqs',
+};
+
 const procurementModules = new Set([
-  'supplier-management',
-  'price-requests',
-  'vendor-comparison',
-  'cost-analysis',
+  'procurement-queue',
+  'rfqs',
+  'supplier-quotations',
+  'approved-suppliers',
+  'pricing-intelligence',
   'purchase-orders',
-  'availability-tracking',
-  'procurement-reports',
-  'supplier-communication',
 ]);
+
+function normalizeProcurementModule(module) {
+  return procurementModuleAliases[module] || module;
+}
+
+function normalizeProcurementStatus(status) {
+  const statusMap = {
+    open: 'Sales Order',
+    Requested: 'Awaiting Price',
+    Quoted: 'Supplier Quotation',
+    Approved: 'Purchase Order',
+    'At Risk': 'Final Cost',
+    'Sales Order': 'Sales Order',
+    'Awaiting Price': 'Awaiting Price',
+    RFQ: 'RFQ',
+    'Supplier Quotation': 'Supplier Quotation',
+    'Final Cost': 'Final Cost',
+    'Purchase Order': 'Purchase Order',
+  };
+  return statusMap[status] || status || 'Sales Order';
+}
 
 const recordTeams = new Set(['procurement', 'cct', 'inventory', 'dispatch', 'finance']);
 const recordModulesByTeam = {
@@ -65,7 +96,7 @@ const recordModulesByTeam = {
     'approval-history',
   ]),
   inventory: new Set(['inventory-dashboard', 'warehouses', 'stock', 'grn', 'transfers', 'alerts', 'batch-tracking', 'inventory-reports']),
-  dispatch: new Set(['dispatch-dashboard', 'packaging', 'vehicle-assignment', 'tracking', 'pod-upload', 'delivery-reports', 'logistics']),
+  dispatch: new Set(['dispatch-dashboard', 'packaging', 'vehicle-assignment', 'tracking', 'courier-tracking', 'pod-upload', 'delivery-reports', 'logistics']),
   finance: new Set(['invoice-queue', 'payments', 'receivables', 'accounts', 'finance-reports', 'profit-analysis', 'margin-analysis']),
 };
 
@@ -188,15 +219,17 @@ function formatLeadRow(lead, team = 'lqt') {
 }
 
 function formatRecord(record) {
+  const module = record.team === 'procurement' ? normalizeProcurementModule(record.module) : record.module;
+  const status = record.team === 'procurement' ? normalizeProcurementStatus(record.status) : record.status;
   return {
     id: record._id,
     source: 'operation',
     team: record.team,
-    module: record.module,
+    module,
     account: record.title,
     owner: record.owner || 'Unassigned',
     detail: record.detail,
-    status: record.status,
+    status,
     next: record.nextStep,
     value: record.value,
     metadata: record.metadata || {},
@@ -264,11 +297,12 @@ export const getOperationsDashboard = asyncHandler(async (req, res) => {
   if (recordTeams.has(team)) {
     const records = await OperationRecord.find({ team }).sort({ updatedAt: -1 }).limit(200);
     const rows = records.map(formatRecord);
+    const moduleKeys = team === 'procurement' ? [...procurementModules] : [...(recordModulesByTeam[team] || procurementModules)];
     return res.json({
       team,
       rows,
       counts: statusCounts(rows),
-      modules: Object.fromEntries([...((recordModulesByTeam[team] || procurementModules))].map((module) => [module, rows.filter((row) => row.module === module).length])),
+      modules: Object.fromEntries(moduleKeys.map((module) => [module, rows.filter((row) => row.module === module).length])),
     });
   }
 
@@ -420,7 +454,7 @@ export const listOperationRecords = asyncHandler(async (req, res) => {
   if (accessError) return res.status(403).json({ message: accessError });
 
   const filter = { team };
-  if (req.query.module) filter.module = req.query.module;
+  if (req.query.module) filter.module = team === 'procurement' ? normalizeProcurementModule(req.query.module) : req.query.module;
   const records = await OperationRecord.find(filter).sort({ updatedAt: -1 }).limit(200);
   res.json({ data: records.map(formatRecord) });
 });
@@ -430,17 +464,18 @@ export const createOperationRecord = asyncHandler(async (req, res) => {
   const accessError = assertTeamAccess(req, team);
   if (accessError) return res.status(403).json({ message: accessError });
   const allowedModules = team === 'sales' ? recordModulesByTeam.sales : recordModulesByTeam[team] || procurementModules;
-  if (!allowedModules.has(req.body.module) && !['customer-management', 'sales-reports'].includes(req.body.module)) {
+  const requestedModule = team === 'procurement' ? normalizeProcurementModule(req.body.module) : req.body.module;
+  if (!allowedModules.has(requestedModule) && !['customer-management', 'sales-reports'].includes(requestedModule)) {
     return res.status(400).json({ message: 'Invalid operation module' });
   }
 
   const record = await OperationRecord.create({
     team,
-    module: req.body.module,
+    module: requestedModule,
     title: req.body.title,
     owner: req.body.owner || req.user.name,
     detail: req.body.detail || '',
-    status: req.body.status || 'open',
+    status: team === 'procurement' ? normalizeProcurementStatus(req.body.status || 'Sales Order') : req.body.status || 'open',
     nextStep: req.body.nextStep || '',
     value: req.body.value || '',
     metadata: req.body.metadata || {},
@@ -461,7 +496,9 @@ export const updateOperationRecord = asyncHandler(async (req, res) => {
   if (!record) return res.status(404).json({ message: 'Operation record not found' });
 
   ['title', 'owner', 'detail', 'status', 'value'].forEach((field) => {
-    if (req.body[field] !== undefined) record[field] = req.body[field];
+    if (req.body[field] !== undefined) {
+      record[field] = field === 'status' && team === 'procurement' ? normalizeProcurementStatus(req.body[field]) : req.body[field];
+    }
   });
   if (req.body.nextStep !== undefined) record.nextStep = req.body.nextStep;
   if (req.body.metadata !== undefined) record.metadata = req.body.metadata;

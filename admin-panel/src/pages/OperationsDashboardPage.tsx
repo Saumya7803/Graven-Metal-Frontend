@@ -125,6 +125,15 @@ type DashboardConfig = {
   rows: WorkRow[];
   activity: string[];
   priorities: string[];
+  responsibilities?: string[];
+  workflow?: string[];
+  playbook?: string;
+  decisionExample?: {
+    salesPrice: string;
+    procurementCost: string;
+    margin: string;
+    decision: string;
+  };
 };
 
 type WorkspaceProps = {
@@ -187,7 +196,21 @@ const statusMixClass: Record<string, string> = {
   'Need More Information': 'bg-gradient-to-r from-amber-500 via-yellow-400 to-yellow-200',
   Rejected: 'bg-gradient-to-r from-zinc-700 via-red-900 to-red-500',
   'Assigned To Sales': 'bg-gradient-to-r from-violet-500 via-fuchsia-400 to-pink-300',
+  'Sales Order': 'bg-gradient-to-r from-sky-500 via-cyan-400 to-blue-300',
+  'Awaiting Price': 'bg-gradient-to-r from-amber-500 via-yellow-400 to-orange-300',
+  RFQ: 'bg-gradient-to-r from-sky-500 via-cyan-400 to-blue-300',
+  'Supplier Quotation': 'bg-gradient-to-r from-violet-500 via-fuchsia-400 to-pink-300',
+  'Final Cost': 'bg-gradient-to-r from-amber-500 via-yellow-400 to-orange-300',
+  'Purchase Order': 'bg-gradient-to-r from-emerald-500 via-green-400 to-lime-300',
+  'Order Ready': 'bg-gradient-to-r from-sky-500 via-cyan-400 to-blue-300',
+  Packaging: 'bg-gradient-to-r from-amber-500 via-yellow-400 to-orange-300',
+  Dispatch: 'bg-gradient-to-r from-violet-500 via-fuchsia-400 to-pink-300',
+  Tracking: 'bg-gradient-to-r from-sky-500 via-cyan-400 to-blue-300',
+  Delivered: 'bg-gradient-to-r from-emerald-500 via-green-400 to-lime-300',
 };
+
+const procurementWorkflowStages = ['Sales Order', 'Awaiting Price', 'RFQ', 'Supplier Quotation', 'Final Cost', 'Purchase Order'] as const;
+const dispatchWorkflowStages = ['Order Ready', 'Packaging', 'Dispatch', 'Tracking', 'Delivered'] as const;
 
 const roleClass = {
   page: 'bg-[rgb(var(--role-page))]',
@@ -449,94 +472,108 @@ const configs: Record<DashboardKind, DashboardConfig> = {
     priorities: ['Customer contact', 'Send quotation', 'Track negotiation', 'Confirm orders'],
   },
   procurement: {
-    title: 'Procurement Dashboard',
-    eyebrow: 'Sourcing Team',
+    title: 'Procurement Queue',
+    eyebrow: 'Procurement Team',
     route: '/procurement',
     roleLabel: 'Procurement',
     theme: roleThemes.procurement,
     primaryColumn: 'Supplier',
-    detailColumn: 'Procurement Work',
+    detailColumn: 'Sourcing Work',
     stats: [
-      { label: 'Suppliers', value: '54', helper: 'Approved vendors', icon: Truck, tone: 'blue' },
-      { label: 'Price Requests', value: '18', helper: 'Awaiting vendor response', icon: ClipboardList, tone: 'gold' },
-      { label: 'Comparisons', value: '7', helper: 'Ready for decision', icon: BarChart3, tone: 'green' },
-      { label: 'Purchase Orders', value: '11', helper: 'In progress', icon: FileText, tone: 'violet' },
+      { label: 'Sales Orders', value: '24', helper: 'Waiting for procurement pricing', icon: ClipboardList, tone: 'blue' },
+      { label: 'Awaiting Price', value: '18', helper: 'RFQ response pending', icon: Clock, tone: 'gold' },
+      { label: 'Supplier Quotations', value: '13', helper: 'Vendor offers received', icon: FileText, tone: 'violet' },
+      { label: 'Purchase Orders', value: '11', helper: 'Ready for release', icon: Package, tone: 'green' },
     ],
     statuses: [
-      { label: 'Requested', value: 18, tone: 'gold' },
-      { label: 'Quoted', value: 15, tone: 'blue' },
-      { label: 'Approved', value: 11, tone: 'green' },
-      { label: 'At Risk', value: 3, tone: 'red' },
+      { label: 'Sales Order', value: 24, tone: 'blue' },
+      { label: 'Awaiting Price', value: 18, tone: 'gold' },
+      { label: 'RFQ', value: 15, tone: 'blue' },
+      { label: 'Supplier Quotation', value: 13, tone: 'violet' },
+      { label: 'Final Cost', value: 8, tone: 'gold' },
+      { label: 'Purchase Order', value: 11, tone: 'green' },
     ],
     modules: [
-      { key: 'overview', label: 'Dashboard Overview', icon: BarChart3, metric: '91%', helper: 'Sourcing coverage' },
-      { key: 'supplier-management', label: 'Supplier Management', icon: Truck, metric: '54', helper: 'Vendor accounts' },
-      { key: 'price-requests', label: 'Price Requests', icon: ClipboardList, metric: '18', helper: 'Open requests' },
-      { key: 'vendor-comparison', label: 'Vendor Comparison', icon: BarChart3, metric: '7', helper: 'Shortlists' },
-      { key: 'cost-analysis', label: 'Cost Analysis', icon: TrendingUp, metric: '4.6%', helper: 'Savings tracked' },
-      { key: 'purchase-orders', label: 'Purchase Orders', icon: FileText, metric: '11', helper: 'POs active' },
-      { key: 'availability-tracking', label: 'Availability Tracking', icon: Clock, metric: '23', helper: 'Stock checks' },
-      { key: 'procurement-reports', label: 'Procurement Reports', icon: FileSpreadsheet, metric: '8', helper: 'Reports generated' },
-      { key: 'supplier-communication', label: 'Supplier Communication', icon: Mail, metric: '32', helper: 'Vendor threads' },
+      { key: 'overview', label: 'Procurement Queue', icon: BarChart3, metric: '91%', helper: 'Sourcing coverage' },
+      { key: 'procurement-queue', label: 'Procurement Queue', icon: ClipboardList, metric: '24', helper: 'Sales orders awaiting price' },
+      { key: 'rfqs', label: 'RFQs', icon: Mail, metric: '18', helper: 'Vendor requests live' },
+      { key: 'supplier-quotations', label: 'Supplier Quotations', icon: FileText, metric: '13', helper: 'Quotes received' },
+      { key: 'approved-suppliers', label: 'Approved Suppliers', icon: Truck, metric: '54', helper: 'Vendor panel' },
+      { key: 'pricing-intelligence', label: 'Pricing Intelligence', icon: TrendingUp, metric: '96%', helper: 'Cost trend insights' },
+      { key: 'purchase-orders', label: 'Purchase Orders', icon: Package, metric: '11', helper: 'POs ready' },
     ],
     rows: [
-      { account: 'Shakti Metals', owner: 'Ananya', detail: 'Copper cathode price request', status: 'Quoted', next: 'Compare landed cost', value: '-2.1%' },
-      { account: 'Bharat Alloys', owner: 'Dev', detail: 'Steel coil availability', status: 'Requested', next: 'Vendor reminder', value: '3 days' },
-      { account: 'Global Ferro', owner: 'Ananya', detail: 'Brass rods supplier comparison', status: 'Approved', next: 'Raise PO', value: '-4.6%' },
-      { account: 'Metalink Exports', owner: 'Kabir', detail: 'Aluminium ingot delivery risk', status: 'At Risk', next: 'Escalate alternate', value: '+1.8%' },
+      { account: 'Pioneer Infra', owner: 'Ananya', detail: 'Sales order awaiting procurement pricing', status: 'Sales Order', next: 'Create RFQ', value: '₹42L' },
+      { account: 'Bharat Alloys', owner: 'Dev', detail: 'RFQ issued to approved suppliers', status: 'RFQ', next: 'Await vendor quotation', value: '3 vendors' },
+      { account: 'Global Ferro', owner: 'Ananya', detail: 'Supplier quotations under review', status: 'Supplier Quotation', next: 'Lock final cost', value: '-4.6%' },
+      { account: 'Metalink Exports', owner: 'Kabir', detail: 'Final cost ready for PO release', status: 'Final Cost', next: 'Generate purchase order', value: '+1.8%' },
     ],
     activity: [
-      'Global Ferro selected for brass rods purchase order',
-      'Metalink Exports flagged for delivery risk',
-      'Shakti Metals quotation added to comparison',
-      'Bharat Alloys reminder queued',
+      'Pioneer Infra sales order moved into procurement queue',
+      'Bharat Alloys RFQ circulated to approved suppliers',
+      'Global Ferro supplier quotation under review',
+      'Metalink Exports purchase order pending release',
     ],
-    priorities: ['Close pending price requests', 'Compare top vendor offers', 'Raise approved POs', 'Escalate availability risks'],
+    priorities: ['Raise RFQs from sales orders', 'Track supplier quotations', 'Lock final cost before release', 'Issue purchase orders'],
+    responsibilities: ['Product Pricing', 'Vendor Selection', 'RFQ Management', 'Supplier Negotiation'],
+    workflow: ['Sales Order', 'Awaiting Price', 'RFQ', 'Supplier Quotation', 'Final Cost', 'Purchase Order'],
+    playbook:
+      'Sales order comes in first, the team checks approved suppliers and pricing intelligence, then issues RFQs, reviews quotations, locks the final cost, and releases the purchase order.',
   },
   cct: {
-    title: 'CCT Dashboard',
-    eyebrow: 'Control Room',
+    title: 'CCT Control Room',
+    eyebrow: 'Commercial Control Tower',
     route: '/cct',
     roleLabel: 'CCT',
     theme: roleThemes.cct,
-    primaryColumn: 'Approval',
-    detailColumn: 'Commercial Gatekeeping',
+    primaryColumn: 'Commercial Case',
+    detailColumn: 'Decision Logic',
     stats: [
-      { label: 'Approval Queue', value: '16', helper: 'Items awaiting review', icon: ShieldCheck, tone: 'gold' },
-      { label: 'Margin Checks', value: '9', helper: 'Commercial safeguard reviews', icon: TrendingUp, tone: 'red' },
-      { label: 'Pricing Approvals', value: '11', helper: 'Price sign-off pending', icon: FileText, tone: 'green' },
-      { label: 'Escalations', value: '4', helper: 'Requires leadership input', icon: Activity, tone: 'violet' },
+      { label: 'Margin Reviews', value: '16', helper: 'Profit gate checks', icon: TrendingUp, tone: 'gold' },
+      { label: 'Target Price Reviews', value: '9', helper: 'Commercial ceiling checks', icon: Target, tone: 'red' },
+      { label: 'Commercial Approvals', value: '11', helper: 'Approve or hold decisions', icon: ShieldCheck, tone: 'green' },
+      { label: 'Sourcing Decisions', value: '4', helper: 'Route to procurement or hold', icon: Activity, tone: 'violet' },
     ],
     statuses: [
       { label: 'Pending', value: 16, tone: 'gold' },
       { label: 'Reviewed', value: 11, tone: 'green' },
       { label: 'On Hold', value: 5, tone: 'blue' },
-      { label: 'Escalated', value: 4, tone: 'red' },
+      { label: 'Approved', value: 4, tone: 'green' },
     ],
     modules: [
-      { key: 'overview', label: 'Dashboard Overview', icon: BarChart3, metric: '83%', helper: 'Approval SLA' },
+      { key: 'overview', label: 'Commercial Control Tower', icon: BarChart3, metric: '83%', helper: 'Approval SLA' },
       { key: 'approval-queue', label: 'Approval Queue', icon: ClipboardList, metric: '16', helper: 'Pending commercial review' },
       { key: 'margin-review', label: 'Margin Review', icon: TrendingUp, metric: '9', helper: 'Protect profit before release' },
       { key: 'cost-review', label: 'Cost Review', icon: FileText, metric: '12', helper: 'Input cost validation' },
       { key: 'target-price-review', label: 'Target Price Review', icon: Target, metric: '8', helper: 'Target price governance' },
-      { key: 'commercial-approval', label: 'Commercial Approval', icon: ShieldCheck, metric: '11', helper: 'Commercial releases' },
+      { key: 'commercial-approval', label: 'Commercial Approval', icon: ShieldCheck, metric: '11', helper: 'Approve next process' },
       { key: 'pricing-approval', label: 'Pricing Approval', icon: CheckCircle2, metric: '14', helper: 'Price sign-off' },
-      { key: 'sourcing-approval', label: 'Sourcing Approval', icon: Truck, metric: '6', helper: 'Source validation' },
+      { key: 'sourcing-approval', label: 'Sourcing Decision', icon: Truck, metric: '6', helper: 'Release to procurement or hold' },
       { key: 'approval-history', label: 'Approval History', icon: History, metric: '41', helper: 'Decision history' },
     ],
     rows: [
-      { account: 'Pioneer Infra', owner: 'Neha', detail: 'Price release for copper cathode RFQ', status: 'Pending', next: 'Approve commercial note', value: '₹42L' },
-      { account: 'Vertex Components', owner: 'Aarav', detail: 'Margin check on brass rods order', status: 'Reviewed', next: 'Await final pricing', value: '7.8%' },
+      { account: 'Pioneer Infra', owner: 'Neha', detail: 'Sales price 10,000 vs procurement cost 8,500', status: 'Pending', next: 'Approve next process', value: 'Margin 1,500' },
+      { account: 'Vertex Components', owner: 'Aarav', detail: 'Margin review on brass rods pricing', status: 'Reviewed', next: 'Release to procurement', value: '15.0%' },
       { account: 'Apex Rail Systems', owner: 'Isha', detail: 'Target price review for steel coils', status: 'On Hold', next: 'Request supplier support', value: '₹27L' },
-      { account: 'Kavya Electricals', owner: 'Rohan', detail: 'Escalation for payment-linked release', status: 'Escalated', next: 'Commercial sign-off', value: 'High' },
+      { account: 'Kavya Electricals', owner: 'Rohan', detail: 'Sourcing decision on payment-linked release', status: 'Approved', next: 'Pass to procurement', value: 'Approved' },
     ],
     activity: [
-      'Pioneer Infra price request moved to commercial queue',
-      'Vertex Components margin check completed',
-      'Apex Rail Systems target price escalated',
-      'Kavya Electricals approval history updated',
+      'Pioneer Infra commercial case reviewed for margin and next process',
+      'Vertex Components margin check completed and approved',
+      'Apex Rail Systems target price escalated for review',
+      'Kavya Electricals sourcing decision passed to procurement',
     ],
-    priorities: ['Clear commercial approvals', 'Review margin exceptions', 'Resolve escalations', 'Document approval history'],
+    priorities: ['Review margin first', 'Validate target price', 'Approve or hold sourcing', 'Document commercial decisions'],
+    responsibilities: ['Margin Review', 'Target Price Review', 'Sourcing Decision', 'Commercial Approval'],
+    workflow: ['Sales Price', 'Procurement Cost', 'Margin Check', 'Decision'],
+    playbook:
+      'The Control Tower sits between Sales and Procurement: compare sales price against procurement cost, confirm the margin, then approve the next process or hold it for review.',
+    decisionExample: {
+      salesPrice: '10,000',
+      procurementCost: '8,500',
+      margin: '1,500',
+      decision: 'Approve next process',
+    },
   },
   inventory: {
     title: 'Inventory Dashboard',
@@ -584,48 +621,54 @@ const configs: Record<DashboardKind, DashboardConfig> = {
     priorities: ['Post pending GRNs', 'Resolve low stock alerts', 'Complete warehouse transfers', 'Review blocked batches'],
   },
   dispatch: {
-    title: 'Dispatch Dashboard',
-    eyebrow: 'Dispatch & Logistics',
+    title: 'Dispatch Team Control',
+    eyebrow: 'Dispatch Team',
     route: '/dispatch',
     roleLabel: 'Dispatch',
     theme: roleThemes.dispatch,
     primaryColumn: 'Shipment',
-    detailColumn: 'Dispatch Work',
+    detailColumn: 'Dispatch Workflow',
     stats: [
-      { label: 'Ready to Ship', value: '14', helper: 'Packed and awaiting pickup', icon: Truck, tone: 'blue' },
-      { label: 'Vehicles Assigned', value: '7', helper: 'Active routes', icon: Package, tone: 'gold' },
-      { label: 'POD Pending', value: '6', helper: 'Proof of delivery required', icon: ClipboardList, tone: 'red' },
-      { label: 'Delivered', value: '26', helper: 'Completed dispatches', icon: CheckCircle2, tone: 'green' },
+      { label: 'Order Ready', value: '14', helper: 'Ready for packaging', icon: ClipboardList, tone: 'blue' },
+      { label: 'Packaging', value: '11', helper: 'Packed and labeled', icon: Package, tone: 'gold' },
+      { label: 'Dispatch', value: '7', helper: 'Courier or vehicle assigned', icon: Truck, tone: 'violet' },
+      { label: 'Delivered', value: '26', helper: 'Completed deliveries', icon: CheckCircle2, tone: 'green' },
     ],
     statuses: [
-      { label: 'Ready', value: 14, tone: 'gold' },
-      { label: 'Packed', value: 11, tone: 'blue' },
-      { label: 'In Transit', value: 9, tone: 'red' },
+      { label: 'Order Ready', value: 14, tone: 'blue' },
+      { label: 'Packaging', value: 11, tone: 'gold' },
+      { label: 'Dispatch', value: 9, tone: 'violet' },
+      { label: 'Tracking', value: 8, tone: 'blue' },
       { label: 'Delivered', value: 26, tone: 'green' },
     ],
     modules: [
-      { key: 'overview', label: 'Dashboard Overview', icon: BarChart3, metric: '91%', helper: 'Dispatch readiness' },
-      { key: 'dispatch-dashboard', label: 'Dispatch Dashboard', icon: Truck, metric: '14', helper: 'Shipments ready' },
+      { key: 'overview', label: 'Dispatch Team', icon: BarChart3, metric: '91%', helper: 'Dispatch readiness' },
+      { key: 'dispatch-dashboard', label: 'Dispatch', icon: Truck, metric: '14', helper: 'Shipments ready' },
+      { key: 'logistics', label: 'Logistics', icon: Activity, metric: '18', helper: 'Routing and lane control' },
+      { key: 'courier-tracking', label: 'Courier Tracking', icon: Globe2, metric: '9', helper: 'Live shipment tracking' },
       { key: 'packaging', label: 'Packaging', icon: Package, metric: '11', helper: 'Packed orders' },
       { key: 'vehicle-assignment', label: 'Vehicle Assignment', icon: Users, metric: '7', helper: 'Routes assigned' },
       { key: 'tracking', label: 'Tracking', icon: Globe2, metric: '9', helper: 'Live transit updates' },
       { key: 'pod-upload', label: 'POD Upload', icon: FileText, metric: '6', helper: 'Pending proofs' },
       { key: 'delivery-reports', label: 'Delivery Reports', icon: FileSpreadsheet, metric: '10', helper: 'Completed shipments' },
-      { key: 'logistics', label: 'Logistics', icon: Activity, metric: '18', helper: 'Route and lane control' },
     ],
     rows: [
-      { account: 'Apex Rail Systems', owner: 'Rahul', detail: 'Steel coils packed for pickup', status: 'Packed', next: 'Assign vehicle', value: '2 pallets' },
-      { account: 'Pioneer Infra', owner: 'Anita', detail: 'Copper cathode ready dispatch', status: 'Ready', next: 'Schedule dispatch', value: 'Truck A' },
-      { account: 'Vertex Components', owner: 'Kabir', detail: 'POD upload pending', status: 'In Transit', next: 'Collect delivery proof', value: 'Due today' },
+      { account: 'Apex Rail Systems', owner: 'Rahul', detail: 'Steel coils ready for packaging', status: 'Order Ready', next: 'Start packaging', value: '2 pallets' },
+      { account: 'Pioneer Infra', owner: 'Anita', detail: 'Copper cathode packaging in progress', status: 'Packaging', next: 'Assign courier', value: 'Truck A' },
+      { account: 'Vertex Components', owner: 'Kabir', detail: 'Courier tracking active', status: 'Tracking', next: 'Confirm POD', value: 'Due today' },
       { account: 'Kavya Electricals', owner: 'Meera', detail: 'Delivered and awaiting closeout', status: 'Delivered', next: 'Share report', value: 'Complete' },
     ],
     activity: [
-      'Truck assignment updated for Apex Rail Systems',
-      'Pioneer Infra dispatch schedule confirmed',
-      'Vertex Components proof of delivery requested',
+      'Apex Rail Systems moved from order ready to packaging',
+      'Pioneer Infra courier assigned for dispatch',
+      'Vertex Components tracking link shared',
       'Kavya Electricals delivery report generated',
     ],
-    priorities: ['Assign delivery vehicles', 'Upload POD documents', 'Close delivered shipments', 'Share delivery reports'],
+    priorities: ['Move orders into packaging', 'Assign courier or vehicle', 'Track live shipment status', 'Close delivered orders'],
+    responsibilities: ['Dispatch Coordination', 'Packaging Control', 'Courier Tracking', 'Logistics Oversight'],
+    workflow: [...dispatchWorkflowStages],
+    playbook:
+      'Dispatch starts when the order is ready, moves into packaging, then goes out through dispatch and live courier tracking until delivery is confirmed.',
   },
   finance: {
     title: 'Finance Dashboard',
@@ -704,11 +747,11 @@ function StatusChip({ status }: { status: string }) {
   const tone: Tone =
     status === 'Hot' || status === 'At Risk' || status === 'Rejected' || status === 'Lost'
       ? 'red'
-      : status === 'Warm' || status === 'RFQ' || status === 'Requested' || status === 'Need More Information' || status === 'Pricing'
+      : status === 'Warm' || status === 'RFQ' || status === 'Requested' || status === 'Awaiting Price' || status === 'Need More Information' || status === 'Pricing' || status === 'Final Cost' || status === 'Packaging'
         ? 'gold'
-        : status === 'Approved' || status === 'Order' || status === 'Qualified' || status === 'Assigned To Sales' || status === 'New' || status === 'Follow-Up' || status === 'Won'
+        : status === 'Approved' || status === 'Order' || status === 'Qualified' || status === 'Assigned To Sales' || status === 'New' || status === 'Follow-Up' || status === 'Won' || status === 'Purchase Order' || status === 'Sales Order' || status === 'Order Ready' || status === 'Delivered'
           ? 'green'
-        : status === 'Negotiation'
+        : status === 'Negotiation' || status === 'Supplier Quotation' || status === 'Dispatch'
             ? 'violet'
             : 'blue';
   return <span className={`rounded-full border px-2.5 py-1 text-xs font-semibold ${toneClass[tone].chip}`}>{status}</span>;
@@ -820,6 +863,82 @@ function SideRail({
 }) {
   return (
     <aside className="space-y-5">
+      {config.decisionExample ? (
+        <Panel>
+          <p className="text-xs uppercase tracking-[0.18em] text-zinc-500">Decision Example</p>
+          <div className="mt-4 grid gap-3 sm:grid-cols-2">
+            <div className={`rounded-2xl border ${roleClass.borderSoft} ${roleClass.inner} p-3`}>
+              <p className="text-xs uppercase tracking-[0.14em] text-zinc-500">Sales Price</p>
+              <p className="mt-2 font-display text-2xl text-white">{config.decisionExample.salesPrice}</p>
+            </div>
+            <div className={`rounded-2xl border ${roleClass.borderSoft} ${roleClass.inner} p-3`}>
+              <p className="text-xs uppercase tracking-[0.14em] text-zinc-500">Procurement Cost</p>
+              <p className="mt-2 font-display text-2xl text-white">{config.decisionExample.procurementCost}</p>
+            </div>
+            <div className={`rounded-2xl border ${roleClass.borderSoft} ${roleClass.inner} p-3`}>
+              <p className="text-xs uppercase tracking-[0.14em] text-zinc-500">Margin</p>
+              <p className={`mt-2 font-display text-2xl ${roleClass.text}`}>{config.decisionExample.margin}</p>
+            </div>
+            <div className={`rounded-2xl border ${roleClass.borderSoft} ${roleClass.bgSoft} p-3`}>
+              <p className="text-xs uppercase tracking-[0.14em] text-zinc-500">Decision</p>
+              <p className="mt-2 text-sm font-semibold text-white">{config.decisionExample.decision}</p>
+            </div>
+          </div>
+        </Panel>
+      ) : null}
+
+      {config.responsibilities?.length ? (
+        <Panel>
+          <p className="text-xs uppercase tracking-[0.18em] text-zinc-500">Team Responsibilities</p>
+          <div className="mt-4 grid gap-2">
+            {config.responsibilities.map((item, index) => (
+              <div key={item} className={`flex items-center gap-3 rounded-xl border ${roleClass.borderSoft} ${roleClass.inner} px-3 py-2`}>
+                <span className={`grid h-7 w-7 shrink-0 place-items-center rounded-lg border ${roleClass.border} ${roleClass.bgSoft} text-xs font-bold ${roleClass.text}`}>
+                  {index + 1}
+                </span>
+                <span className="text-sm text-zinc-300">{item}</span>
+              </div>
+            ))}
+          </div>
+        </Panel>
+      ) : null}
+
+      {config.workflow?.length ? (
+        <Panel>
+          <p className="text-xs uppercase tracking-[0.18em] text-zinc-500">Workflow</p>
+          <div className="mt-4 space-y-3">
+            {config.workflow.map((step, index) => (
+              <div key={step} className="relative pl-8">
+                <span className={`absolute left-0 top-0 grid h-5 w-5 place-items-center rounded-full border ${roleClass.borderStrong} ${roleClass.bgSoft} text-[10px] font-bold ${roleClass.text}`}>
+                  {index + 1}
+                </span>
+                <p className="font-semibold text-white">{step}</p>
+                <p className="mt-1 text-xs text-zinc-500">
+                  {index === 0
+                    ? 'Start with the incoming sales order.'
+                    : index === 1
+                      ? 'Check target cost and approved supplier options.'
+                      : index === 2
+                        ? 'Send RFQ to selected vendors.'
+                        : index === 3
+                          ? 'Review commercial offers and terms.'
+                          : index === 4
+                            ? 'Lock the final landed cost.'
+                            : 'Release purchase order and confirm supply.'}
+                </p>
+              </div>
+            ))}
+          </div>
+        </Panel>
+      ) : null}
+
+      {config.playbook ? (
+        <Panel>
+          <p className="text-xs uppercase tracking-[0.18em] text-zinc-500">How Work Moves</p>
+          <p className="mt-3 text-sm leading-6 text-zinc-300">{config.playbook}</p>
+        </Panel>
+      ) : null}
+
       <Panel>
         <p className="text-xs uppercase tracking-[0.18em] text-zinc-500">Status Mix</p>
         <div className="mt-4 space-y-3">
@@ -878,6 +997,12 @@ function OverviewWorkspace({ config, filteredRows, queueMode, setQueueMode, sele
           <div>
             <p className="text-xs uppercase tracking-[0.18em] text-zinc-500">Work Queue</p>
             <h3 className="mt-1 font-display text-2xl text-white">{queueTitle}</h3>
+            {config.playbook ? <p className="mt-2 max-w-3xl text-sm leading-6 text-zinc-400">{config.playbook}</p> : null}
+            {config.decisionExample ? (
+              <p className="mt-2 text-sm text-zinc-400">
+                Example decision: sales price {config.decisionExample.salesPrice}, procurement cost {config.decisionExample.procurementCost}, margin {config.decisionExample.margin}, so the next process is {config.decisionExample.decision.toLowerCase()}.
+              </p>
+            ) : null}
           </div>
           <QueueModeControl queueMode={queueMode} setQueueMode={setQueueMode} />
         </div>
@@ -893,7 +1018,7 @@ function OverviewWorkspace({ config, filteredRows, queueMode, setQueueMode, sele
 function IntakeWorkspace({ kind, filteredRows, selectedModule, actionBusy, onOpenForm, onOpenNewForm }: WorkspaceProps) {
   const fields =
     kind === 'procurement'
-      ? ['Supplier name', 'Material category', 'GST / compliance', 'Preferred lane']
+      ? ['Sales order ref', 'Material category', 'Target cost', 'Preferred supplier']
       : kind === 'sales'
         ? ['Customer name', 'Industry', 'Buying cycle', 'Credit profile']
         : ['Lead source', 'Material need', 'Budget range', 'Decision maker'];
@@ -903,11 +1028,11 @@ function IntakeWorkspace({ kind, filteredRows, selectedModule, actionBusy, onOpe
       <Panel>
         <div className="flex items-center justify-between gap-3">
           <div>
-            <p className="text-xs uppercase tracking-[0.18em] text-zinc-500">Intake Desk</p>
+            <p className="text-xs uppercase tracking-[0.18em] text-zinc-500">{kind === 'procurement' ? 'Procurement Intake' : 'Intake Desk'}</p>
             <h3 className="mt-1 font-display text-2xl text-white">{selectedModule.label}</h3>
           </div>
           <span className={`rounded-full border ${roleClass.border} ${roleClass.bgSoft} px-3 py-1 text-xs ${roleClass.textSoft}`}>
-            Fresh queue
+            {kind === 'procurement' ? 'Sales order intake' : 'Fresh queue'}
           </span>
         </div>
         <div className="mt-5 grid gap-3 md:grid-cols-2">
@@ -927,7 +1052,10 @@ function IntakeWorkspace({ kind, filteredRows, selectedModule, actionBusy, onOpe
               </div>
               <div className="mt-4 grid grid-cols-2 gap-2 text-xs">
                 <span className={`rounded-xl border ${roleClass.borderSoft} ${roleClass.inner} px-3 py-2 text-zinc-400`}>Owner: {row.owner}</span>
-                <span className={`rounded-xl border ${roleClass.borderSoft} ${roleClass.inner} px-3 py-2 text-zinc-400`}>Priority: {row.value}</span>
+                <span className={`rounded-xl border ${roleClass.borderSoft} ${roleClass.inner} px-3 py-2 text-zinc-400`}>
+                  {kind === 'procurement' ? 'Cost: ' : 'Priority: '}
+                  {row.value}
+                </span>
               </div>
               <div className="mt-4 flex flex-wrap gap-2">
                 <button
@@ -974,7 +1102,7 @@ function IntakeWorkspace({ kind, filteredRows, selectedModule, actionBusy, onOpe
             onClick={onOpenNewForm}
             className={`inline-flex w-full items-center justify-center gap-2 rounded-xl border ${roleClass.border} ${roleClass.bgSoft} px-3 py-2 text-sm font-semibold ${roleClass.text} disabled:opacity-60`}
           >
-            {kind === 'lqt' ? 'Open an assigned lead' : 'Open Validated Form'}
+            {kind === 'lqt' ? 'Open an assigned lead' : kind === 'procurement' ? 'Open procurement record' : 'Open Validated Form'}
             <CheckCircle2 size={15} />
           </button>
         </div>
@@ -1018,7 +1146,9 @@ function AssignmentWorkspace({ config, filteredRows, selectedModule, onOpenForm 
 
 function ScorecardWorkspace({ filteredRows, selectedModule, actionBusy, onRowAction }: WorkspaceProps) {
   const checks =
-    selectedModule.key === 'cost-analysis'
+    selectedModule.key === 'pricing-intelligence'
+      ? ['Compare supplier rates', 'Check freight impact', 'Assess payment terms', 'Lock final cost']
+      : selectedModule.key === 'cost-analysis'
       ? ['Base rate verified', 'Freight captured', 'Payment terms compared', 'Margin impact checked']
       : selectedModule.key === 'lead-conversion'
         ? ['Customer contacted', 'Quotation sent', 'Negotiation complete', 'Order confirmed']
@@ -1028,7 +1158,7 @@ function ScorecardWorkspace({ filteredRows, selectedModule, actionBusy, onRowAct
     <div className="grid gap-5 xl:grid-cols-[1fr_420px]">
       <Panel>
         <p className="text-xs uppercase tracking-[0.18em] text-zinc-500">
-          {selectedModule.key === 'lead-conversion' ? 'Order Confirmation Workspace' : 'Scoring Workspace'}
+          {selectedModule.key === 'lead-conversion' ? 'Order Confirmation Workspace' : selectedModule.key === 'pricing-intelligence' ? 'Pricing Intelligence Workspace' : 'Scoring Workspace'}
         </p>
         <h3 className="mt-1 font-display text-2xl text-white">{selectedModule.label}</h3>
         <div className="mt-5 grid gap-3 md:grid-cols-2">
@@ -1269,7 +1399,24 @@ function ProcessWorkspace({
   onOpenForm,
   onOpenNewForm,
 }: WorkspaceProps) {
-  const formButtonLabel = kind === 'sales' ? 'Open Sales form' : kind === 'procurement' ? 'Open price form' : 'Open form';
+  const formButtonLabel =
+    kind === 'sales'
+      ? 'Open Sales form'
+      : kind === 'procurement'
+        ? selectedModule.key === 'procurement-queue'
+          ? 'Open queue form'
+          : selectedModule.key === 'rfqs'
+            ? 'Open RFQ form'
+            : selectedModule.key === 'supplier-quotations'
+              ? 'Open quotation form'
+              : selectedModule.key === 'purchase-orders'
+                ? 'Open PO form'
+                : 'Open procurement form'
+        : 'Open form';
+  const processSteps =
+    kind === 'procurement'
+      ? procurementWorkflowStages.map((step) => step)
+      : ['Prepare document', 'Internal approval', 'Customer/vendor update'];
   return (
     <Panel>
       <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
@@ -1298,17 +1445,22 @@ function ProcessWorkspace({
       {kind === 'sales' || kind === 'procurement' ? (
         <div className={`mt-5 rounded-2xl border ${roleClass.borderSoft} ${roleClass.inner} p-4`}>
           <p className="text-xs uppercase tracking-[0.18em] text-zinc-500">
-            {kind === 'sales' ? 'Sales inbox form' : 'Procurement price form'}
+            {kind === 'sales' ? 'Sales inbox form' : 'Procurement workflow form'}
           </p>
           <p className="mt-2 text-sm text-zinc-300">
             {kind === 'sales'
               ? 'Capture customer contact, quotation, negotiation, and the next order step in one place.'
-              : 'Capture supplier price, comparison notes, and the next procurement step in one place.'}
+              : 'Capture sales order, RFQ, supplier quotation, final cost, and purchase order updates in one place.'}
+          </p>
+          <p className="mt-2 text-xs uppercase tracking-[0.16em] text-zinc-500">
+            {kind === 'procurement'
+              ? 'Responsibilities: Product Pricing, Vendor Selection, RFQ Management, Supplier Negotiation'
+              : 'Keep the handoff moving'}
           </p>
         </div>
       ) : null}
       <div className="mt-5 grid gap-3 md:grid-cols-3">
-        {['Prepare document', 'Internal approval', 'Customer/vendor update'].map((step, index) => (
+        {processSteps.map((step, index) => (
           <div key={step} className={`rounded-2xl border ${roleClass.borderSoft} ${roleClass.card} p-4`}>
             <p className="text-xs uppercase tracking-[0.14em] text-zinc-500">Step {index + 1}</p>
             <p className="mt-2 font-semibold text-white">{step}</p>
@@ -1387,7 +1539,7 @@ function OperationsFormModal({ kind, row, members, salesMembers, activeModule, b
     row.assignedTo || members.find((member) => member.name === row.owner)?.id || ''
   );
   const [detail, setDetail] = useState(row.requirement || row.detail || '');
-  const [status, setStatus] = useState(row.status || (kind === 'procurement' ? 'Requested' : 'in_review'));
+  const [status, setStatus] = useState(row.status || (kind === 'procurement' ? 'Sales Order' : 'in_review'));
   const [leadTemperature, setLeadTemperature] = useState(row.status?.toLowerCase() || 'warm');
   const [nextStep, setNextStep] = useState(row.next === 'Review requirement' ? '' : row.next || '');
   const [value, setValue] = useState(row.value || '');
@@ -1406,7 +1558,7 @@ function OperationsFormModal({ kind, row, members, salesMembers, activeModule, b
   const assignedLabel = handoffToSales ? 'Sales person' : 'Assigned employee';
   const assignedPlaceholder = handoffToSales ? 'Select sales person' : `Select ${kind} employee`;
   const nextStepLabel = kind === 'sales' ? 'Next sales step' : kind === 'procurement' ? 'Next procurement step' : 'Next step';
-  const noteLabel = kind === 'sales' ? 'Customer contact / communication notes' : kind === 'procurement' ? 'Supplier conversation / notes' : 'Work note';
+  const noteLabel = kind === 'sales' ? 'Customer contact / communication notes' : kind === 'procurement' ? 'Supplier negotiation / notes' : 'Work note';
   const statusLabel = kind === 'sales' ? 'Sales stage' : 'Status';
   const valueLabel =
     kind === 'sales'
@@ -1414,7 +1566,7 @@ function OperationsFormModal({ kind, row, members, salesMembers, activeModule, b
         ? 'Quotation amount (INR)'
         : 'Quotation / order value'
       : kind === 'procurement'
-        ? 'Supplier price / landed cost'
+        ? 'Final cost / PO value'
         : 'Value';
 
   const submit = () => {
@@ -1507,7 +1659,7 @@ function OperationsFormModal({ kind, row, members, salesMembers, activeModule, b
       title: title.trim(),
       owner: memberById.get(assigneeId)?.name || '',
       detail: detail.trim(),
-      status: status.trim(),
+      status: kind === 'procurement' ? status.trim() : status.trim(),
       nextStep: nextStep.trim(),
       value: value.trim(),
       note: note.trim(),
@@ -1614,6 +1766,12 @@ function OperationsFormModal({ kind, row, members, salesMembers, activeModule, b
                     <option key={item}>{item}</option>
                   ))}
                 </select>
+              ) : kind === 'procurement' ? (
+                <select className={`${inputClass} mt-2`} value={status} onChange={(event) => setStatus(event.target.value)}>
+                  {procurementWorkflowStages.map((item) => (
+                    <option key={item}>{item}</option>
+                  ))}
+                </select>
               ) : (
                 <input className={`${inputClass} mt-2`} value={status} onChange={(event) => setStatus(event.target.value)} />
               )}
@@ -1684,15 +1842,15 @@ function OperationsFormModal({ kind, row, members, salesMembers, activeModule, b
 function ModuleWorkspace(props: WorkspaceProps) {
   const { activeModule } = props;
   if (activeModule === 'overview') return <OverviewWorkspace {...props} />;
-  if (['new-leads', 'customer-management', 'supplier-management'].includes(activeModule)) {
+  if (['new-leads', 'customer-management', 'supplier-management', 'procurement-queue'].includes(activeModule)) {
     return <IntakeWorkspace {...props} />;
   }
   if (['assigned-leads', 'leads', 'sales-inbox'].includes(activeModule)) return <AssignmentWorkspace {...props} />;
   if (activeModule === 'customers') return <IntakeWorkspace {...props} />;
-  if (['qualification', 'cost-analysis'].includes(activeModule)) {
+  if (['qualification', 'cost-analysis', 'pricing-intelligence'].includes(activeModule)) {
     return <ScorecardWorkspace {...props} />;
   }
-  if (['lead-status', 'negotiation-tracking', 'vendor-comparison', 'approval-queue', 'inventory-dashboard', 'dispatch-dashboard', 'invoice-queue', 'orders'].includes(activeModule)) {
+  if (['lead-status', 'negotiation-tracking', 'vendor-comparison', 'approval-queue', 'margin-review', 'cost-review', 'target-price-review', 'commercial-approval', 'pricing-approval', 'sourcing-approval', 'approval-history', 'inventory-dashboard', 'dispatch-dashboard', 'logistics', 'courier-tracking', 'invoice-queue', 'orders', 'approved-suppliers', 'supplier-quotations', 'rfqs'].includes(activeModule)) {
     return <BoardWorkspace {...props} />;
   }
   if (['follow-ups', 'supplier-communication', 'tasks'].includes(activeModule)) return <FollowUpWorkspace {...props} />;
@@ -1706,6 +1864,9 @@ function ModuleWorkspace(props: WorkspaceProps) {
       'order-management',
       'lead-conversion',
       'price-requests',
+      'procurement-queue',
+      'rfqs',
+      'supplier-quotations',
       'purchase-orders',
     ].includes(activeModule)
   ) {
@@ -1910,10 +2071,16 @@ export function OperationsDashboardPage({ kind }: { kind: DashboardKind }) {
 
         await operationsApi.updateQuote(kind, row.id, quotePayload);
       } else if (row.source === 'operation' && isRecordTeamKind(kind)) {
-        await operationsApi.updateRecord(kind, row.id, {
-          status: action === 'Requested' ? 'Requested' : action === 'At Risk' ? 'At Risk' : 'Updated',
+        const isProcurementStage = procurementWorkflowStages.includes(action as (typeof procurementWorkflowStages)[number]);
+        const payload: Record<string, unknown> = {
           note: `${selectedModule.label}: ${action}`,
-        });
+        };
+        if (kind === 'procurement') {
+          if (isProcurementStage) payload.status = action;
+        } else {
+          payload.status = action === 'Requested' ? 'Requested' : action === 'At Risk' ? 'At Risk' : 'Updated';
+        }
+        await operationsApi.updateRecord(kind, row.id, payload);
       }
 
       toast.success(`${selectedModule.label} updated`);
@@ -1935,9 +2102,9 @@ export function OperationsDashboardPage({ kind }: { kind: DashboardKind }) {
     try {
       await operationsApi.createRecord(kind, {
         module,
-        title: kind === 'procurement' ? 'New Supplier Draft' : kind === 'sales' ? 'New Sales Draft' : 'New Operational Draft',
+        title: kind === 'procurement' ? 'New Procurement Draft' : kind === 'sales' ? 'New Sales Draft' : 'New Operational Draft',
         detail: selectedModule.helper,
-        status: 'open',
+        status: kind === 'procurement' ? 'Sales Order' : 'open',
         nextStep: 'Complete details',
         value: 'Draft',
       });
@@ -1957,7 +2124,7 @@ export function OperationsDashboardPage({ kind }: { kind: DashboardKind }) {
       account: '',
       owner: user?.name || '',
       detail: '',
-      status: kind === 'procurement' ? 'Requested' : 'open',
+      status: kind === 'procurement' ? 'Sales Order' : 'open',
       next: '',
       value: '',
     });
