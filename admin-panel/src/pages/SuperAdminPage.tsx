@@ -971,11 +971,11 @@ export function SuperAdminPage() {
       icon: ClipboardList,
     },
     {
-      label: 'Sales Team Management',
+      label: 'CRO Team Management',
       role: 'sales',
       count: admins.filter((row) => row.role === 'sales').length,
-      helper: 'Commercial pipeline ownership',
-      route: '/sales',
+      helper: 'Customer relationship ownership',
+      route: '/cro',
       icon: UserCog,
     },
     {

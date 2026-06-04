@@ -16,23 +16,25 @@ function checklistScore(checklist = {}) {
 }
 
 function qualificationBand(score) {
-  if (score >= 80) return 'Sales Ready';
-  if (score >= 60) return 'Warm Lead';
-  if (score >= 40) return 'Nurture';
-  return 'Reject';
+  if (score >= 80) return 'Qualified';
+  if (score >= 60) return 'Need More Information';
+  if (score >= 40) return 'Need More Information';
+  return 'Rejected';
 }
 
 function stageLabel(stage) {
   return (
     {
       newLead: 'New',
-      contacted: 'Contacted',
-      requirementGathering: 'Review',
       qualified: 'Qualified',
-      assigned: 'Assigned',
-      accepted: 'Accepted',
-      returned: 'Returned',
+      needMoreInformation: 'Need More Information',
       rejected: 'Rejected',
+      assignedToSales: 'Assigned To Sales',
+      contacted: 'Need More Information',
+      requirementGathering: 'Qualified',
+      assigned: 'Assigned To Sales',
+      accepted: 'Assigned To Sales',
+      returned: 'Rejected',
     }[stage] || stage
   );
 }
@@ -134,25 +136,25 @@ function buildDashboard(leads) {
   return {
     kpis: {
       newLeads: rows.filter((row) => row.stage === 'newLead').length,
-      pendingQualification: rows.filter((row) => ['contacted', 'requirementGathering'].includes(row.stage)).length,
+      pendingQualification: rows.filter((row) => ['needMoreInformation', 'contacted', 'requirementGathering'].includes(row.stage)).length,
       followUpsDue: rows.filter((row) => row.nextActionAt && new Date(row.nextActionAt) <= new Date(today.getTime() + 24 * 60 * 60 * 1000)).length,
-      salesReady: rows.filter((row) => row.qualificationScore >= 80).length,
-      assignedToday: rows.filter((row) => row.stage === 'assigned' && sameDay(row.createdAt)).length,
-      slaPercent: rows.length ? Math.round((rows.filter((row) => ['assigned', 'accepted', 'rejected'].includes(row.stage)).length / rows.length) * 100) : 0,
+      salesReady: rows.filter((row) => ['qualified', 'assignedToSales', 'assigned', 'accepted'].includes(row.stage)).length,
+      assignedToday: rows.filter((row) => row.stage === 'assignedToSales' && sameDay(row.createdAt)).length,
+      slaPercent: rows.length ? Math.round((rows.filter((row) => ['assignedToSales', 'rejected', 'assigned', 'accepted'].includes(row.stage)).length / rows.length) * 100) : 0,
     },
     funnel: [
       { label: 'New Leads', value: rows.filter((row) => row.stage === 'newLead').length },
-      { label: 'Contacted', value: rows.filter((row) => row.stage === 'contacted').length },
-      { label: 'Requirement Gathering', value: rows.filter((row) => row.stage === 'requirementGathering').length },
       { label: 'Qualified', value: rows.filter((row) => row.stage === 'qualified').length },
-      { label: 'Assigned', value: rows.filter((row) => row.stage === 'assigned').length },
+      { label: 'Need More Information', value: rows.filter((row) => row.stage === 'needMoreInformation').length },
+      { label: 'Rejected', value: rows.filter((row) => row.stage === 'rejected').length },
+      { label: 'Assigned To Sales', value: rows.filter((row) => row.stage === 'assignedToSales').length },
     ],
     statusMix: summarizeCounts(rows, 'stage'),
     assignmentTracker: {
-      assignedToday: rows.filter((row) => row.stage === 'assigned' && sameDay(row.createdAt)).length,
-      acceptedBySales: rows.filter((row) => row.stage === 'accepted').length,
-      pendingAcceptance: rows.filter((row) => row.stage === 'assigned').length,
-      returnedLeads: rows.filter((row) => row.stage === 'returned').length,
+      assignedToday: rows.filter((row) => row.stage === 'assignedToSales' && sameDay(row.createdAt)).length,
+      acceptedBySales: rows.filter((row) => row.stage === 'assignedToSales').length,
+      pendingAcceptance: rows.filter((row) => row.stage === 'assignedToSales').length,
+      returnedLeads: rows.filter((row) => row.stage === 'rejected' || row.stage === 'returned').length,
     },
   };
 }
@@ -163,10 +165,10 @@ function buildReports(rows, teamMembers) {
     value: rows.filter((row) => row.leadSource === source).length,
   }));
   const qualificationBuckets = [
-    { label: '80-100 Sales Ready', value: rows.filter((row) => row.qualificationScore >= 80).length },
-    { label: '60-79 Warm Lead', value: rows.filter((row) => row.qualificationScore >= 60 && row.qualificationScore < 80).length },
-    { label: '40-59 Nurture', value: rows.filter((row) => row.qualificationScore >= 40 && row.qualificationScore < 60).length },
-    { label: '0-39 Reject', value: rows.filter((row) => row.qualificationScore < 40).length },
+    { label: 'Qualified', value: rows.filter((row) => row.stage === 'qualified').length },
+    { label: 'Need More Information', value: rows.filter((row) => row.stage === 'needMoreInformation').length },
+    { label: 'Assigned To Sales', value: rows.filter((row) => row.stage === 'assignedToSales').length },
+    { label: 'Rejected', value: rows.filter((row) => row.stage === 'rejected').length },
   ];
 
   const completedFollowUps = rows.reduce(
@@ -247,7 +249,7 @@ async function ensureLqtSeedData() {
       internalNotes: 'Warm lead, qualification in progress.',
       owner: 'Suresh',
       priority: 'urgent',
-      stage: 'contacted',
+      stage: 'needMoreInformation',
       checklist: {
         firstContactDone: true,
         requirementCollected: true,
@@ -278,7 +280,7 @@ async function ensureLqtSeedData() {
       owner: 'Meena',
       salesAssignee: 'Arjun',
       priority: 'medium',
-      stage: 'requirementGathering',
+      stage: 'qualified',
       checklist: {
         firstContactDone: true,
         requirementCollected: true,
@@ -309,7 +311,7 @@ async function ensureLqtSeedData() {
       owner: 'Priya',
       salesAssignee: 'Mehul',
       priority: 'high',
-      stage: 'qualified',
+      stage: 'assignedToSales',
       checklist: {
         firstContactDone: true,
         requirementCollected: true,
@@ -351,7 +353,7 @@ async function ensureLqtSeedData() {
       internalNotes: 'Nurture for next follow-up.',
       owner: 'Suresh',
       priority: 'medium',
-      stage: 'contacted',
+      stage: 'needMoreInformation',
       checklist: {
         firstContactDone: true,
       },
@@ -378,7 +380,7 @@ async function ensureLqtSeedData() {
       owner: 'Meena',
       salesAssignee: 'Arjun',
       priority: 'low',
-      stage: 'returned',
+      stage: 'rejected',
       checklist: {
         firstContactDone: true,
         requirementCollected: true,
@@ -427,16 +429,16 @@ async function fetchTeamMembers(rows = []) {
   const members = await User.find({ role: { $in: ['lqt', 'sales'] } }).select('_id name email role').sort({ name: 1 });
   return members.map((member) => {
     const memberRows = rows.filter((row) => row.owner === member.name || row.salesAssignee === member.name);
-    const activeRows = memberRows.filter((row) => !['accepted', 'rejected'].includes(row.stage));
+    const activeRows = memberRows.filter((row) => !['assignedToSales', 'accepted', 'rejected', 'returned'].includes(row.stage));
     const pendingFollowUps = memberRows.reduce(
       (sum, row) =>
         sum + row.followUps.filter((followUp) => followUp.assignedExecutive === member.name && followUp.status !== 'completed').length,
       0
     );
-    const qualifiedLeads = memberRows.filter((row) => ['qualified', 'assigned', 'accepted'].includes(row.stage)).length;
-    const assignmentsCompleted = memberRows.filter((row) => row.stage === 'accepted').length;
+    const qualifiedLeads = memberRows.filter((row) => ['qualified', 'assignedToSales', 'assigned', 'accepted'].includes(row.stage)).length;
+    const assignmentsCompleted = memberRows.filter((row) => row.stage === 'assignedToSales' || row.stage === 'accepted').length;
     const slaPercent = memberRows.length
-      ? Math.round((memberRows.filter((row) => ['assigned', 'accepted', 'rejected'].includes(row.stage)).length / memberRows.length) * 100)
+      ? Math.round((memberRows.filter((row) => ['assignedToSales', 'accepted', 'rejected'].includes(row.stage)).length / memberRows.length) * 100)
       : 0;
 
     return {

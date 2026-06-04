@@ -45,7 +45,10 @@ export type WebsiteLeadStats = {
   totalWebsiteLeads: number;
   newWebsiteLeads: number;
   qualifiedLeads: number;
+  needMoreInformation: number;
+  rejectedLeads: number;
   salesAssigned: number;
+  assignedToSales: number;
   quotationsSent: number;
   ordersWon: number;
   convertedLeads: number;

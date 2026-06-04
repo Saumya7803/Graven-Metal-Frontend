@@ -153,6 +153,11 @@ export const updateLead = asyncHandler(async (req, res) => {
 
   if (status) {
     recordStatus(lead, status, note, req.user._id);
+    if (status === 'Assigned To Sales') {
+      lead.assignedTeam = 'sales';
+    } else if (status === 'New' || status === 'Qualified' || status === 'Need More Information' || status === 'Rejected') {
+      lead.assignedTeam = 'lqt';
+    }
   }
   if (leadTemperature) lead.leadTemperature = leadTemperature;
   if (assignedTeam !== undefined) lead.assignedTeam = assignedTeam;

@@ -51,6 +51,28 @@ const recordModulesByTeam = {
   finance: new Set(['invoice-queue', 'payments', 'receivables', 'accounts', 'finance-reports', 'profit-analysis', 'margin-analysis']),
 };
 
+const leadWorkflowStatusLabels = {
+  New: 'New',
+  Qualified: 'Qualified',
+  'Need More Information': 'Need More Information',
+  Rejected: 'Rejected',
+  'Assigned To Sales': 'Assigned To Sales',
+  'LQT Qualification': 'Qualified',
+  'Buyer Verified': 'Qualified',
+  'Requirement Analyzed': 'Qualified',
+  'Sales Assigned': 'Assigned To Sales',
+  'Follow-up': 'Assigned To Sales',
+  'Quotation Sent': 'Assigned To Sales',
+  Negotiation: 'Assigned To Sales',
+  'Order Confirmed': 'Assigned To Sales',
+  Won: 'Assigned To Sales',
+  Lost: 'Rejected',
+};
+
+function normalizeLeadWorkflowStatus(status) {
+  return leadWorkflowStatusLabels[status] || status || 'New';
+}
+
 function assertTeamAccess(req, team) {
   if (req.user.role === 'super_admin') return null;
   if (req.user.role !== team) return 'Forbidden: team dashboard access denied';
@@ -86,6 +108,7 @@ function formatQuoteRow(quote) {
 
 function formatLeadRow(lead) {
   const pendingFollowUp = lead.followUps?.find((item) => item.status === 'pending');
+  const normalizedStatus = normalizeLeadWorkflowStatus(lead.status);
   return {
     id: lead._id,
     source: 'lead',
@@ -97,8 +120,8 @@ function formatLeadRow(lead) {
     detail: `${lead.product}, ${lead.quantity} ${lead.unit}`,
     product: lead.product,
     quantity: `${lead.quantity} ${lead.unit}`,
-    status: lead.status,
-    leadStatus: lead.status,
+    status: normalizedStatus,
+    leadStatus: normalizedStatus,
     next: pendingFollowUp?.note || 'Review website inquiry',
     lastFollowUp: pendingFollowUp?.dueAt || '',
     value: `${lead.priority} (${lead.priorityScore})`,
@@ -163,26 +186,23 @@ function teamLeadFilter(team) {
 
 function websiteLeadAnalytics(leads) {
   const totalInquiries = leads.length;
-  const qualifiedStatuses = new Set([
-    'Qualified',
-    'Sales Assigned',
-    'Follow-up',
-    'Quotation Sent',
-    'Negotiation',
-    'Order Confirmed',
-    'Won',
-  ]);
-  const qualifiedLeads = leads.filter((lead) => qualifiedStatuses.has(lead.status)).length;
-  const salesAssigned = leads.filter((lead) => lead.assignedTeam === 'sales').length;
+  const statuses = leads.map((lead) => normalizeLeadWorkflowStatus(lead.status));
+  const qualifiedLeads = statuses.filter((status) => status === 'Qualified').length;
+  const needMoreInformation = statuses.filter((status) => status === 'Need More Information').length;
+  const rejectedLeads = statuses.filter((status) => status === 'Rejected').length;
+  const assignedToSales = statuses.filter((status) => status === 'Assigned To Sales').length;
   const quotationsSent = leads.filter((lead) => lead.quotation?.status === 'sent').length;
-  const ordersWon = leads.filter((lead) => lead.status === 'Won' || lead.order?.status === 'fulfilled').length;
+  const ordersWon = leads.filter((lead) => normalizeLeadWorkflowStatus(lead.status) === 'Assigned To Sales' || lead.order?.status === 'fulfilled').length;
 
   return {
     totalInquiries,
     totalWebsiteLeads: totalInquiries,
-    newWebsiteLeads: leads.filter((lead) => lead.status === 'New').length,
+    newWebsiteLeads: statuses.filter((status) => status === 'New').length,
     qualifiedLeads,
-    salesAssigned,
+    needMoreInformation,
+    rejectedLeads,
+    salesAssigned: assignedToSales,
+    assignedToSales,
     quotationsSent,
     ordersWon,
     convertedLeads: ordersWon,
@@ -225,12 +245,13 @@ export const getOperationsDashboard = asyncHandler(async (req, res) => {
     counts: {
       quoteStatus: statusCounts(rows, 'quoteStatus'),
       leadTemperature: statusCounts(rows, 'leadTemperature'),
+      leadStatus: statusCounts(rows, 'leadStatus'),
     },
     modules: {
-      'new-leads': rows.filter((row) => row.quoteStatus === 'new' || row.leadStatus === 'New').length,
-      'assigned-leads': rows.filter((row) => row.owner !== 'Unassigned').length,
-      qualification: rows.filter((row) => row.quoteStatus === 'in_review' || row.leadStatus === 'Qualified').length,
-      'lead-status': Object.keys(statusCounts(rows, 'leadTemperature')).length,
+      'new-leads': rows.filter((row) => row.leadStatus === 'New' || row.quoteStatus === 'new').length,
+      'assigned-leads': rows.filter((row) => row.leadStatus === 'Assigned To Sales' || row.assignedTeam === 'sales').length,
+      qualification: rows.filter((row) => row.leadStatus === 'Qualified' || row.quoteStatus === 'in_review').length,
+      'lead-status': rows.filter((row) => row.leadStatus === 'Need More Information' || row.leadStatus === 'Rejected').length,
       'follow-ups': rows.reduce((sum, row) => sum + row.followUps.filter((item) => item.status === 'pending').length, 0),
       'call-notes': rows.reduce((sum, row) => sum + row.callNotes.length, 0),
       'meeting-scheduling': rows.reduce((sum, row) => sum + row.meetings.filter((item) => item.status === 'scheduled').length, 0),

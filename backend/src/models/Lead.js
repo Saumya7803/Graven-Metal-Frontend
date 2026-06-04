@@ -61,10 +61,13 @@ const createLeadId = () => {
 
 export const LEAD_STATUSES = [
   'New',
+  'Qualified',
+  'Need More Information',
+  'Rejected',
+  'Assigned To Sales',
   'LQT Qualification',
   'Buyer Verified',
   'Requirement Analyzed',
-  'Qualified',
   'Sales Assigned',
   'Follow-up',
   'Quotation Sent',

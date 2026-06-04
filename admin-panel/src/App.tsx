@@ -1,5 +1,5 @@
 import { Suspense, lazy } from 'react';
-import { createBrowserRouter, RouterProvider } from 'react-router-dom';
+import { Navigate, createBrowserRouter, RouterProvider } from 'react-router-dom';
 import { ProtectedRoute } from './components/auth/ProtectedRoute';
 import { PublicOnlyRoute } from './components/auth/PublicOnlyRoute';
 import { RouteLoader } from './components/ui/RouteLoader';
@@ -73,6 +73,10 @@ const router = createBrowserRouter([
   },
   {
     path: '/sales',
+    element: <Navigate to="/cro" replace />,
+  },
+  {
+    path: '/cro',
     element: withSuspense(
       <ProtectedRoute allowedRoles={['sales', 'super_admin']}>
         <OperationsDashboardPage kind="sales" />

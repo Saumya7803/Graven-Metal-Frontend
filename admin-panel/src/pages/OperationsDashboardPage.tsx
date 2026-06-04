@@ -177,10 +177,11 @@ const toneClass: Record<Tone, { icon: string; bar: string; chip: string; ring: s
 };
 
 const statusMixClass: Record<string, string> = {
-  Hot: 'bg-gradient-to-r from-red-600 via-orange-500 to-orange-300',
-  Warm: 'bg-gradient-to-r from-amber-500 via-yellow-400 to-yellow-200',
-  Cold: 'bg-gradient-to-r from-slate-500 via-sky-500 to-cyan-300',
+  New: 'bg-gradient-to-r from-sky-500 via-cyan-400 to-blue-300',
+  Qualified: 'bg-gradient-to-r from-emerald-500 via-green-400 to-lime-300',
+  'Need More Information': 'bg-gradient-to-r from-amber-500 via-yellow-400 to-yellow-200',
   Rejected: 'bg-gradient-to-r from-zinc-700 via-red-900 to-red-500',
+  'Assigned To Sales': 'bg-gradient-to-r from-violet-500 via-fuchsia-400 to-pink-300',
 };
 
 const roleClass = {
@@ -348,75 +349,76 @@ const roleThemes: Record<DashboardKind, RoleTheme> = {
 
 const configs: Record<DashboardKind, DashboardConfig> = {
   lqt: {
-    title: 'LQT Dashboard',
+    title: 'LQT Inbox',
     eyebrow: 'Lead Qualification Team',
     route: '/lqt',
     roleLabel: 'LQT',
     theme: roleThemes.lqt,
     primaryColumn: 'Lead',
-    detailColumn: 'Requirement',
+    detailColumn: 'Qualification Work',
     stats: [
-      { label: 'New Leads', value: '38', helper: 'Awaiting first touch', icon: UserCheck, tone: 'blue' },
-      { label: 'Hot Leads', value: '12', helper: 'Ready for sales handoff', icon: Target, tone: 'red' },
-      { label: 'Follow-Ups', value: '17', helper: 'Scheduled this week', icon: Phone, tone: 'gold' },
-      { label: 'Meetings', value: '6', helper: 'Buyer calls booked', icon: Calendar, tone: 'green' },
+      { label: 'New Leads', value: '38', helper: 'Waiting in the inbox', icon: UserCheck, tone: 'blue' },
+      { label: 'Qualified', value: '18', helper: 'Ready for CRO review', icon: Target, tone: 'green' },
+      { label: 'Need More Info', value: '9', helper: 'Awaiting clarification', icon: Phone, tone: 'gold' },
+      { label: 'Assigned To Sales', value: '12', helper: 'Moved to CRO dashboard', icon: ArrowRight, tone: 'violet' },
     ],
     statuses: [
-      { label: 'Hot', value: 12, tone: 'red' },
-      { label: 'Warm', value: 18, tone: 'gold' },
-      { label: 'Cold', value: 9, tone: 'blue' },
+      { label: 'New', value: 12, tone: 'blue' },
+      { label: 'Qualified', value: 18, tone: 'green' },
+      { label: 'Need More Information', value: 9, tone: 'gold' },
       { label: 'Rejected', value: 4, tone: 'violet' },
+      { label: 'Assigned To Sales', value: 12, tone: 'violet' },
     ],
     modules: [
       { key: 'overview', label: 'Dashboard Overview', icon: BarChart3, metric: '82%', helper: 'Qualification SLA' },
-      { key: 'new-leads', label: 'New Leads', icon: UserCheck, metric: '38', helper: 'Unqualified inquiries' },
-      { key: 'assigned-leads', label: 'Assigned Leads', icon: Users, metric: '24', helper: 'Owned by LQT agents' },
-      { key: 'qualification', label: 'Lead Qualification', icon: CheckCircle2, metric: '31', helper: 'Profile checks' },
-      { key: 'lead-status', label: 'Lead Status', icon: SlidersHorizontal, metric: '4', helper: 'Hot/Warm/Cold/Rejected' },
+      { key: 'new-leads', label: 'LQT Inbox', icon: UserCheck, metric: '38', helper: 'Incoming enquiries' },
+      { key: 'qualification', label: 'Verify Requirement', icon: CheckCircle2, metric: '31', helper: 'Requirement checks' },
+      { key: 'lead-status', label: 'Validate Customer', icon: SlidersHorizontal, metric: '4', helper: 'Customer verification' },
+      { key: 'sales-assignment', label: 'Assign Sales Person', icon: ArrowRight, metric: '12', helper: 'CRO handoffs' },
+      { key: 'assigned-leads', label: 'Leads', icon: Users, metric: '24', helper: 'Assigned to CRO' },
+      { key: 'lead-history', label: 'Customer', icon: History, metric: '120', helper: 'Customer timeline' },
       { key: 'follow-ups', label: 'Follow-Ups', icon: Phone, metric: '17', helper: 'Pending calls' },
       { key: 'call-notes', label: 'Call Notes', icon: MessageSquare, metric: '64', helper: 'Logged conversations' },
       { key: 'meeting-scheduling', label: 'Meeting Scheduling', icon: Calendar, metric: '6', helper: 'Booked meetings' },
-      { key: 'sales-assignment', label: 'Lead Assignment to Sales', icon: ArrowRight, metric: '12', helper: 'Sales handoffs' },
-      { key: 'lead-history', label: 'Lead History', icon: History, metric: '120', helper: 'Timeline records' },
     ],
     rows: [
-      { account: 'Pioneer Infra', owner: 'Aarav', detail: 'Copper cathode, 12 MT', status: 'Hot', next: 'Call today 4:30 PM', value: 'High' },
-      { account: 'Kavya Electricals', owner: 'Meera', detail: 'Aluminium ingots, monthly supply', status: 'Warm', next: 'Send buyer profile', value: 'Medium' },
-      { account: 'Northline Works', owner: 'Rohan', detail: 'Steel coils for fabrication', status: 'Cold', next: 'Follow-up Friday', value: 'Low' },
-      { account: 'Vertex Components', owner: 'Isha', detail: 'Brass rods, export inquiry', status: 'Hot', next: 'Schedule sales meeting', value: 'High' },
+      { account: 'Pioneer Infra', owner: 'Aarav', detail: 'Copper cathode, 12 MT', status: 'New', next: 'Verify requirement', value: 'High' },
+      { account: 'Kavya Electricals', owner: 'Meera', detail: 'Aluminium ingots, monthly supply', status: 'Qualified', next: 'Validate customer profile', value: 'Medium' },
+      { account: 'Northline Works', owner: 'Rohan', detail: 'Steel coils for fabrication', status: 'Need More Information', next: 'Request missing details', value: 'Low' },
+      { account: 'Vertex Components', owner: 'Isha', detail: 'Brass rods, export inquiry', status: 'Assigned To Sales', next: 'Assign sales person', value: 'High' },
     ],
     activity: [
-      'Pioneer Infra marked Hot after budget confirmation',
-      'Vertex Components assigned to Sales queue',
-      'Kavya Electricals call notes updated',
-      'Northline Works follow-up moved to Friday',
+      'Pioneer Infra entered LQT inbox for verification',
+      'Vertex Components assigned to CRO queue',
+      'Kavya Electricals customer validation updated',
+      'Northline Works requested more information',
     ],
-    priorities: ['Call back Hot leads', 'Complete qualification checklist', 'Assign sales-ready leads', 'Update lead history'],
+    priorities: ['Verify requirement', 'Validate customer', 'Assign priority', 'Route to sales person'],
   },
   sales: {
-    title: 'Sales Dashboard',
-    eyebrow: 'Commercial Team',
-    route: '/sales',
-    roleLabel: 'Sales',
+    title: 'CRO Dashboard',
+    eyebrow: 'Customer Relationship Office',
+    route: '/cro',
+    roleLabel: 'CRO',
     theme: roleThemes.sales,
-    primaryColumn: 'Customer',
-    detailColumn: 'Commercial Work',
+    primaryColumn: 'Lead',
+    detailColumn: 'Customer Work',
     stats: [
-      { label: 'Assigned Leads', value: '29', helper: 'Active opportunities', icon: Users, tone: 'blue' },
-      { label: 'Open RFQs', value: '14', helper: 'Awaiting pricing', icon: ClipboardList, tone: 'gold' },
+      { label: 'Leads', value: '29', helper: 'Assigned to CRO', icon: Users, tone: 'blue' },
+      { label: 'Customers', value: '14', helper: 'Active accounts', icon: Briefcase, tone: 'gold' },
       { label: 'Quotations', value: '9', helper: 'Sent this week', icon: FileText, tone: 'green' },
       { label: 'Orders', value: '5', helper: 'In confirmation', icon: Package, tone: 'violet' },
     ],
     statuses: [
-      { label: 'Assigned', value: 29, tone: 'blue' },
-      { label: 'RFQ', value: 14, tone: 'gold' },
+      { label: 'Leads', value: 29, tone: 'blue' },
+      { label: 'Customer', value: 14, tone: 'gold' },
       { label: 'Negotiation', value: 8, tone: 'violet' },
       { label: 'Converted', value: 5, tone: 'green' },
     ],
     modules: [
       { key: 'overview', label: 'Dashboard Overview', icon: BarChart3, metric: '74%', helper: 'Conversion health' },
-      { key: 'assigned-leads', label: 'Assigned Leads', icon: Users, metric: '29', helper: 'Sales-owned leads' },
-      { key: 'customer-management', label: 'Customer Management', icon: Briefcase, metric: '46', helper: 'Managed accounts' },
+      { key: 'assigned-leads', label: 'Leads', icon: Users, metric: '29', helper: 'Assigned leads' },
+      { key: 'customer-management', label: 'Customer', icon: Briefcase, metric: '46', helper: 'Managed accounts' },
       { key: 'rfq-management', label: 'RFQ Management', icon: ClipboardList, metric: '14', helper: 'Open RFQs' },
       { key: 'quotation-management', label: 'Quotation Management', icon: FileText, metric: '9', helper: 'Live quotes' },
       { key: 'negotiation-tracking', label: 'Negotiation Tracking', icon: TrendingUp, metric: '8', helper: 'In negotiation' },
@@ -693,13 +695,13 @@ function StatCard({ stat }: { stat: Metric }) {
 
 function StatusChip({ status }: { status: string }) {
   const tone: Tone =
-    status === 'Hot' || status === 'At Risk'
+    status === 'Hot' || status === 'At Risk' || status === 'Rejected'
       ? 'red'
-      : status === 'Warm' || status === 'RFQ' || status === 'Requested'
+      : status === 'Warm' || status === 'RFQ' || status === 'Requested' || status === 'Need More Information'
         ? 'gold'
-        : status === 'Approved' || status === 'Order'
+        : status === 'Approved' || status === 'Order' || status === 'Qualified' || status === 'Assigned To Sales' || status === 'New'
           ? 'green'
-          : status === 'Negotiation'
+        : status === 'Negotiation'
             ? 'violet'
             : 'blue';
   return <span className={`rounded-full border px-2.5 py-1 text-xs font-semibold ${toneClass[tone].chip}`}>{status}</span>;
@@ -1258,7 +1260,7 @@ function ProcessWorkspace({
   onOpenForm,
   onOpenNewForm,
 }: WorkspaceProps) {
-  const formButtonLabel = kind === 'sales' ? 'Open quotation form' : kind === 'procurement' ? 'Open price form' : 'Open form';
+  const formButtonLabel = kind === 'sales' ? 'Open CRO form' : kind === 'procurement' ? 'Open price form' : 'Open form';
   return (
     <Panel>
       <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
@@ -1287,7 +1289,7 @@ function ProcessWorkspace({
       {kind === 'sales' || kind === 'procurement' ? (
         <div className={`mt-5 rounded-2xl border ${roleClass.borderSoft} ${roleClass.inner} p-4`}>
           <p className="text-xs uppercase tracking-[0.18em] text-zinc-500">
-            {kind === 'sales' ? 'Sales quotation form' : 'Procurement price form'}
+            {kind === 'sales' ? 'CRO quotation form' : 'Procurement price form'}
           </p>
           <p className="mt-2 text-sm text-zinc-300">
             {kind === 'sales'
@@ -1955,9 +1957,9 @@ export function OperationsDashboardPage({ kind }: { kind: DashboardKind }) {
     kind === 'lqt' && websiteLeadStats
       ? [
           { ...config.stats[0], label: 'Total Inquiries', value: String(websiteLeadStats.totalInquiries), helper: 'Website lead capture' },
-          { ...config.stats[1], label: 'Qualified Leads', value: String(websiteLeadStats.qualifiedLeads), helper: 'Validated by qualification team' },
-          { ...config.stats[2], label: 'Sales Assigned', value: String(websiteLeadStats.salesAssigned), helper: 'Routed to executives' },
-          { ...config.stats[3], label: 'Orders Won', value: String(websiteLeadStats.ordersWon), helper: `${websiteLeadStats.conversionRate}% conversion rate` },
+          { ...config.stats[1], label: 'Qualified', value: String(websiteLeadStats.qualifiedLeads), helper: 'Validated and ready' },
+          { ...config.stats[2], label: 'Need More Info', value: String(websiteLeadStats.needMoreInformation), helper: 'Awaiting customer response' },
+          { ...config.stats[3], label: 'Assigned To Sales', value: String(websiteLeadStats.assignedToSales), helper: 'Routed to CRO' },
         ]
       : config.stats;
 
