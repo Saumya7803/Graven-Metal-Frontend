@@ -43,7 +43,7 @@ export function AboutPage() {
 
           <div className="relative z-10 mx-auto flex max-w-[1600px] flex-col px-4 py-6 sm:px-6 lg:min-h-[calc(100svh-121px)] lg:px-8">
             <div className="grid flex-1 gap-8 lg:grid-cols-[1.05fr_0.95fr] lg:items-stretch">
-              <div className="flex flex-col justify-center py-8 lg:min-h-[74vh] lg:py-0 lg:pl-8 xl:pl-16">
+              <div className="flex flex-col items-center justify-center py-8 text-center lg:min-h-[74vh] lg:py-0 lg:pr-10 xl:pr-16">
                 <p className="text-sm text-zinc-500">Home / About Us</p>
                 <p className="mt-6 text-xs font-bold uppercase tracking-[0.22em] text-gold">About Graven Metal</p>
                 <h1 className="mt-4 max-w-[10ch] text-4xl font-extrabold leading-[1.05] text-white sm:text-5xl lg:text-6xl xl:text-[4.75rem]">
@@ -57,7 +57,7 @@ export function AboutPage() {
                 </p>
                 <p className="mt-4 text-sm font-medium text-zinc-400">Trusted by industries worldwide.</p>
 
-                <div className="mt-7 grid max-w-2xl grid-cols-2 gap-3">
+                <div className="mt-7 grid w-full max-w-2xl grid-cols-2 gap-3">
                   {heroStats.map((stat) => {
                     const Icon = stat.icon;
                     return (
