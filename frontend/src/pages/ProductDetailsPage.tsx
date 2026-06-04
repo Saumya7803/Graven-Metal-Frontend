@@ -353,7 +353,7 @@ export function ProductDetailsPage() {
               Add to Enquiry
             </button>
             <a
-              href="https://wa.me/12125550148"
+              href="https://wa.me/917905350134"
               target="_blank"
               rel="noreferrer"
               className="inline-flex items-center justify-center gap-2 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm font-semibold text-emerald-300 transition hover:border-emerald-400/60 hover:bg-emerald-500/15"
