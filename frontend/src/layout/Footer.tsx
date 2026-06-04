@@ -60,8 +60,8 @@ export function Footer() {
             <p className="w-fit rounded px-1 py-0.5">8/61, Sector-8</p>
             <p className="w-fit rounded px-1 py-0.5">Jankipuram Extension</p>
             <p className="w-fit rounded px-1 py-0.5">Lucknow - 226021, India</p>
-            <a href="mailto:info@gravenautomation.com" className="gm-luxury-hover w-fit rounded px-1 py-0.5 hover:text-gold">
-              info@gravenautomation.com
+            <a href="mailto:info@gravenmetal.com" className="gm-luxury-hover w-fit rounded px-1 py-0.5 hover:text-gold">
+              info@gravenmetal.com
             </a>
             <a href="tel:+917905350134" className="gm-luxury-hover w-fit rounded px-1 py-0.5 hover:text-gold">
               +91 79053 50134
@@ -75,8 +75,8 @@ export function Footer() {
             <p className="w-fit rounded px-1 py-0.5">7/25, Tower F, 2nd Floor</p>
             <p className="w-fit rounded px-1 py-0.5">Kirti Nagar</p>
             <p className="w-fit rounded px-1 py-0.5">New Delhi - 110015, India</p>
-            <a href="mailto:info@gravenautomation.com" className="gm-luxury-hover w-fit rounded px-1 py-0.5 hover:text-gold">
-              info@gravenautomation.com
+            <a href="mailto:info@gravenmetal.com" className="gm-luxury-hover w-fit rounded px-1 py-0.5 hover:text-gold">
+              info@gravenmetal.com
             </a>
             <a href="tel:+917905350134" className="gm-luxury-hover w-fit rounded px-1 py-0.5 hover:text-gold">
               +91 79053 50134

@@ -41,16 +41,6 @@ function getUnitPrice(product: ApiProduct) {
   ) || 0;
 }
 
-function formatMoney(currency: string | undefined, value: number) {
-  const normalized = (currency || 'USD').toUpperCase();
-  const locale = normalized === 'INR' ? 'en-IN' : 'en-US';
-  return new Intl.NumberFormat(locale, {
-    style: 'currency',
-    currency: normalized,
-    maximumFractionDigits: value % 1 === 0 ? 0 : 2,
-  }).format(value);
-}
-
 const features = ['100% Purity Guaranteed', 'Certified & Hallmarked', 'Secure Global Delivery', 'Best Market Pricing'];
 
 export function ProductDetailsPage() {
@@ -105,15 +95,14 @@ export function ProductDetailsPage() {
   const selectedFallbackImage = getProductFallbackImage(categoryName);
   const stockLabel =
     product?.inStock === false ? 'Out of stock' : product?.stockQty ? `In stock (${product.stockQty}+ units)` : 'In stock';
-  const pricingDisplay = `${formatMoney(product?.currency, unitPrice)} / ${unitLabel}`;
   const detailRows = [
     ['Category', categoryName || 'Metal'],
     ['Grade', product?.unitType || 'Standard'],
-    ['Size', product?.weightPerUnit ? `${product.weightPerUnit} ${product.weightUnit || product.unit || 'unit'}` : 'As per requirement'],
+    ['Size', product?.weightPerUnit ? 'As per requirement' : 'As per requirement'],
     ['Length', product?.unit || 'As per size'],
-    ['Weight', product?.weightPerUnit ? `${product.weightPerUnit} ${product.weightUnit || 'kg'}` : 'As per order'],
+    ['Weight', 'As per order'],
     ['Stock Availability', stockLabel],
-    ['MOQ', product?.moq ? `${product.moq} ${product.unitType || product.unit || 'unit'}` : 'On request'],
+    ['MOQ', 'On request'],
   ];
   const productTabs = [
     { key: 'description', label: 'Description', icon: MessageSquareMore },
@@ -151,8 +140,9 @@ export function ProductDetailsPage() {
           offers: {
             '@type': 'Offer',
             priceCurrency: product.currency || 'USD',
-            price: unitPrice,
             availability: 'https://schema.org/InStock',
+            price: 0,
+            description: 'Request for quote only',
           },
         }}
       />
@@ -172,7 +162,7 @@ export function ProductDetailsPage() {
                 />
               ) : null}
               <div className="absolute left-4 top-4 rounded-full border border-gold/25 bg-black/40 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-gold">
-                Live Product Details
+                Quote Only
               </div>
             </div>
           </div>
@@ -296,7 +286,7 @@ export function ProductDetailsPage() {
           <div className="mt-5 flex flex-wrap items-center gap-2">
             <span className="inline-flex items-center gap-2 rounded-full border border-gold/20 bg-gold/10 px-3 py-1 text-xs font-semibold text-gold">
               <Star size={12} fill="currentColor" />
-              Live Price
+              Request for Quote
             </span>
             <span className="inline-flex items-center gap-2 rounded-full border border-emerald-400/25 bg-emerald-400/10 px-3 py-1 text-xs font-semibold text-emerald-300">
               {product.inStock === false ? 'Out of Stock' : 'In Stock'}
@@ -304,15 +294,13 @@ export function ProductDetailsPage() {
           </div>
 
           <div className="mt-5 border-y border-white/10 py-4">
-            <p className="text-xs uppercase tracking-[0.18em] text-zinc-500">Unit Price</p>
+            <p className="text-xs uppercase tracking-[0.18em] text-zinc-500">Quote Status</p>
             <div className="mt-2 flex flex-wrap items-end justify-between gap-4">
               <div>
-                <p className="text-3xl font-extrabold text-gold sm:text-4xl">{pricingDisplay}</p>
-                <p className="mt-1 text-xs text-zinc-500">Inclusive of all taxes and packaging where applicable</p>
+                <p className="text-3xl font-extrabold text-gold sm:text-4xl">Request for Quote</p>
+                <p className="mt-1 text-xs text-zinc-500">Email us for pricing and availability. We reply with a custom quote.</p>
               </div>
-              <div className="rounded-full border border-gold/15 bg-black/20 px-3 py-1 text-xs font-semibold text-zinc-300">
-                MOQ {product.moq ? `${product.moq} ${unitLabel}` : 'On request'}
-              </div>
+              <div className="rounded-full border border-gold/15 bg-black/20 px-3 py-1 text-xs font-semibold text-zinc-300">MOQ On request</div>
             </div>
           </div>
 
@@ -400,8 +388,8 @@ export function ProductDetailsPage() {
               </div>
             </div>
             <div className="mt-4 flex items-center justify-between gap-3 border-t border-white/5 pt-4">
-              <span className="text-sm font-medium text-zinc-300">Total Estimate</span>
-              <span className="text-2xl font-semibold text-white">{formatMoney(product.currency, totalPrice)}</span>
+              <span className="text-sm font-medium text-zinc-300">Pricing</span>
+              <span className="text-2xl font-semibold text-white">Request for Quote</span>
             </div>
           </div>
 

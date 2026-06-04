@@ -6,7 +6,7 @@ export const companyDetails = {
   founded: 2022,
   headquarters: '8/61, Sector-8, Jankipuram Extension, Lucknow-226021, India',
   indiaOffice: '8/61, Sector-8, Jankipuram Extension, Lucknow-226021, India',
-  email: 'info@gravenautomation.com',
+  email: 'info@gravenmetal.com',
   phone: '+9179053 50134',
   supportPhone: '+9179053 50134',
   certifications: ['Industrial Automation Solutions', 'International Spare Parts Supply', 'Process Optimization', 'Quick Technical Support'],
