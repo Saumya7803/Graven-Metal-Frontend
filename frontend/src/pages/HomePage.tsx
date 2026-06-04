@@ -12,7 +12,6 @@ import {
   Globe2,
   PackageCheck,
   ShieldCheck,
-  TrendingUp,
   Truck,
   UserRound,
   X,
@@ -21,8 +20,6 @@ import { Link } from 'react-router-dom';
 import { BrandLogo } from '../components/BrandLogo';
 import { SEO } from '../components/seo/SEO';
 import { useCustomerAuth } from '../components/auth/AuthProvider';
-import { publicApi } from '../lib/publicApi';
-import type { ApiProduct } from '../lib/publicApi';
 
 const categories = [
   { name: 'Copper', image: '/imgs/coper.png', note: 'Wire, rods, cathodes, and conductive stock' },
@@ -55,55 +52,6 @@ const navLinks = [
   ['Contact Us', '/contact'],
 ] as const;
 
-const fallbackMarketRows = [
-  { metal: 'Copper 1Kg', price: '$805', move: '+1.10%', positive: true },
-  { metal: 'Steel Coil', price: '$56,900', move: '+0.43%', positive: true },
-  { metal: 'Aluminium 1Kg', price: '$225', move: '-0.10%', positive: false },
-];
-
-const weightUnitToKg: Record<string, number> = {
-  g: 0.001,
-  gram: 0.001,
-  grams: 0.001,
-  kg: 1,
-  kilogram: 1,
-  kilograms: 1,
-  lb: 0.45359237,
-  lbs: 0.45359237,
-  pound: 0.45359237,
-  pounds: 0.45359237,
-  oz: 0.028349523125,
-  ounce: 0.028349523125,
-  ounces: 0.028349523125,
-  ton: 1000,
-  tonne: 1000,
-  t: 1000,
-};
-
-function getWeightMultiplier(weightUnit?: string) {
-  return weightUnit ? weightUnitToKg[weightUnit.toLowerCase()] || 1 : 1;
-}
-
-function getUnitLabel(product: ApiProduct) {
-  return product.unitType || product.unit || 'unit';
-}
-
-function getUnitPrice(product: ApiProduct) {
-  return (product.unitPrice ?? product.price * (product.weightPerUnit ?? 1) * getWeightMultiplier(product.weightUnit || product.unit)) || 0;
-}
-
-function toMarketRow(product: ApiProduct) {
-  const price = getUnitPrice(product);
-  const hash = Math.abs([...product.name].reduce((acc, char) => acc + char.charCodeAt(0), 0));
-  const move = Number((((hash % 240) / 100) - 1.2).toFixed(2));
-  return {
-    metal: `${product.name} ${getUnitLabel(product)}`,
-    price: `$${price.toLocaleString(undefined, { maximumFractionDigits: price > 1000 ? 0 : 2 })}`,
-    move: `${move >= 0 ? '+' : ''}${move.toFixed(2)}%`,
-    positive: move >= 0,
-  };
-}
-
 const capabilities = [
   {
     title: 'Verified sourcing',
@@ -133,27 +81,9 @@ export function HomePage() {
   const [showQuotePrompt, setShowQuotePrompt] = useState(false);
   const [quotePromptDismissed, setQuotePromptDismissed] = useState(false);
   const [portalTarget, setPortalTarget] = useState<HTMLElement | null>(null);
-  const [marketRows, setMarketRows] = useState(fallbackMarketRows);
 
   useEffect(() => {
     setPortalTarget(document.body);
-  }, []);
-
-  useEffect(() => {
-    let active = true;
-    publicApi
-      .getProducts()
-      .then((products) => {
-        if (!active || products.length === 0) return;
-        setMarketRows(products.slice(0, 3).map(toMarketRow));
-      })
-      .catch(() => {
-        if (active) setMarketRows(fallbackMarketRows);
-      });
-
-    return () => {
-      active = false;
-    };
   }, []);
 
   useEffect(() => {
@@ -294,8 +224,8 @@ export function HomePage() {
                 </div>
               </div>
 
-              <div className="grid flex-1 items-center gap-8 py-10 lg:grid-cols-[minmax(0,1fr)_360px] lg:py-12">
-                <div className="w-full max-w-[700px]">
+              <div className="grid flex-1 items-center gap-8 py-10 lg:grid-cols-1 lg:py-12">
+                <div className="w-full max-w-[760px] lg:mx-auto">
                   <p className="inline-flex items-center gap-2 border-l-2 border-gold pl-3 text-xs font-semibold uppercase tracking-[0.2em] text-champagne">
                     Industrial metal and automation supply
                   </p>
@@ -341,40 +271,6 @@ export function HomePage() {
                   </div>
                 </div>
 
-                <div className="hidden lg:block">
-                  <div className="rounded-md border border-gold/20 bg-[#061018]/88 p-4 shadow-halo backdrop-blur">
-                    <div className="flex items-center justify-between border-b border-white/10 pb-3">
-                      <div>
-                        <p className="text-[11px] uppercase tracking-[0.18em] text-zinc-500">Market desk</p>
-                        <h2 className="mt-1 text-lg font-semibold text-white">Live snapshot</h2>
-                      </div>
-                      <span className="grid h-9 w-9 place-items-center rounded border border-gold/30 bg-gold/10 text-gold">
-                        <TrendingUp size={17} />
-                      </span>
-                    </div>
-
-                    <div className="mt-2 divide-y divide-white/10">
-                      {marketRows.map((row) => (
-                        <div key={row.metal} className="grid grid-cols-[1fr_auto_auto] items-center gap-3 py-3 text-sm">
-                          <span className="font-semibold text-zinc-200">{row.metal}</span>
-                          <span className="text-zinc-300">{row.price}</span>
-                          <span className={row.positive ? 'text-emerald-400' : 'text-red-400'}>{row.move}</span>
-                        </div>
-                      ))}
-                    </div>
-
-                    <div className="mt-4 grid grid-cols-2 gap-2">
-                      <div className="border border-white/10 bg-black/20 p-3">
-                        <p className="text-xl font-bold text-gold">25+</p>
-                        <p className="mt-1 text-xs text-zinc-400">delivery countries</p>
-                      </div>
-                      <div className="border border-white/10 bg-black/20 p-3">
-                        <p className="text-xl font-bold text-gold">500+</p>
-                        <p className="mt-1 text-xs text-zinc-400">supplier network</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
               </div>
             </div>
           </section>
