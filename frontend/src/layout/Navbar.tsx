@@ -71,7 +71,7 @@ export function Navbar() {
           id="primary-nav"
           className={`${
             open ? 'translate-x-0' : 'translate-x-full'
-          } fixed right-0 top-0 z-50 flex h-screen w-[84%] max-w-[336px] flex-col gap-1 border-l border-gold/20 bg-[#070b10] p-6 shadow-halo transition-transform duration-300 md:static md:h-auto md:w-auto md:max-w-none md:translate-x-0 md:flex-row md:items-center md:gap-2 md:border-0 md:bg-transparent md:p-0 md:shadow-none`}
+          } fixed right-0 top-0 z-50 flex h-[100dvh] w-[86%] max-w-[336px] flex-col gap-1 overflow-y-auto border-l border-gold/20 bg-[#070b10] p-5 shadow-halo transition-transform duration-300 md:static md:h-auto md:w-auto md:max-w-none md:translate-x-0 md:flex-row md:items-center md:gap-2 md:overflow-visible md:border-0 md:bg-transparent md:p-0 md:shadow-none`}
         >
           <p className="mb-4 font-display text-lg text-white md:hidden">Navigation</p>
           {navLinks.map((link) => (
@@ -80,7 +80,7 @@ export function Navbar() {
               to={link.to}
               onClick={() => setOpen(false)}
               className={({ isActive }) =>
-                `relative rounded-md px-2.5 py-2 text-[11px] uppercase tracking-[0.2em] ${
+                `relative rounded-md px-2.5 py-3 text-[11px] uppercase tracking-[0.2em] md:py-2 ${
                   isActive
                     ? 'bg-gold/10 text-gold md:bg-transparent md:after:absolute md:after:bottom-0 md:after:left-2 md:after:right-2 md:after:h-px md:after:bg-gradient-to-r md:after:from-transparent md:after:via-gold md:after:to-transparent'
                     : 'text-zinc-300 hover:text-champagne md:text-zinc-400'
@@ -93,7 +93,7 @@ export function Navbar() {
           <Link
             to="/quote-request"
             onClick={() => setOpen(false)}
-            className="mt-3 inline-flex items-center justify-center rounded-md bg-gold-cta px-3.5 py-2 text-xs font-semibold text-black shadow-gold transition hover:brightness-110 md:mt-0 md:ml-1"
+            className="mt-3 inline-flex w-full items-center justify-center rounded-md bg-gold-cta px-3.5 py-3 text-xs font-semibold text-black shadow-gold transition hover:brightness-110 md:mt-0 md:ml-1 md:w-auto md:py-2"
           >
             Request Quote
           </Link>
@@ -102,7 +102,7 @@ export function Navbar() {
               <Link
                 to="/account"
                 onClick={() => setOpen(false)}
-                className="inline-flex min-w-0 items-center justify-center gap-2 rounded-md border border-gold/25 bg-[#0a121b] px-3 py-2 text-xs font-semibold text-gold hover:border-gold/50 hover:text-champagne"
+                className="inline-flex min-w-0 flex-1 items-center justify-center gap-2 rounded-md border border-gold/25 bg-[#0a121b] px-3 py-3 text-xs font-semibold text-gold hover:border-gold/50 hover:text-champagne md:flex-none md:py-2"
               >
                 <UserRound size={15} />
                 <span className="max-w-[120px] truncate">{user?.name || 'Account'}</span>
@@ -124,7 +124,7 @@ export function Navbar() {
             <Link
               to="/login"
               onClick={() => setOpen(false)}
-              className="mt-2 inline-flex items-center justify-center gap-2 rounded-md border border-gold/25 bg-[#0a121b] px-3.5 py-2 text-xs font-semibold text-gold hover:border-gold/50 hover:text-champagne md:mt-0 md:ml-1"
+              className="mt-2 inline-flex w-full items-center justify-center gap-2 rounded-md border border-gold/25 bg-[#0a121b] px-3.5 py-3 text-xs font-semibold text-gold hover:border-gold/50 hover:text-champagne md:mt-0 md:ml-1 md:w-auto md:py-2"
             >
               <UserRound size={15} />
               Login

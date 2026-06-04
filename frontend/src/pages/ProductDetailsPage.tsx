@@ -148,8 +148,8 @@ export function ProductDetailsPage() {
       />
       <p className="text-sm text-zinc-500">Home / Products / {categoryName || 'Product'} / {product.name}</p>
       <section className="grid gap-4 xl:grid-cols-[1.08fr_0.92fr]">
-        <div className="rounded-[1.75rem] border border-gold/15 bg-[#070c12] p-3 shadow-halo sm:p-4">
-          <div className="overflow-hidden rounded-[1.5rem] border border-white/10 bg-gradient-to-br from-zinc-900 via-black to-zinc-900">
+        <div className="rounded-xl border border-gold/15 bg-[#070c12] p-3 shadow-halo sm:rounded-[1.75rem] sm:p-4">
+          <div className="overflow-hidden rounded-lg border border-white/10 bg-gradient-to-br from-zinc-900 via-black to-zinc-900 sm:rounded-[1.5rem]">
             <div className="relative aspect-[1.05/1] w-full">
               {selectedImage ? (
                 <img
@@ -167,7 +167,7 @@ export function ProductDetailsPage() {
             </div>
           </div>
 
-          <div className="mt-3 grid grid-cols-5 gap-2">
+          <div className="mt-3 grid grid-cols-4 gap-2 sm:grid-cols-5">
             {galleryImages.map((image, index) => (
               <button
                 key={`${image}-${index}`}
@@ -177,12 +177,12 @@ export function ProductDetailsPage() {
                   activeImage === index ? 'border-gold shadow-gold' : 'border-white/10 opacity-80 hover:opacity-100'
                 }`}
               >
-                <img src={image} alt={`${product.name} gallery ${index + 1}`} className="h-20 w-full object-cover" />
+                <img src={image} alt={`${product.name} gallery ${index + 1}`} className="h-16 w-full object-cover sm:h-20" />
               </button>
             ))}
           </div>
 
-          <div className="mt-4 overflow-hidden rounded-[1.25rem] border border-white/10 bg-[#0a1017]">
+          <div className="mt-4 overflow-hidden rounded-xl border border-white/10 bg-[#0a1017] sm:rounded-[1.25rem]">
             <div className="flex flex-wrap gap-2 border-b border-white/10 px-3 pt-3">
               {productTabs.map((tab) => {
                 const Icon = tab.icon;
@@ -216,9 +216,9 @@ export function ProductDetailsPage() {
               {activeTab === 'specs' ? (
                 <div className="space-y-2">
                   {detailRows.map(([label, value]) => (
-                    <div key={label} className="grid grid-cols-[120px_1fr] gap-3 border-b border-white/8 pb-2 text-sm">
+                    <div key={label} className="grid gap-1 border-b border-white/8 pb-2 text-sm sm:grid-cols-[120px_1fr] sm:gap-3">
                       <p className="text-zinc-500">{label}</p>
-                      <p className="text-zinc-200">{value}</p>
+                      <p className="break-words text-zinc-200">{value}</p>
                     </div>
                   ))}
                 </div>
@@ -264,7 +264,7 @@ export function ProductDetailsPage() {
                     'Packing List',
                     'Commercial Invoice',
                   ].map((item) => (
-                    <div key={item} className="flex items-center justify-between rounded-xl border border-white/10 bg-black/20 px-3 py-3">
+                    <div key={item} className="flex flex-col gap-2 rounded-xl border border-white/10 bg-black/20 px-3 py-3 sm:flex-row sm:items-center sm:justify-between">
                       <div className="flex items-center gap-3">
                         <CheckCircle2 size={16} className="text-emerald-300" />
                         <p className="text-sm text-zinc-100">{item}</p>
@@ -278,7 +278,7 @@ export function ProductDetailsPage() {
           </div>
         </div>
 
-        <aside className="rounded-[1.75rem] border border-gold/15 bg-[#070c12] p-4 shadow-halo sm:p-5">
+        <aside className="rounded-xl border border-gold/15 bg-[#070c12] p-4 shadow-halo sm:rounded-[1.75rem] sm:p-5">
           <p className="text-xs uppercase tracking-[0.24em] text-gold">Home / Products / {categoryName || 'Metal'}</p>
           <h1 className="mt-2 font-display text-3xl text-white sm:text-4xl">{product.name}</h1>
           <p className="mt-2 text-sm text-zinc-400">{categoryName || 'Premium Grade'}</p>
@@ -295,7 +295,7 @@ export function ProductDetailsPage() {
 
           <div className="mt-5 border-y border-white/10 py-4">
             <p className="text-xs uppercase tracking-[0.18em] text-zinc-500">Quote Status</p>
-            <div className="mt-2 flex flex-wrap items-end justify-between gap-4">
+            <div className="mt-2 flex flex-col items-start gap-3 sm:flex-row sm:flex-wrap sm:items-end sm:justify-between sm:gap-4">
               <div>
                 <p className="text-3xl font-extrabold text-gold sm:text-4xl">Request for Quote</p>
                 <p className="mt-1 text-xs text-zinc-500">Email us for pricing and availability. We reply with a custom quote.</p>
@@ -308,7 +308,7 @@ export function ProductDetailsPage() {
             {detailRows.slice(0, 7).map(([label, value]) => (
               <div key={label} className="flex items-start justify-between gap-4 border-b border-white/8 pb-2 text-sm">
                 <span className="text-zinc-500">{label}</span>
-                <span className="max-w-[58%] text-right text-zinc-100">{value}</span>
+                <span className="max-w-[62%] break-words text-right text-zinc-100 sm:max-w-[58%]">{value}</span>
               </div>
             ))}
           </div>
@@ -362,7 +362,7 @@ export function ProductDetailsPage() {
             </a>
           </div>
 
-          <div className="mt-5 rounded-2xl border border-white/10 bg-black/20 p-4">
+          <div className="mt-5 rounded-xl border border-white/10 bg-black/20 p-4 sm:rounded-2xl">
             <div className="flex items-center justify-between gap-3">
               <span className="text-sm font-semibold text-white">Quantity</span>
               <div className="flex items-center gap-2">

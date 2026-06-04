@@ -38,15 +38,15 @@ export function AboutPage() {
         path="/about"
       />
       <MotionReveal>
-        <section className="relative min-h-[calc(100svh-121px)] overflow-hidden bg-[#04070b]">
+        <section className="relative overflow-hidden bg-[#04070b] lg:min-h-[calc(100svh-121px)]">
           <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(3,7,11,0.14)_0%,rgba(3,7,11,0.68)_60%,rgba(3,7,11,0.96)_100%)]" />
 
-          <div className="relative z-10 mx-auto flex min-h-[calc(100svh-121px)] max-w-[1600px] flex-col px-4 py-6 sm:px-6 lg:px-8">
+          <div className="relative z-10 mx-auto flex max-w-[1600px] flex-col px-4 py-6 sm:px-6 lg:min-h-[calc(100svh-121px)] lg:px-8">
             <div className="grid flex-1 gap-8 lg:grid-cols-[1.05fr_0.95fr] lg:items-stretch">
-              <div className="flex min-h-[44vh] flex-col justify-center lg:min-h-[74vh] lg:pl-8 xl:pl-16">
+              <div className="flex flex-col justify-center py-8 lg:min-h-[74vh] lg:py-0 lg:pl-8 xl:pl-16">
                 <p className="text-sm text-zinc-500">Home / About Us</p>
                 <p className="mt-6 text-xs font-bold uppercase tracking-[0.22em] text-gold">About Graven Metal</p>
-                <h1 className="mt-4 max-w-[10ch] text-4xl font-extrabold leading-[1.03] text-white sm:text-5xl lg:text-6xl xl:text-[4.75rem]">
+                <h1 className="mt-4 max-w-[10ch] text-4xl font-extrabold leading-[1.05] text-white sm:text-5xl lg:text-6xl xl:text-[4.75rem]">
                   Building Strength.
                   <br />
                   Delivering Trust.
@@ -57,7 +57,7 @@ export function AboutPage() {
                 </p>
                 <p className="mt-4 text-sm font-medium text-zinc-400">Trusted by industries worldwide.</p>
 
-                <div className="mt-7 grid max-w-2xl gap-3 sm:grid-cols-2">
+                <div className="mt-7 grid max-w-2xl grid-cols-2 gap-3">
                   {heroStats.map((stat) => {
                     const Icon = stat.icon;
                     return (
@@ -80,7 +80,7 @@ export function AboutPage() {
                 <div className="mt-7">
                   <Link
                     to="/products"
-                    className="inline-flex items-center gap-3 rounded-xl border border-gold/40 px-6 py-3 text-sm font-bold uppercase tracking-[0.18em] text-gold transition hover:bg-gold/10"
+                    className="inline-flex w-full items-center justify-center gap-3 rounded-xl border border-gold/40 px-6 py-3 text-sm font-bold uppercase tracking-[0.18em] text-gold transition hover:bg-gold/10 sm:w-auto"
                   >
                     Explore Products
                     <ArrowRight size={16} />
@@ -88,7 +88,7 @@ export function AboutPage() {
                 </div>
               </div>
 
-              <div className="relative min-h-[52vh] overflow-hidden lg:min-h-[74vh]">
+              <div className="relative min-h-[32vh] overflow-hidden sm:min-h-[42vh] lg:min-h-[74vh]">
                 <img
                   src="/imgs/about-page-logo.jpeg"
                   alt="Molten metal pouring in a foundry"

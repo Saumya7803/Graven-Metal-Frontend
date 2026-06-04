@@ -72,7 +72,7 @@ export function ContactPage() {
         path="/contact"
       />
       <MotionReveal>
-        <section className="relative min-h-[calc(100svh-121px)] overflow-hidden border-b border-gold/15 bg-[#050a0f]">
+        <section className="relative overflow-hidden border-b border-gold/15 bg-[#050a0f] lg:min-h-[calc(100svh-121px)]">
           <div className="absolute inset-0">
             <img
               src="/imgs/background.png"
@@ -84,10 +84,10 @@ export function ContactPage() {
             <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(3,7,11,0.18)_0%,rgba(3,7,11,0.58)_62%,rgba(3,7,11,0.94)_100%)]" />
           </div>
 
-          <div className="relative z-10 mx-auto grid min-h-[calc(100svh-121px)] max-w-7xl items-center gap-6 px-5 py-8 sm:px-7 md:px-10 lg:grid-cols-[0.86fr_1.14fr]">
+          <div className="relative z-10 mx-auto grid max-w-7xl items-start gap-6 px-4 py-8 sm:px-7 md:px-10 lg:min-h-[calc(100svh-121px)] lg:grid-cols-[0.86fr_1.14fr] lg:items-center">
             <div className="max-w-[520px]">
               <p className="text-sm text-zinc-500">Home / Contact Us</p>
-              <p className="mt-7 text-xs font-bold uppercase tracking-[0.18em] text-gold">Contact GRAVEN METAL</p>
+              <p className="mt-6 text-xs font-bold uppercase tracking-[0.18em] text-gold sm:mt-7">Contact GRAVEN METAL</p>
               <h1 className="mt-4 text-4xl font-extrabold leading-tight text-white sm:text-5xl md:text-6xl">
                 Get In Touch
               </h1>
@@ -96,16 +96,16 @@ export function ContactPage() {
               </p>
 
               <div className="mt-6 grid gap-3 text-sm">
-                <p className="rounded-lg border border-gold/15 bg-black/35 px-4 py-3 text-zinc-300 backdrop-blur-md">
+                <p className="break-words rounded-lg border border-gold/15 bg-black/35 px-4 py-3 text-zinc-300 backdrop-blur-md">
                   <span className="text-gold">Phone:</span> {companyDetails.phone}
                 </p>
-                <p className="rounded-lg border border-gold/15 bg-black/35 px-4 py-3 text-zinc-300 backdrop-blur-md">
+                <p className="break-words rounded-lg border border-gold/15 bg-black/35 px-4 py-3 text-zinc-300 backdrop-blur-md">
                   <span className="text-gold">Support:</span> {companyDetails.supportPhone}
                 </p>
-                <p className="rounded-lg border border-gold/15 bg-black/35 px-4 py-3 text-zinc-300 backdrop-blur-md">
+                <p className="break-words rounded-lg border border-gold/15 bg-black/35 px-4 py-3 text-zinc-300 backdrop-blur-md">
                   <span className="text-gold">Email:</span> {companyDetails.email}
                 </p>
-                <p className="rounded-lg border border-gold/15 bg-black/35 px-4 py-3 text-zinc-300 backdrop-blur-md">
+                <p className="break-words rounded-lg border border-gold/15 bg-black/35 px-4 py-3 text-zinc-300 backdrop-blur-md">
                   <span className="text-gold">Address:</span> {companyDetails.indiaOffice}
                 </p>
               </div>
@@ -114,7 +114,7 @@ export function ContactPage() {
                 href="https://wa.me/917905350134"
                 target="_blank"
                 rel="noreferrer"
-                className="mt-5 inline-flex rounded-md border border-emerald-500/40 bg-emerald-500/10 px-4 py-2 text-sm font-medium text-emerald-300 transition hover:bg-emerald-500/20"
+                className="mt-5 inline-flex w-full justify-center rounded-md border border-emerald-500/40 bg-emerald-500/10 px-4 py-3 text-sm font-medium text-emerald-300 transition hover:bg-emerald-500/20 sm:w-auto sm:py-2"
               >
                 WhatsApp Chat
               </a>

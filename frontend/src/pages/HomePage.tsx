@@ -160,11 +160,11 @@ export function HomePage() {
               <span className="rounded border border-white/15 bg-white/[0.04] px-3 py-2.5">Bulk purchase support</span>
               <span className="rounded border border-white/15 bg-white/[0.04] px-3 py-2.5">Quality-assured follow-up</span>
             </div>
-            <div className="mt-6 flex flex-wrap gap-3">
+            <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
               <Link
                 to="/quote-request"
                 onClick={closeQuotePrompt}
-                className="inline-flex items-center gap-2 rounded bg-gold-cta px-5 py-3 text-sm font-bold text-black shadow-gold hover:brightness-110"
+                className="inline-flex items-center justify-center gap-2 rounded bg-gold-cta px-5 py-3 text-sm font-bold text-black shadow-gold hover:brightness-110"
               >
                 Go to Request Quote <ArrowRight size={15} />
               </Link>
@@ -183,7 +183,7 @@ export function HomePage() {
         : null}
 
       <>
-          <section className="relative min-h-[600px] overflow-hidden bg-[#050b11] sm:min-h-[660px] lg:min-h-[calc(100svh-72px)]">
+          <section className="relative min-h-[560px] overflow-hidden bg-[#050b11] sm:min-h-[660px] lg:min-h-[calc(100svh-72px)]">
             <img
               src="/imgs/background.png"
               alt="Molten metal pouring"
@@ -193,10 +193,10 @@ export function HomePage() {
             <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.36)_0%,transparent_34%,rgba(0,0,0,0.48)_100%)]" />
             <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-[#03070b] to-transparent" />
 
-            <div className="relative z-10 mx-auto flex min-h-[600px] w-full max-w-7xl flex-col px-5 py-5 sm:min-h-[660px] sm:px-7 md:px-10 lg:min-h-[calc(100svh-72px)]">
+            <div className="relative z-10 mx-auto flex min-h-[560px] w-full max-w-7xl flex-col px-4 py-4 sm:min-h-[660px] sm:px-7 md:px-10 lg:min-h-[calc(100svh-72px)]">
               <div className="flex items-center justify-between gap-5">
                 <Link to="/" className="inline-flex items-center text-white">
-                  <BrandLogo className="h-10 sm:h-11" />
+                  <BrandLogo className="h-9 sm:h-11" />
                 </Link>
 
                 <nav className="hidden items-center gap-7 lg:flex">
@@ -217,19 +217,19 @@ export function HomePage() {
                   </Link>
                   <Link
                     to="/quote-request"
-                    className="inline-flex items-center gap-2 rounded bg-gold-cta px-4 py-2.5 text-xs font-bold text-black shadow-gold hover:brightness-110 sm:px-5"
+                    className="inline-flex items-center gap-2 rounded bg-gold-cta px-3 py-2.5 text-xs font-bold text-black shadow-gold hover:brightness-110 sm:px-5"
                   >
                     Request Quote <ArrowRight size={14} />
                   </Link>
                 </div>
               </div>
 
-              <div className="grid flex-1 items-center gap-8 py-10 lg:grid-cols-1 lg:py-12">
+              <div className="grid flex-1 items-center gap-8 py-8 lg:grid-cols-1 lg:py-12">
                 <div className="w-full max-w-[760px] lg:mx-auto">
-                  <p className="inline-flex items-center gap-2 border-l-2 border-gold pl-3 text-xs font-semibold uppercase tracking-[0.2em] text-champagne">
+                  <p className="inline-flex items-center gap-2 border-l-2 border-gold pl-3 text-[11px] font-semibold uppercase tracking-[0.16em] text-champagne sm:text-xs">
                     Industrial metal and automation supply
                   </p>
-                  <h1 className="mt-5 font-display text-[2.75rem] font-semibold leading-[1.04] text-white sm:text-[4rem] lg:text-[5.15rem]">
+                  <h1 className="mt-5 font-display text-4xl font-semibold leading-[1.06] text-white sm:text-[4rem] lg:text-[5.15rem]">
                     GRAVEN METAL
                     <span className="block text-gold">powers procurement.</span>
                   </h1>
@@ -238,7 +238,7 @@ export function HomePage() {
                     supply, responsive pricing, and reliable delivery.
                   </p>
 
-                  <div className="mt-8 grid max-w-[610px] grid-cols-2 gap-x-5 gap-y-4 sm:grid-cols-4">
+                  <div className="mt-7 grid max-w-[610px] grid-cols-2 gap-x-4 gap-y-4 sm:grid-cols-4 sm:gap-x-5">
                     {assurances.map((item) => {
                       const Icon = item.icon;
                       return (
@@ -255,16 +255,16 @@ export function HomePage() {
                     })}
                   </div>
 
-                  <div className="mt-8 flex flex-wrap gap-4">
+                  <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:gap-4">
                     <Link
                       to="/products"
-                      className="inline-flex items-center gap-2 rounded bg-gold-cta px-6 py-3.5 text-sm font-bold text-black shadow-gold hover:brightness-110"
+                      className="inline-flex items-center justify-center gap-2 rounded bg-gold-cta px-6 py-3.5 text-sm font-bold text-black shadow-gold hover:brightness-110 sm:w-auto"
                     >
                       Explore Metals <ArrowRight size={15} />
                     </Link>
                     <Link
                       to="/live-prices"
-                      className="inline-flex items-center rounded border border-gold/45 bg-black/20 px-6 py-3.5 text-sm font-bold text-white hover:border-gold"
+                      className="inline-flex items-center justify-center rounded border border-gold/45 bg-black/20 px-6 py-3.5 text-sm font-bold text-white hover:border-gold sm:w-auto"
                     >
                       View Live Prices
                     </Link>
@@ -276,7 +276,7 @@ export function HomePage() {
           </section>
 
           <section className="border-y border-[#172533] bg-[#050b11] px-4 py-9 sm:px-6 lg:px-10">
-            <div className="mx-auto grid max-w-7xl gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="mx-auto grid max-w-7xl grid-cols-2 gap-3 lg:grid-cols-4">
               {stats.map((item) => (
                 <div key={item.label} className="border border-[#172533] bg-[#060d13] px-5 py-5">
                   <p className="text-3xl font-extrabold text-gold">{item.value}</p>
@@ -370,7 +370,7 @@ export function HomePage() {
                 <img
                   src="/imgs/steel.png"
                   alt="Industrial metal stock"
-                  className="h-full min-h-[340px] w-full object-cover"
+                  className="h-full min-h-[260px] w-full object-cover sm:min-h-[340px]"
                   loading="lazy"
                   decoding="async"
                 />

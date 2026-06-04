@@ -77,16 +77,16 @@ export function QuoteRequestPage() {
               </div>
             ) : null}
 
-            <div className="mt-7 flex flex-wrap gap-3">
+            <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
               <a
                 href="#lead-capture-form"
-                className="inline-flex items-center gap-2 rounded bg-gold-cta px-5 py-3 text-sm font-bold text-black shadow-gold hover:brightness-110"
+                className="inline-flex items-center justify-center gap-2 rounded bg-gold-cta px-5 py-3 text-sm font-bold text-black shadow-gold hover:brightness-110"
               >
                 Submit Your Requirement <ArrowRight size={15} />
               </a>
               <Link
                 to="/products"
-                className="inline-flex items-center rounded border border-gold/35 bg-black/20 px-5 py-3 text-sm font-semibold text-gold hover:border-gold"
+                className="inline-flex items-center justify-center rounded border border-gold/35 bg-black/20 px-5 py-3 text-sm font-semibold text-gold hover:border-gold"
               >
                 View Products
               </Link>
