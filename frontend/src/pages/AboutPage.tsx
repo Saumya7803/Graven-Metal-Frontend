@@ -40,9 +40,6 @@ export function AboutPage() {
       <MotionReveal>
         <section className="relative min-h-[calc(100svh-121px)] overflow-hidden bg-[#04070b]">
           <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(3,7,11,0.14)_0%,rgba(3,7,11,0.68)_60%,rgba(3,7,11,0.96)_100%)]" />
-          <div className="absolute left-[2%] top-[9%] h-[88%] w-px rotate-[22deg] bg-gradient-to-b from-transparent via-gold/70 to-transparent" />
-          <div className="absolute left-[6%] top-[7%] h-[90%] w-px rotate-[22deg] bg-gradient-to-b from-transparent via-gold/45 to-transparent" />
-          <div className="absolute left-[10%] top-[5%] h-[92%] w-px rotate-[22deg] bg-gradient-to-b from-transparent via-gold/28 to-transparent" />
 
           <div className="relative z-10 mx-auto flex min-h-[calc(100svh-121px)] max-w-[1600px] flex-col px-4 py-6 sm:px-6 lg:px-8">
             <div className="grid flex-1 gap-8 lg:grid-cols-[0.95fr_1.05fr] lg:items-stretch">
