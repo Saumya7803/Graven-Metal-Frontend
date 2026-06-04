@@ -46,12 +46,12 @@ export function AboutPage() {
               <div className="flex flex-col items-center justify-center py-8 text-center lg:min-h-[74vh] lg:py-0 lg:pr-10 xl:pr-16">
                 <p className="text-sm text-zinc-500">Home / About Us</p>
                 <p className="mt-6 text-xs font-bold uppercase tracking-[0.22em] text-gold">About Graven Metal</p>
-                <h1 className="mt-4 max-w-[10ch] text-4xl font-extrabold leading-[1.05] text-white sm:text-5xl lg:text-6xl xl:text-[4.75rem]">
+                <h1 className="mx-auto mt-4 max-w-[10ch] text-4xl font-extrabold leading-[1.05] text-white sm:text-5xl lg:text-6xl xl:text-[4.75rem]">
                   Building Strength.
                   <br />
                   Delivering Trust.
                 </h1>
-                <p className="mt-6 max-w-xl text-base leading-8 text-zinc-300 sm:text-lg">
+                <p className="mx-auto mt-6 max-w-xl text-base leading-8 text-zinc-300 sm:text-lg">
                   Graven Metal is a leading global supplier of premium quality metals. We ensure 100% purity,
                   competitive pricing, and timely delivery.
                 </p>
@@ -61,10 +61,10 @@ export function AboutPage() {
                   {heroStats.map((stat) => {
                     const Icon = stat.icon;
                     return (
-                      <div
-                        key={stat.label}
-                        className="flex items-center gap-3 rounded-xl border border-white/10 bg-black/18 px-4 py-3"
-                      >
+                    <div
+                      key={stat.label}
+                      className="flex items-center gap-3 rounded-xl border border-white/10 bg-black/18 px-4 py-3 text-left"
+                    >
                         <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-gold/25 bg-gold/10 text-gold">
                           <Icon size={17} />
                         </span>
@@ -80,7 +80,7 @@ export function AboutPage() {
                 <div className="mt-7">
                   <Link
                     to="/products"
-                    className="inline-flex w-full items-center justify-center gap-3 rounded-xl border border-gold/40 px-6 py-3 text-sm font-bold uppercase tracking-[0.18em] text-gold transition hover:bg-gold/10 sm:w-auto"
+                    className="inline-flex items-center justify-center gap-3 rounded-xl border border-gold/40 px-6 py-3 text-sm font-bold uppercase tracking-[0.18em] text-gold transition hover:bg-gold/10"
                   >
                     Explore Products
                     <ArrowRight size={16} />
