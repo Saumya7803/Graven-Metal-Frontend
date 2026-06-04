@@ -42,8 +42,8 @@ export function AboutPage() {
           <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(3,7,11,0.14)_0%,rgba(3,7,11,0.68)_60%,rgba(3,7,11,0.96)_100%)]" />
 
           <div className="relative z-10 mx-auto flex min-h-[calc(100svh-121px)] max-w-[1600px] flex-col px-4 py-6 sm:px-6 lg:px-8">
-            <div className="grid flex-1 gap-8 lg:grid-cols-[0.95fr_1.05fr] lg:items-stretch">
-              <div className="flex min-h-[44vh] flex-col justify-center lg:min-h-[74vh]">
+            <div className="grid flex-1 gap-8 lg:grid-cols-[1.05fr_0.95fr] lg:items-stretch">
+              <div className="flex min-h-[44vh] flex-col justify-center lg:min-h-[74vh] lg:pl-8 xl:pl-16">
                 <p className="text-sm text-zinc-500">Home / About Us</p>
                 <p className="mt-6 text-xs font-bold uppercase tracking-[0.22em] text-gold">About Graven Metal</p>
                 <h1 className="mt-4 max-w-[10ch] text-4xl font-extrabold leading-[1.03] text-white sm:text-5xl lg:text-6xl xl:text-[4.75rem]">
