@@ -55,7 +55,7 @@ export function AboutPage() {
                 <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(4,7,11,0.08)_0%,rgba(4,7,11,0.3)_56%,rgba(4,7,11,0.82)_100%)]" />
               </div>
 
-              <div className="relative z-10 flex w-full max-w-[900px] flex-col items-center justify-center py-8 text-center lg:min-h-[74vh] lg:py-0">
+              <div className="relative z-10 flex w-full max-w-[900px] flex-col items-center justify-center py-8 text-center lg:min-h-[74vh] lg:-translate-x-6 lg:py-0 xl:-translate-x-10">
                 <p className="text-sm text-zinc-500">Home / About Us</p>
                 <p className="mt-6 text-xs font-bold uppercase tracking-[0.22em] text-gold">About Graven Metal</p>
                 <h1 className="mx-auto mt-4 max-w-[10ch] text-4xl font-extrabold leading-[1.05] text-white sm:text-5xl lg:text-6xl xl:text-[4.75rem]">
