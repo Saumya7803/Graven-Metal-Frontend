@@ -42,34 +42,22 @@ export function AboutPage() {
           <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(3,7,11,0.14)_0%,rgba(3,7,11,0.68)_60%,rgba(3,7,11,0.96)_100%)]" />
 
           <div className="relative z-10 mx-auto flex max-w-[1600px] flex-col px-4 py-6 sm:px-6 lg:min-h-[calc(100svh-121px)] lg:px-8">
-            <div className="relative flex flex-1 items-center justify-center">
-              <div className="absolute inset-y-0 right-0 hidden w-[46%] -translate-x-6 overflow-hidden lg:block xl:-translate-x-10">
-                <img
-                  src="/imgs/about-page-logo.jpeg"
-                  alt="Molten metal pouring in a foundry"
-                  className="absolute inset-0 h-full w-full object-cover object-[72%_center]"
-                  decoding="async"
-                  fetchPriority="high"
-                />
-                <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(4,7,11,0.98)_0%,rgba(4,7,11,0.68)_38%,rgba(4,7,11,0.12)_68%,rgba(4,7,11,0)_100%)]" />
-                <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(4,7,11,0.08)_0%,rgba(4,7,11,0.3)_56%,rgba(4,7,11,0.82)_100%)]" />
-              </div>
-
-              <div className="relative z-10 flex w-full max-w-[900px] flex-col items-center justify-center py-8 text-center lg:min-h-[74vh] lg:-translate-x-6 lg:py-0 xl:-translate-x-10">
+            <div className="relative flex flex-1 flex-col lg:grid lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)] lg:items-stretch lg:gap-8">
+              <div className="relative z-10 flex w-full flex-col items-center justify-center py-8 text-center lg:min-h-[74vh] lg:items-start lg:justify-start lg:py-0 lg:pl-20 lg:text-left xl:pl-32 2xl:pl-40">
                 <p className="text-sm text-zinc-500">Home / About Us</p>
                 <p className="mt-6 text-xs font-bold uppercase tracking-[0.22em] text-gold">About Graven Metal</p>
-                <h1 className="mx-auto mt-4 max-w-[10ch] text-4xl font-extrabold leading-[1.05] text-white sm:text-5xl lg:text-6xl xl:text-[4.75rem]">
+                <h1 className="mx-auto mt-4 max-w-[10ch] text-4xl font-extrabold leading-[1.05] text-white sm:text-5xl lg:mx-0 lg:max-w-[9ch] lg:text-6xl xl:text-[4.75rem]">
                   Building Strength.
                   <br />
                   Delivering Trust.
                 </h1>
-                <p className="mx-auto mt-6 max-w-xl text-base leading-8 text-zinc-300 sm:text-lg">
+                <p className="mx-auto mt-6 max-w-xl text-base leading-8 text-zinc-300 sm:text-lg lg:mx-0">
                   Graven Metal is a leading global supplier of premium quality metals. We ensure 100% purity,
                   competitive pricing, and timely delivery.
                 </p>
                 <p className="mt-4 text-sm font-medium text-zinc-400">Trusted by industries worldwide.</p>
 
-                <div className="mt-7 grid w-full max-w-2xl grid-cols-2 gap-3">
+                <div className="mt-7 grid w-full max-w-2xl grid-cols-2 gap-3 lg:mx-0">
                   {heroStats.map((stat) => {
                     const Icon = stat.icon;
                     return (
@@ -98,6 +86,18 @@ export function AboutPage() {
                     <ArrowRight size={16} />
                   </Link>
                 </div>
+              </div>
+
+              <div className="relative mt-8 h-[32vh] overflow-hidden sm:h-[42vh] lg:mt-0 lg:block lg:min-h-[74vh]">
+                <img
+                  src="/imgs/about-page-logo.jpeg"
+                  alt="Molten metal pouring in a foundry"
+                  className="absolute inset-0 h-full w-full object-cover object-[72%_center]"
+                  decoding="async"
+                  fetchPriority="high"
+                />
+                <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(4,7,11,0.98)_0%,rgba(4,7,11,0.68)_38%,rgba(4,7,11,0.12)_68%,rgba(4,7,11,0)_100%)]" />
+                <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(4,7,11,0.08)_0%,rgba(4,7,11,0.3)_56%,rgba(4,7,11,0.82)_100%)]" />
               </div>
             </div>
 
