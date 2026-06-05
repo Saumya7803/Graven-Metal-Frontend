@@ -43,11 +43,11 @@ export function AboutPage() {
 
           <div className="relative z-10 mx-auto flex max-w-[1600px] flex-col px-4 py-6 sm:px-6 lg:min-h-[calc(100svh-121px)] lg:px-8">
             <div className="relative flex flex-1 items-center justify-center">
-              <div className="absolute inset-y-0 right-0 hidden w-[46%] overflow-hidden lg:block">
+              <div className="absolute inset-y-0 right-0 hidden w-[46%] -translate-x-6 overflow-hidden lg:block xl:-translate-x-10">
                 <img
                   src="/imgs/about-page-logo.jpeg"
                   alt="Molten metal pouring in a foundry"
-                  className="absolute inset-0 h-full w-full object-cover object-right"
+                  className="absolute inset-0 h-full w-full object-cover object-[72%_center]"
                   decoding="async"
                   fetchPriority="high"
                 />
